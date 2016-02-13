@@ -542,15 +542,6 @@ def update_run_tracker():
 @app.route("/submit_data", methods=["POST"])
 def submit_data():
 
-	# Let's turn this into an API where you can post input data and get
-	# back output data after some calculations.
-
-	# If a user makes a POST request to http://127.0.0.1:5000/predict, and
-	# sends an X vector (to predict a class y_pred) with it as its data,
-	# we will use our trained LogisticRegression model to make a
-	# prediction and send back another JSON with the answer. You can use
-	# this to make interactive visualizations.
-
     # read the data that came with the POST request as a dict
     # inbound request example: http://127.0.0.1:5000/predict -X POST -H 'Content-Type: application/json' -d '{"example": [154]}'
     # my example: http://127.0.0.1:5000/test_predict -X POST -H 'Content-Type: application/json' -d '{'keywords': ['rabbit','goat','wine'],'rating_metric': ['lda'],'distance_metric': ['pearsonr']}'
@@ -639,24 +630,7 @@ def scorecard(timestamp, cluster_seeds, cluster_seed_names, num_seg):
 	filenames = ['predicted_segment_','posterior_probabilities_','model_stats_']
 	predicted_clusters, posterior_probabilities, model_stats = (np.genfromtxt(basedir + "/static/model/" + filename + timestamp + ".txt", delimiter=',', skip_header=0) for filename in filenames)
 
-	#  http://docs.scipy.org/doc/numpy-1.10.0/reference/generated/numpy.genfromtxt.html'
-	# predicted_clusters = np.genfromtxt(basedir + "/static/model/" + filename, delimiter=',', skip_header=0)
-	# print filename, "loaded"
-	# print predicted_clusters.shape
-	# #print predicted_clusters[:100]
-	# #cluster_counts = Counter(predicted_clusters)
-	# #print cluster_counts # remember, this is dictionary-like object, e.g. cluster_counts[1] = number, etc
 
-	# filename = 'posterior_probabilities_.txt'
-	# posterior_probabilities = np.genfromtxt(basedir+ "/static/model/" +filename, delimiter=',', skip_header=0)
-
-	# filename = 'model_stats_.txt'
-	# model_stats = np.genfromtxt(basedir + "/static/model/" +filename, delimiter=',', skip_header=0)
-
-	# print filename, "loaded"
-	# calculate cluster scorecard metrics
-	#print posterior_probabilities.shape
-	#print posterior_probabilities[:100]
 	cluster_size = [len(predicted_clusters[predicted_clusters == x+1]) for x in range(num_seg)]
 	mean_posterior_probabilities = [np.mean(posterior_probabilities[:,x][predicted_clusters ==x+1]) for x in range(num_seg)] 
 	cluster_shares = [float(cluster_size[x]) / sum(cluster_size) for x in range(num_seg)]
@@ -748,94 +722,12 @@ def update_results_dict(results, X_rebucketed, names):
 	print("------- Runtime: %.2f seconds -------" % (time.time() - start_time))
 	
 	results_dict = dict(Parallel(n_jobs=num_cores,verbose=5)(delayed(make_one_results_dict_entry_mp)(i,results_dict.keys()[i],results_dict[results_dict.keys()[i]], X_rebucketed, names) for i in range(len(results_dict.keys()))))
-	#results_2_keys = results_dict.keys()
-	#results_2_dict = dict(zip(results_2_keys, results_2))
-	# could json.dumps be of help here? Send one results_dict[key] as results_dict[key].items() (=list), then convert to dict, and reverse / re-assemble on other end?
-	# for key in results_dict:
-	#   	make_one_results_dict_entry(1, key, results_dict, X_rebucketed, names)
-		# pred_clusters = np.array(results_dict[key]['predicted_clusters'])
-		# pred_clusters = np.reshape(pred_clusters, (pred_clusters.shape[0],1))
-		# clustered_responders = np.append(X_rebucketed, pred_clusters, axis=1)
-		
-		# results_dict[key]['response_shares'] = {}; results_dict[key]['response_counts'] = {}; results_dict[key]['response_polarity'] = {}; results_dict[key]['cross_question_polarity'] = {}
-		# questions = results_dict[key]['quest_list']
-		
-		# for question in results_dict[key]['quest_list']:
-		# 	response_shares = []; response_counts = []
-			
-		# 	for cluster in set(results_dict[key]['predicted_clusters']):
-		# 		response_count = [sum(clustered_responders[clustered_responders[:,clustered_responders.shape[1]-1] == cluster][:,names.index(question)] == bucket) for bucket in set(clustered_responders[:,names.index(question)])]
-		# 		response_counts.append(response_count)
-		# 		response_share = [float(response_count[i])/sum(response_count) for i in range(len(response_count))]
-		# 		response_shares.append(response_share)
-
-		# 	results_dict[key]['response_counts'][question] = response_counts
-		# 	results_dict[key]['response_shares'][question] = response_shares
-		# 	results_dict[key]['response_polarity'][question] = [max(item) - np.mean(item) for item in response_shares]
-		# 	cross_question_polarity = np.reshape(results_dict[key]['response_shares'][question],(results_dict[key]['cluster_number'],3))
-		# 	results_dict[key]['cross_question_polarity'][question] = [max(cross_question_polarity[:,col]) - np.mean(cross_question_polarity[:,col]) for col in range(cross_question_polarity.shape[1])]
-
 	
-		# results_dict[key]['polarity_scores'] = [sum(results_dict[key]['response_polarity'][question][cluster] / len (results_dict[key]['quest_list']) for question in results_dict[key]['quest_list']) for cluster in range(results_dict[key]['cluster_number'])]
-		# results_dict[key]['weighted_average_cluster_polarity'] = sum([a*b for a,b in zip(results_dict[key]['polarity_scores'],results_dict[key]['cluster_shares'])])
-		# results_dict[key]['mean_cluster polarity'] = np.mean(results_dict[key]['polarity_scores'])
-		# results_dict[key]['average_cross_question_polarity'] = sum(sum(value) for value in results_dict[key]['cross_question_polarity'].values()) / len(results_dict[key]['cross_question_polarity'].values())	
-
-		# print results_dict[key]['cluster_counts'], sum(results_dict[key]['cluster_counts'])
-		# print results_dict[key]['cluster_shares'], sum(results_dict[key]['cluster_shares']) 
-		# print 'polarity scores:', results_dict[key]['polarity_scores']
-		# print "weighted average cluster polarity: ", results_dict[key]['weighted_average_cluster_polarity'] 
-		# print "mean cluster polarity: ", results_dict[key]['mean_cluster polarity']
-		# print "average cross_question_polarity: ", results_dict[key]['average_cross_question_polarity']
-	
-	#print "results_2 length:", len(results_2)
-	#print "sample results_2 entry:", results_2[0]
 
 	print "results_dict complete with", len(results_dict.keys()), "entries"
 	print("------- Runtime: %.2f seconds -------" % (time.time() - start_time))
 
 	return timestamps#, results_dict
-
-def make_one_results_dict_entry(i, key, results_dict, X_rebucketed, names):
-	#results_dict_entry = dict(results_dict_entry)
-	
-	pred_clusters = np.array(results_dict[key]['predicted_clusters'])
-	pred_clusters = np.reshape(pred_clusters, (pred_clusters.shape[0],1))
-	clustered_responders = np.append(X_rebucketed, pred_clusters, axis=1)
-	
-	results_dict[key]['response_shares'] = {}; results_dict[key]['response_counts'] = {}; results_dict[key]['response_polarity'] = {}; results_dict[key]['cross_question_polarity'] = {}
-	questions = results_dict[key]['quest_list']
-	
-	# for question in results_dict[key]['quest_list']:
-	# for question in question_dict.keys():
-	for question in names:
-		response_shares = []; response_counts = []
-		
-		for cluster in set(results_dict[key]['predicted_clusters']):
-			response_count = [sum(clustered_responders[clustered_responders[:,clustered_responders.shape[1]-1] == cluster][:,names.index(question)] == bucket) for bucket in set(clustered_responders[:,names.index(question)])]
-			response_counts.append(response_count)
-			response_share = [float(response_count[i])/sum(response_count) for i in range(len(response_count))]
-			response_shares.append(response_share)
-
-		results_dict[key]['response_counts'][question] = response_counts
-		results_dict[key]['response_shares'][question] = response_shares
-		results_dict[key]['response_polarity'][question] = [max(item) - np.mean(item) for item in response_shares]
-		cross_question_polarity = np.reshape(results_dict[key]['response_shares'][question],(results_dict[key]['cluster_number'],3))
-		results_dict[key]['cross_question_polarity'][question] = [max(cross_question_polarity[:,col]) - np.mean(cross_question_polarity[:,col]) for col in range(cross_question_polarity.shape[1])]
-
-
-	results_dict[key]['polarity_scores'] = [sum(results_dict[key]['response_polarity'][question][cluster] / len (results_dict[key]['quest_list']) for question in results_dict[key]['quest_list']) for cluster in range(results_dict[key]['cluster_number'])]
-	results_dict[key]['weighted_average_cluster_polarity'] = sum([a*b for a,b in zip(results_dict[key]['polarity_scores'],results_dict[key]['cluster_shares'])])
-	results_dict[key]['mean_cluster polarity'] = np.mean(results_dict[key]['polarity_scores'])
-	results_dict[key]['average_cross_question_polarity'] = sum(sum(value) for value in results_dict[key]['cross_question_polarity'].values()) / len(results_dict[key]['cross_question_polarity'].values())	
-
-	print "number of entries for results_dict[key]", key, len(results_dict[key].keys())
-	#print results_dict[key]
-	one_entry = dict(results_dict[key].items())
-
-	print "number of entries for one_entry", key, len(one_entry.keys())
-
-	return one_entry
 
 def make_one_results_dict_entry_mp(i, key, results_dict_entry, X_rebucketed, names):
 	'''
