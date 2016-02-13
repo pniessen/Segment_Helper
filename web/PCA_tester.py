@@ -721,8 +721,9 @@ def update_results_dict(results, X_rebucketed, names):
 	
 	print("------- Runtime: %.2f seconds -------" % (time.time() - start_time))
 	
-	results_dict = dict(Parallel(n_jobs=num_cores,verbose=5)(delayed(make_one_results_dict_entry_mp)(i,results_dict.keys()[i],results_dict[results_dict.keys()[i]], X_rebucketed, names) for i in range(len(results_dict.keys()))))
-	
+	#results_dict = dict(Parallel(n_jobs=num_cores,verbose=5)(delayed(make_one_results_dict_entry_mp)(i,results_dict.keys()[i],results_dict[results_dict.keys()[i]], X_rebucketed, names) for i in range(len(results_dict.keys()))))
+	new_results_dict = dict(Parallel(n_jobs=num_cores,verbose=5)(delayed(make_one_results_dict_entry_mp)(i,timestamps[i],results_dict[timestamps[i]], X_rebucketed, names) for i in range(len(timestamps))))
+	results_dict.update(new_results_dict)
 
 	print "results_dict complete with", len(results_dict.keys()), "entries"
 	print("------- Runtime: %.2f seconds -------" % (time.time() - start_time))
@@ -1021,6 +1022,7 @@ if __name__ == "__main__":
 	# (x) drag / drop question chooser (with "rewind" feature to run number X) ("this run is x% similar")
 	# (x) populate explorer with actual question names
 	# (x) detect which questions are checked and/or selected in explorer
+	# (x) progress bar for data loading
 	# logic check: num_quetions > num_segments
 	# update run_tracker by column baed on results_dict state change (how to handle batch mode?)
 	# control panel: option for other methods, knn, DBSCAN, tensorflow

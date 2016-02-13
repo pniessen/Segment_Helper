@@ -198,7 +198,7 @@
     <section id="about" class="container content-section text-center">
         <div class="row">
             <div class="col-md-3">
-                <h2>Basic Mode:</h2>
+                <h2>Classic Mode:</h2>
                 <li><p>Load data file</p></li>
                 <li><p>Choose variables to segment by</p></li>
                 <li><p>Review results</p></li>
@@ -366,7 +366,7 @@
     </section>
 
     <!-- Map Section -->
-    <div id="map"></div>
+<!--     <div id="map"></div> -->
 
     <!-- Footer -->
     <footer>
@@ -374,7 +374,21 @@
             <p>Copyright &copy; Your Website 2014</p>
         </div>
     </footer>
-
+    <!-- Please wait dialog for ajax POST call -->
+    <!-- http://stackoverflow.com/questions/2509711/display-loading-image-while-post-with-ajax -->
+    <!-- http://dotnetspeak.com/2013/05/creating-simple-please-wait-dialog-with-twitter-bootstrap -->
+<!--     <section>
+        <div class="modal hide" id="pleaseWaitDialog" data-backdrop="static" data-keyboard="false" style='display:none'>
+            <div class="modal-header">
+                <h1>Processing...</h1>
+            </div>
+            <div class="modal-body">
+                <div class="progress progress-striped active">
+                    <div class="bar" style="width: 100%;"></div>
+                </div>
+            </div>
+        </div>
+    </section> -->
     <!-- jQuery -->
     <script src="static/js/jquery.js"></script>
 
@@ -385,7 +399,7 @@
     <script src="static/js/jquery.easing.min.js"></script>
 
     <!-- Google Maps API Key - Use your own API key to enable the map feature. More information on the Google Maps API can be found at https://developers.google.com/maps/ -->
-    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRngKslUGJTlibkQ3FkfTxj3Xss1UlZDA&sensor=false"></script>
+    <!--     // <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRngKslUGJTlibkQ3FkfTxj3Xss1UlZDA&sensor=false"></script> -->
 
     <!-- Custom Theme JavaScript -->
     <script src="static/js/grayscale.js"></script>
@@ -395,7 +409,6 @@
     
     <!-- Bootstrap-Switch (http://www.bootstrap-switch.org/) -->
     <script src="/static/js/bootstrap-switch.js"></script>
-
 
     <!-- Bootstrap - Switch -->
     <script>
@@ -430,6 +443,27 @@
     //     };
     // });
     </script>
+    <script>
+    // turns on / off waiting screen
+    // http://dotnetspeak.com/2013/05/creating-simple-please-wait-dialog-with-twitter-bootstrap
+    // http://jsfiddle.net/terryr2015/qzzxuuj7/
+    // on: myApp.showPleaseWait();
+    // off: myApp.hidePleaseWait();
+    var myApp;
+    myApp = myApp || (function () {
+        var pleaseWaitDiv = $('<div class="modal fade" style=top:40% id="pleaseWaitDialog" data-backdrop="static" data-keyboard="false"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h4 class="modal-title" style="color:black" >Processing - please wait...</h4></div><div class="modal-body"><div class="progress"><div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div></div></div></div></div></div>');
+        return {
+            showPleaseWait: function () {
+                pleaseWaitDiv.modal();
+            },
+            hidePleaseWait: function () {
+                pleaseWaitDiv.modal('hide');
+            },
+
+        };
+    })();
+    </script>
+   
     <!--  which boxes in run_tracker have been checked?  -->
     <script>
     // Pass the checkbox name to the function
@@ -495,6 +529,8 @@ function SubmitData () {
     // var data_to_send = "{\"questions\":" + checkbox_ids + ", \"segments\":" + num_segments + "}";
     console.log(data_to_send, checkbox_ids);      
 
+    //$('#pleaseWaitDialog').show(); // show loading message
+    myApp.showPleaseWait();
     $.ajax({
          type: "POST",
          contentType: "application/json; charset=utf-8",
@@ -504,7 +540,11 @@ function SubmitData () {
          // data: "{\"keywords\": \"romantic,beer,family\", \"neighborhoods\":\"\", \"cuisines\":\"Sushi\"}",
          data: data_to_send,
          success: function (data) {console.log(data);
+                                myApp.hidePleaseWait();
                                 UpdateTrackerData ();
+                                GetTrainingData();
+                                // myApp.hidePleaseWait();
+                                // $('#pleaseWaitDialog').hide(); //hide loading message
                                     // MakeATable(data);
                                     // console.log('table made');
                                     // loadImage(data);
