@@ -2,6 +2,10 @@
 # 1.20.2016
 # Peter Niessen
 
+"""
+Segmentr: a customer segmentation toolkit
+"""
+
 import numpy as np
 from sklearn.decomposition import PCA
 import time
@@ -20,6 +24,7 @@ import xlsxwriter
 import sys, getopt
 import itertools
 
+#def init():
 # default options
 interactive_mode = False
 xls = False
@@ -58,22 +63,6 @@ for opt, arg in opts:
 			print "wrong file type"
 			sys.exit()
 
-# arguments = sys.argv[1:]
-# print "Command line arguments:", str(arguments)
-
-# interactive_mode = False
-# xls = False
-# web_mode = False
-
-# if ('-i' or '-I') in arguments:
-# 	interactive_mode = True
-
-# if ('-w' or '-W') in arguments:
-# 	web_mode = True
-
-# if ('-xls' or '-xl' or '-x') in arguments:
-# 	xls = 'True'
-
 app = Flask(__name__)
 start_time = time.time()
 
@@ -91,10 +80,17 @@ app.logger.addHandler(handler)
 # These are the extension that we are accepting to be uploaded
 app.config['ALLOWED_EXTENSIONS'] = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'csv', 'xls'])
 
+# return basedir, basedir_for_upload, handler, xls, interactive_mode, web_mode, filename, grid_search, app, start_time
+
+
+
 # Step 1: load datasets, namess
 # load datafile
 
 def get_PCA(filename, n_components):
+	'''
+	Uses sclearn.decomposition for principal componets analysis of survey response data
+	'''
 	z = func_name(); print "in function:", z
 	print "-----------in get_PCA function----------------"
 	
@@ -144,6 +140,11 @@ def get_PCA(filename, n_components):
 	return factor_matrix, names, X#, question_dict
 
 def top_n_factors (factor_matrix, top_n):
+	'''
+	Uses PCA to group survey questions by PCA factors: 
+		(a) rank order questions by largest PCA factor (factor_matrix) 
+		(b) take largest (top_n)
+	'''
 	z = func_name(); print "in function:", z
 	print "-----------in top_n_factors function----------------------"
 	global question_dict
@@ -210,6 +211,12 @@ def top_n_factors (factor_matrix, top_n):
 	return factor_matrix, num_rows, num_cols, question_number, rh, best_factor, second_best_factor#, question_dict
 
 def rebucket(factor_matrix, names, X, rh):
+	'''
+	Tries different bucketing techniques: [(2,3,2),(3,2,2), (2,2,3), (3,1,3), (1,3,3), (1,2,4)]
+	Chooses technique that best proxies normal distribution 
+	"Rosetta Heuristic" is (approxminately) a ranking of how far from standard deviation - lower is better
+	Rosetta_heuristic = np.absolute((top_bucket - .26)) + np.absolute((bottom_bucket - .26)) + np.absolute((middle_bucket - .48)) + np.absolute((top_bucket - bottom_bucket)) * 100
+	'''
 	z = func_name(); print "in function:", z
 	print "-----------in rebucket function------------------"
 	global question_dict
@@ -309,6 +316,10 @@ def rebucket(factor_matrix, names, X, rh):
 	return rebucketed_filename, X_rebucketed#, question_dict
 
 def cluster_seed(factor_matrix, best_factor, question_number, num_cols, num_rows):
+	'''
+	Builds cluster_seed (size n_factors), grouping questions by highest PCA value then choosing lowest RH as cluster_seed
+
+	'''
 	z = func_name(); print "in function:", z
 	print "----------in cluster_seed function-------------------"
 	# Step 5: now group questions by highest factor (=factor_matrix[best_factor], remember col #1 = index 0!)
@@ -351,6 +362,9 @@ def cluster_seed(factor_matrix, best_factor, question_number, num_cols, num_rows
 # step 6: use cluster_seed as input to poLCA
 #def poLCA(cluster_seed, num_seg, num_rep, rebucketed_filename):
 def poLCA(i, cluster_seed, num_seg, num_rep, rebucketed_filename):
+	'''
+	Runs poLCA script in R - see http://dlinzer.github.io/poLCA/
+	'''
 	z = func_name(); print "in function:", z
 
 	print "------------in poLCA function---------------"
@@ -541,6 +555,10 @@ def submit_data():
     # inbound request example: http://127.0.0.1:5000/predict -X POST -H 'Content-Type: application/json' -d '{"example": [154]}'
     # my example: http://127.0.0.1:5000/test_predict -X POST -H 'Content-Type: application/json' -d '{'keywords': ['rabbit','goat','wine'],'rating_metric': ['lda'],'distance_metric': ['pearsonr']}'
     # simple example: curl http://127.0.0.1:5000/test_predict -X POST -H 'Content-Type: applcation/json' -d '{"keywords": '66666'}'
+	# curl http://127.0.0.1:5000/submit_data -X POST -H 'Content-Type: applcation/json' -d '{u'segments': [6], u'questions': u'[q39_8,q39_4,q39_6,q48_28,q31_20,q07_18,q07_17,q07_11,q35_5,q16_8,q06_2,q08_5,q08_6,q06_8,q06_16,q35_8,q48_25,q48_27]'}'
+	# {"questions":"[q39_8,q39_4,q39_6,q48_28,q31_20,q07_18,q07_17,q07_11,q35_5,q16_8,q06_2,q08_5,q08_6,q06_8,q06_16,q35_8,q48_25,q48_27]", "segments":[6]} 
+	# 	
+
 	counter = 0
 	inbound_data = flask.request.json
 	counter +=1
@@ -608,6 +626,9 @@ def upldfile():
             return jsonify(name=filename, size=file_size)
 
 def scorecard(timestamp, cluster_seeds, cluster_seed_names, num_seg):
+	'''
+	Yields scorecard for single segmentation run - legacy module, does not run off results_dict
+	'''
 	z = func_name(); print "in function:", z
 	print "------------in scorecard function---------------------"
 	# step 7: load predicted clusters from file, add back to original data matrix (X)	
@@ -668,6 +689,9 @@ def scorecard(timestamp, cluster_seeds, cluster_seed_names, num_seg):
 	return
 
 def update_results_dict(results, X_rebucketed, names):
+	''''
+	Updates results_dict after poLCA run
+	'''
 	z = func_name(); print "in function:", z
 	print "----------in make_results_dict function-------------"
 	global results_dict
@@ -814,6 +838,9 @@ def make_one_results_dict_entry(i, key, results_dict, X_rebucketed, names):
 	return one_entry
 
 def make_one_results_dict_entry_mp(i, key, results_dict_entry, X_rebucketed, names):
+	'''
+	Breaks apart results_dict update into threads if multiprocessing possible
+	'''
 	z = func_name(); print "in function:", z
 	print "---------in make_one_results_dict_entry_mp function-----------------"
 	results_dict = dict(results_dict_entry) #not same as global var; should change name!
@@ -860,6 +887,9 @@ def make_one_results_dict_entry_mp(i, key, results_dict_entry, X_rebucketed, nam
 	return key, one_entry
 
 def update_question_dict(timestamps):#question_dict, results_dict):
+	'''
+	Updates question_dict after poLCA run, adding back a boolean run inclusion tracker for each question 
+	'''
 	z = func_name(); print "in function:", z
 
 	global results_dict
@@ -904,6 +934,9 @@ def update_question_dict(timestamps):#question_dict, results_dict):
 	return #question_dict, results_dict
 
 def make_xls():#results_dict):
+	'''
+	Excel export - currently only detailed run results
+	'''
 	z = func_name(); print "in function:", z
 
 	global results_dict
@@ -955,6 +988,9 @@ def make_xls():#results_dict):
 	return
 
 def clean_up (timestamps):
+	'''
+	Deletes working files from poLCA run (easiest way R>Python)
+	'''
 	z = func_name(); print "in function:", z
 	print "----in clean_up function----"
 	# now clean up!
@@ -967,6 +1003,9 @@ def clean_up (timestamps):
 	return
 
 def run_poLCA (grid_search,cluster_seed,num_seg,num_rep,rebucketed_filename):
+	'''
+	Runs single or gridsearch, also uses multiprocessing for gridsearch (if possible)
+	'''
 	z = func_name(); print "in function:", z
 
 	if grid_search == False:
@@ -1009,6 +1048,8 @@ def func_name():
 	return traceback.extract_stack(None, 2)[0][2]
 
 if __name__ == "__main__":
+
+	#app = Flask(__name__)
 	num_seg = 5
 	num_rep = 1
 	n_components = 30
@@ -1021,9 +1062,20 @@ if __name__ == "__main__":
 	# filename = 'test_raw_data_v1.csv' 
 	# file should be (user x question) matrix .csv with question labels in first row
 
+	# setup
+	# basedir, basedir_for_upload, handler, xls, interactive_mode, web_mode, filename, grid_search, start_time = init()
+	
 	# data loading / cleaning pipeline
-	# cleaning
-	# weighting
+	# cleaning (module TBA)
+		# -          Single Box
+		# -          3 scale point check
+		# -          High bucketed (Agree / Disagree)
+		# -          High bucketed (Neutral)
+		# -          Speed Demons
+		# -          Outlier Check
+		# -          Logic check
+		# -          Final cleaning flag
+	# weighting (module TBA)
 
 	# pre-processing pipeline:
 	factor_matrix, names, X = get_PCA(filename, n_components)
@@ -1077,6 +1129,7 @@ if __name__ == "__main__":
 	# (x) drag / drop question chooser (with "rewind" feature to run number X) ("this run is x% similar")
 	# (x) populate explorer with actual question names
 	# (x) detect which questions are checked and/or selected in explorer
+	# logic check: num_quetions > num_segments
 	# update run_tracker by column baed on results_dict state change (how to handle batch mode?)
 	# control panel: option for other methods, knn, DBSCAN, tensorflow
 	# control panel: small vs large gridsearch
