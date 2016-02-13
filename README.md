@@ -1,0 +1,2 @@
+# segmentr
+Customer segmentation toolkit
