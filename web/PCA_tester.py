@@ -979,11 +979,12 @@ if __name__ == "__main__":
 
 	print "cluster_seed: ", cluster_seed
 
-	# analysis and reporting pipeline
-	# results = run_poLCA (grid_search,cluster_seed,num_seg,num_rep,rebucketed_filename)	
-	# timestamps = update_results_dict(results, X_rebucketed, names)
-	# update_question_dict(timestamps)
-	# clean_up(timestamps)
+	if grid_search:
+	#analysis and reporting pipeline
+		results = run_poLCA (grid_search,cluster_seed,num_seg,num_rep,rebucketed_filename)	
+		timestamps = update_results_dict(results, X_rebucketed, names)
+		update_question_dict(timestamps)
+		clean_up(timestamps)
 	
 	print("------- Runtime: %.2f seconds -------" % (time.time() - start_time))
 
@@ -1023,8 +1024,9 @@ if __name__ == "__main__":
 	# (x) populate explorer with actual question names
 	# (x) detect which questions are checked and/or selected in explorer
 	# (x) progress bar for data loading
+	# (x) update run_tracker by column baed on results_dict state change (how to handle batch mode?)
+	# confirm question assignment consistent (dict arbitrary order doesn't create errors in table)
 	# logic check: num_quetions > num_segments
-	# update run_tracker by column baed on results_dict state change (how to handle batch mode?)
 	# control panel: option for other methods, knn, DBSCAN, tensorflow
 	# control panel: small vs large gridsearch
 	# 2-d plot of runs - cohesive (X) vs differentiation (Y)?

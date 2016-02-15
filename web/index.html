@@ -709,6 +709,7 @@ function SubmitData () {
 
     </script>
     <script>
+    var original_question_order = [];
     function startTracker(first_tracker_data){
         
         console.log('in startTracker function'); 
@@ -719,6 +720,7 @@ function SubmitData () {
         //var cols = new Number($("#columncount").val());
         var cols =  Object.keys(first_tracker_data.tracker[0]).length;
         var cols_names = Object.keys(first_tracker_data.tracker[0]);
+        // var orig_question_order = [];
         //console.log (cols);
         //console.log (cols_names);
         //console.log(cols_names[0]);
@@ -743,7 +745,8 @@ function SubmitData () {
             // console.log(cell);
             // row.append('<td></td>');
             // row.append('<input name="animal" type="checkbox">')
-            row.append('<td><input type="checkbox" name = "tcheck" value="' + check_label + '" id="'+check_label+'"></td>').attr({id:'ztable-' + (i+1) + '-0'});
+            row.append('<td><input type="checkbox" name = "tcheck" value="' + check_label + '" id="'+check_label+'"></td>').attr({id:'rtable-' + check_label});//attr({id:'ztable-' + (i+1) + '-0'});
+            original_question_order[i] = check_label;
             // row.append("<td>" + tracker_data.tracker[i].b + "</td>").attr({id:'ttable-' + (i+1) + '-1'});
             for (var j = 0; j < cols; j++) {
                 //console.log (cols_names);
@@ -758,8 +761,8 @@ function SubmitData () {
         //console.log("TTTTT:"+mytable.html());
         mytable.appendTo("#tracker-goes-here");          
       
-      // var newTableObject2 = document.getElementById('trackerTable');
-      // sorttable.makeSortable(newTableObject2);
+      var newTableObject2 = document.getElementById('trackerTable');
+      sorttable.makeSortable(newTableObject2);
     }
     </script>
     <!--     check box event handler -->
@@ -914,8 +917,22 @@ function createCell(cell, text, i, style) {
 function appendColumn(tracker_data) {
     console.log('in appendColumn function');
     var tbl = document.getElementById('trackerTable'), // table reference
+        row_list = document.getElementsByTagName('tr')//.attr('id'),
+        one_row = row_list[1],
+        current_question_order = [],
         i;
+        // one_row_id = getAttributeByIndex(one_row, 0),
+    // console.log (one_row, one_row.length)
 
+    for (var z = 1; z < row_list.length-1; z++) {
+    console.log('id',row_list[z].id.slice(7));
+    current_question_order[z] = row_list[z].id.slice(7);
+    };
+        // row_list_row = row_list.getElementsByTagName('tr'),
+        // row_ids = row_list.getAttribute('id'),
+        // http://www.w3schools.com/jsref/jsref_indexof_array.asp
+        // i;
+    console.log('row_list_id: ', current_question_order.length, current_question_order);
     // var header2 = tbl.rows[0].cells.length;
 
     // var header = document.getElementById('trackerTable').rows[0].cells.length;
@@ -962,8 +979,15 @@ function appendColumn(tracker_data) {
             // if (i = 0) {$('<th></th>').text('xx').appendTo(tbl);}
             // else {
             // var keys = Object.keys(tracker_data.tracker[0]);
+            // original_question_order (=inbound data) match to row_id_list (current table state) as key?
+            var old_to_new_mapping = current_question_order.indexOf(original_question_order[i]);
+            // console.log('original_question_order:', original_question_order[i], "row_list_id: ", current_question_order[i+1]);
+            // console.log('equality check:', original_question_order[i]==current_question_order[i+1]);
+            // console.log('old-to-current mapping: ', current_question_order.indexOf(original_question_order[i]));
+            // console.log('confirm mapping:', current_question_order[old_to_new_mapping]);
             var txt = tracker_data.tracker[i][keys[j]];
-            var x = tbl.rows[i+1].insertCell(-1); 
+            // var x = tbl.rows[i+1].insertCell(-1); // use when sortTable = false
+            var x = tbl.rows[old_to_new_mapping].insertCell(-1); // use when sortTable = true
             // var col_num = tbl.rows[0].cells.length;
             x.innerHTML = txt;
             x.setAttribute('id', 'ttable-'+ (i+1) + "-" + (col_num-1));
