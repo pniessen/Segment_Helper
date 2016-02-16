@@ -573,13 +573,33 @@ def submit_data():
 		
 		print "num_segments:", num_segments
 
+	if 'xls' in keys:
+		xls = False
+		print '---excel export----'
+		xl_flag = inbound_data['xls'].strip("[]")
+
+		if xl_flag == 'true':
+			xls = True
+
+		print "excel export:", xls
+
+	if 'grid_search' in keys:
+		grid_search = False
+		print '---grid search----'
+		gs_flag = inbound_data['grid_search'].strip("[]")
+		
+		if gs_flag == 'true':
+			grid_search = True
+
+		print "grid_search:", grid_search	
+
 	cluster_seed_2 = [names.index(question) for question in questions]
 	print "cluster_seed_2:", cluster_seed_2
 
 	#cluster_seed = [60.0, 90.0, 24.0, 125.0, 72.0, 61.0, 30.0, 68.0, 14.0, 123.0, 144.0, 49.0, 65.0, 53.0, 50.0, 12.0, 58.0, 146.0, 112.0, 81.0, 48.0, 43.0, 134.0, 139.0, 51.0, 86.0, 4.0, 94.0, 111.0, 99.0]
 	cluster_seed = cluster_seed_2
 	num_seg = num_segments
-	grid_search = False
+	#grid_search = False
 	num_rep = 1
 	#rebucketed_filename = 'X_rebucketed.csv'
 
@@ -594,6 +614,10 @@ def submit_data():
 	
 	update_question_dict(timestamps)
 	clean_up(timestamps)
+
+	if xls:
+		make_xls()
+
 
 	results2 = {"example": [155]}
 	return flask.jsonify(results2)
@@ -895,6 +919,176 @@ def clean_up (timestamps):
 
 	return
 
+def save_results():
+	'''
+	Writes results_dict to file
+	'''
+	z = func_name(); print "--------in function: ", z, "--------------"
+
+	global results_dict
+	import ujson
+	import uuid
+	import json
+	import simplejson  
+	import cPickle as pickle
+	import marshal
+	import time
+	
+	time_dict = {}
+	load_time_dict = {}
+
+	# outfile = 'results_dict_' + str(uuid.uuid4()) + '.json'
+
+	# ujson
+	method = 'ujson'
+	print "trying :", method
+	last_time = time.time()
+	try:
+		outfile = 'results_dict_' + str(uuid.uuid4()) + '.json'
+		with open (outfile, "wb") as f:
+			ujson.dumps(results_dict ,f) 
+		this_time = time.time()
+		elapsed_time = this_time - last_time
+		print method,": ", outfile, ' saved with ', len(results_dict), ' entries, in :' , elapsed_time
+		time_dict[method] = elapsed_time
+
+		next_time = time.time()
+		z = ujson.loads(outfile) 
+		elapsed_time = next_time - this_time
+		load_time_dict[method] = elapsed_time
+	
+	except:
+		pass
+
+	# json
+	method = 'json'
+	print "trying :", method
+	last_time = time.time()
+	try: 
+		outfile = 'results_dict_' + str(uuid.uuid4()) + '.json'
+		with open (outfile, "wb") as f:
+			json.dump(results_dict ,f) 
+		this_time = time.time()
+		elapsed_time = this_time - last_time
+		print method,": ", outfile, ' saved with ', len(results_dict), ' entries, in :' , elapsed_time
+		time_dict[method] = elapsed_time
+
+		next_time = time.time()
+		z = json.loads(outfile) 
+		elapsed_time = next_time - this_time
+		load_time_dict[method] = elapsed_time
+
+	except:
+		pass
+
+	# simplejson
+	method = 'simplejson'
+	print "trying :", method
+	last_time = time.time()
+	try:
+		outfile = 'results_dict_' + str(uuid.uuid4()) + '.json'
+		with open (outfile, "wb") as f:
+			simplejson.dumps(results_dict ,f) 
+		this_time = time.time()
+		elapsed_time = this_time - last_time
+		print method,": ", outfile, ' saved with ', len(results_dict), ' entries, in :' , elapsed_time
+		time_dict[method] = elapsed_time
+
+		next_time = time.time()
+		z = simplejson.loads(outfile) 
+		elapsed_time = next_time - this_time
+		load_time_dict[method] = elapsed_time	
+
+	except:
+		pass
+	
+	# marshal
+	method = 'marshal'
+	print "trying :", method
+	last_time = time.time()
+	try:
+		outfile = 'results_dict_' + str(uuid.uuid4()) + '.mar'
+		with open (outfile, "wb") as f:
+			marshal.dumps(results_dict ,f) 
+		this_time = time.time()
+		elapsed_time = this_time - last_time
+		print method,": ", outfile, ' saved with ', len(results_dict), ' entries, in :' , elapsed_time
+		time_dict[method] = elapsed_time
+	
+	except:
+		pass
+	
+	# cPickle
+	method = 'cPickle'
+	print "trying :", method
+	last_time = time.time()
+	try:
+		outfile = 'results_dict_' + str(uuid.uuid4()) + '.pkl'
+		with open(outfile, 'wb') as handle:
+		    pickle.dump(results_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)		
+		this_time = time.time()
+		elapsed_time = this_time - last_time
+		print method,": ", outfile, ' saved with ', len(results_dict), ' entries, in :' , elapsed_time
+		time_dict[method] = elapsed_time
+
+		next_time = time.time()
+		pickle.load(open(outfile, 'rb'))
+		elapsed_time = next_time - this_time
+		load_time_dict[method] = elapsed_time
+	
+	except:
+		pass
+
+	# dill
+	import dill as pickle
+	method = 'dill'
+	print "trying :", method
+	last_time = time.time()
+	try:
+		outfile = 'results_dict_' + str(uuid.uuid4()) + '.pkl'
+		with open(outfile, 'wb') as handle:
+		    pickle.dump(results_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)	
+		this_time = time.time()
+		elapsed_time = this_time - last_time
+		print method,": ", outfile, ' saved with ', len(results_dict), ' entries, in :' , elapsed_time
+		time_dict[method] = elapsed_time
+
+		next_time = time.time()
+		pickle.load(open(outfile, 'rb'))
+		elapsed_time = next_time - this_time
+		load_time_dict[method] = elapsed_time
+	
+	except:
+		pass
+
+	# cloudpickle
+	import cloudpickle as pickle
+	method = 'cloudpickle'
+	print "trying :", method
+	last_time = time.time()
+	try:
+		outfile = 'results_dict_' + str(uuid.uuid4()) + '.pkl'
+		with open(outfile, 'wb') as handle:
+		    pickle.dump(results_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)	
+		this_time = time.time()
+		elapsed_time = this_time - last_time
+		print method,": ", outfile, ' saved with ', len(results_dict), ' entries, in :' , elapsed_time
+		time_dict[method] = elapsed_time
+
+		next_time = time.time()
+		pickle.load(open(outfile, 'rb'))
+		elapsed_time = next_time - this_time
+		load_time_dict[method] = elapsed_time
+	
+	except:
+		pass
+	
+	print '------------Results-----------'
+	print "saving file:", sorted(time_dict.items(), key=lambda x: x[1])
+	print "loading file:", sorted(load_time_dict.items(), key=lambda x: x[1])
+	return
+
+
 def run_poLCA (grid_search,cluster_seed,num_seg,num_rep,rebucketed_filename):
 	'''
 	Runs single or gridsearch, also uses multiprocessing for gridsearch (if possible)
@@ -913,7 +1107,7 @@ def run_poLCA (grid_search,cluster_seed,num_seg,num_rep,rebucketed_filename):
 		print '---------in grid search == True function---------'
 		# run clustering in parallel if possible
 		shortened_cluster_seeds = []
-		num_remove = 0
+		num_remove = 5
 		random.shuffle(cluster_seed)
 		
 		shortened_cluster_seeds = [cluster_seed[0:(len(cluster_seed)-num)] for num in range(num_remove+1) ]
@@ -922,7 +1116,7 @@ def run_poLCA (grid_search,cluster_seed,num_seg,num_rep,rebucketed_filename):
 		# shortened_cluster_seeds = [x for x in itertools.combinations(cluster_seed, 28)]
 		# print "total cluster seeds: ", len(shortened_cluster_seeds)
 
-		num_seg = [5,6]#,7]#,8,9,10,11,12,13,14]
+		num_seg = [5,6]#,7,8]#,9,10,11,12,13,14]
 		
 		num_cores = multiprocessing.cpu_count()
 		#results = Parallel(n_jobs=num_cores,verbose=5)(delayed(poLCA)(i,cluster_seed, num_seg[i], num_rep, rebucketed_filename) for i in range(10))
@@ -985,12 +1179,13 @@ if __name__ == "__main__":
 		timestamps = update_results_dict(results, X_rebucketed, names)
 		update_question_dict(timestamps)
 		clean_up(timestamps)
+		save_results()
 	
 	print("------- Runtime: %.2f seconds -------" % (time.time() - start_time))
 
 	# feature switches
 	if xls:
-		make_xls(results_dict)
+		make_xls()
 
 	if interactive_mode:
 		app.run(debug = True)
@@ -1025,6 +1220,13 @@ if __name__ == "__main__":
 	# (x) detect which questions are checked and/or selected in explorer
 	# (x) progress bar for data loading
 	# (x) update run_tracker by column baed on results_dict state change (how to handle batch mode?)
+	# grid search = largest
+	# mongo db for grid search = large
+	# other param connectivity (num_clusers, grid_search, xls)
+	# other data types (continuous, dichotomous)
+	# coloring of questions by factor relationships?
+	# on mouseover support for run_tracker KPI?
+	# input file validation - len(set(questions)) == len(questions)
 	# confirm question assignment consistent (dict arbitrary order doesn't create errors in table)
 	# logic check: num_quetions > num_segments
 	# control panel: option for other methods, knn, DBSCAN, tensorflow
@@ -1034,6 +1236,11 @@ if __name__ == "__main__":
 	# visualization - 3D (users, PCA(questions)(:3), clusters)
 	# Cython for frequently used modules?
 	# data cleanup
+	#	- time: (hcapturetotaltime	hedittotaltime	hmanagetotaltime	hsharetotaltime	henjoytotaltime	hpersonaltotaltime	hadditionaltotaltime	htotaltimeinminutes)
+	#	- outlier (>3 standard deviations)
+	# 	- logic check (= mutually contradictory questions)
+	# 	- response patterns: single box, 3 scale point check, High Bucketed (Agree/disagree, neutral), Speed demon
+	# 	- basics: unique question names, unique reponder IDS 
 	# data weighting
 	# how to rebucket binary and continuous data (vs 1-7)
 	# audit trail - save X, X_rebucketed, factor_matrix, run_tracker, results_tracker to disk?

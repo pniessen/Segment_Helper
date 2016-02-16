@@ -52,7 +52,6 @@
     font-weight: bold;
     cursor: default;
     }
-
     table.center {
     margin-left:auto; 
     margin-right:auto;
@@ -85,7 +84,6 @@
     #tracker-goes-here  { margin-left:auto; margin-right:auto;}
     </style>
     <style>
-
     .btn-file {
       position: relative;
       overflow: hidden;
@@ -105,13 +103,11 @@
       display: block;
     }
     
-
     input[readonly] {
       background-color: white !important;
       cursor: text !important;
       color: black; 
     }
-
     .container2 {
     float: left;
     width: 25%;
@@ -269,23 +265,30 @@
   <!--  also see http://v4-alpha.getbootstrap.com/components/buttons/ -->
         <section id="explorer" class="container content-section text-center">
 
-            Cats:  <input name="animal" type="checkbox" value="Cats" id = "box1">
-            Dogs:  <input name="animal" type="checkbox" value="Dogs" id = "box2">
+<!--             Cats:  <input name="animal" type="checkbox" value="Cats" id = "box1">
+            Dogs:  <input name="animal" type="checkbox" value="Dogs" id = "box2"> -->
 
         <div class="row"><h2>Explorer</h2>
-            <div class="col-md-6"><h4>Pick the questions for clustering:</h4></div>
+            <div class="col-md-5"><h4>Pick the questions for clustering:</h4></div>
 <!--             <div class="col-md-1">2</div>
             <div class="col-md-1">3</div>
             <div class="col-md-1">4</div>
             <div class="col-md-1">5</div>
             <div class="col-md-1">6</div> -->
-            <div class="col-md-1"></div>
-            <div class="col-md-1"><button type="button" class="btn btn-primary"><i class="fa fa-play-circle"></i><a id="link-portfolio" href="#run-tracker" onclick="SubmitData()">Go!</button></a></div>
-            <div class="col-md-1">                <div class="dropdown open">
-                  <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    # Seg
+            <!-- <div class="col-md-1"></div> -->
+            <div class="col-md-1">
+                <button type="button" class="btn btn-primary"><i class="fa fa-play-circle"></i><a id="link-portfolio" href="#run-tracker" onclick="SubmitData()">Go!</button></a></div>
+
+                <button type="button" id = 'grid-button' class="btn btn-primary" data-toggle="button" aria-pressed="true" autocomplete="off">
+                    Grid:<div id='grid-on-off'>off</div></button>
+                <button type="button" id = 'excel-button' class="btn btn-primary" data-toggle="button" aria-pressed="false" autocomplete="off">
+                    Excel:<div id='excel-on-off'>off</div></button>
+
+                <div class="col-md-1">                <div class="dropdown closed">
+                  <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu1-label" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    # Seg<div id="number-of-segments"></div> 
                   </button>
-                  <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
+                  <div class="dropdown-menu" aria-labelledby="dropdownMenu2" id = 'dropdown-menu-1'>
                     <button class="dropdown-item" type="button" style="color:black">1</button>
                     <button class="dropdown-item" type="button" style="color:black">2</button>
                     <button class="dropdown-item" type="button" style="color:black">3</button>
@@ -297,9 +300,10 @@
                   </div>
                 </div>
             </div>
-            <div class="col-md-1">                <div class="dropdown open">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-play-circle fa-flip-horizontal"></i> Rewind</button>
-                     <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
+            <div class="col-md-1">                <div class="dropdown closed">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-play-circle fa-flip-horizontal"></i> Rewind</button>
+
+                     <div class="dropdown-menu" aria-labelledby="dropdownMenu2" id='dropdown-menu-2'>
                     <button class="dropdown-item" type="button" style="color:black">R1</button>
                     <button class="dropdown-item" type="button" style="color:black">R2</button>
                     <button class="dropdown-item" type="button" style="color:black">R3</button>
@@ -335,10 +339,10 @@
         <section id="run-tracker" class="container content-section text-center">
             <h2>Run Tracker</h2>
             <table class="tg" class="sortable" id = 'myTracker' >
-            <div id="tracker-goes-here" class = "center">
-                <td>Cats:  <input name="animal" type="checkbox" value="Cats" id = "box3"></td>
-                <td>Dogs:  <input name="animal" type="checkbox" value="Dogs" id = "box4"></td>
-            </div> 
+            <div id="tracker-goes-here" class = "center"></div>
+                <td><!-- Cats:  <input name="animal" type="checkbox" value="Cats" id = "box3"> --></td>
+                <td><!-- Dogs:  <input name="animal" type="checkbox" value="Dogs" id = "box4"> --></td>
+            <!-- </div>  -->
             </table>
         </section>
     
@@ -418,10 +422,10 @@
     </script>
     <!-- box check event handler -->
     <script>
-    $("[name='animal']").change(function() {
-    console.log("Handler for .change() called.");
-    alert( "Handler for .change() called." );
-    });
+    // $("[name='animal']").change(function() {
+    // console.log("Handler for .change() called.");
+    // alert( "Handler for .change() called." );
+    // });
     </script>
     <!-- Grid Search parameters on? -->
     <script>
@@ -459,7 +463,6 @@
             hidePleaseWait: function () {
                 pleaseWaitDiv.modal('hide');
             },
-
         };
     })();
     </script>
@@ -480,7 +483,6 @@
       // Return the array if it is non-empty, or null
       return checkboxesChecked.length > 0 ? checkboxesChecked : null;
     }
-
     // Call as
     var checkedBoxes = getCheckedBoxes("mycheckboxes");
     </script>
@@ -488,9 +490,7 @@
     <!-- Load scorecard table data -->
     <script>
     function GetTrainingData () {
-
         console.log('in GetTrainingData function');
-
         $.ajax({
              type: "GET",
              contentType: "application/json; charset=utf-8",
@@ -510,25 +510,25 @@
     </script>
 <script>
 function SubmitData () {
-
     console.log('in SubmitData function');  
-
     // var explorer_ids = getExplorerIds();
     var checkbox_ids = getCheckedBoxes('tcheck');
-    var num_segments = 6;
-
+        // xls_out = true,
+        // grid_search = true;
+    if (grid_search == 'off') {grid_search_flag = false} else {grid_search_flag = true};
+    if (xls_out == 'off') {xls_out_flag = false} else {xls_out_flag = true};
+    if (num_segments <= 0){num_segments = 5};   
+    // var num_segments = 6;
     // var data_to_send = checkbox_ids;
-
     //var data_to_send = '{"example": [154]}'
     // var checkbox_id = [1,2,3,4];
     // var checkbox_ids = checkbox_id.toString();
     // var explorer_ids = explorer_id.toString();
-
-    var data_to_send = "{\"questions\":\"[" + checkbox_ids + "]\", \"segments\":[6]}";
-
+    // var data_to_send = "{\"questions\":\"[" + checkbox_ids + "]\", \"segments\":[" + num_segments + "]}";
+    var data_to_send = "{\"questions\":\"[" + checkbox_ids + "]\", \"segments\":[" + num_segments + "], \"xls\":\"[" + xls_out_flag + "]\", \"grid_search\":\"[" + grid_search_flag + "]\"}";
+    // var data_to_send = "{\"questions\":\"[" + checkbox_ids + "]\", \"segments\":[6]}";
     // var data_to_send = "{\"questions\":" + checkbox_ids + ", \"segments\":" + num_segments + "}";
     console.log(data_to_send, checkbox_ids);      
-
     //$('#pleaseWaitDialog').show(); // show loading message
     myApp.showPleaseWait();
     $.ajax({
@@ -605,14 +605,11 @@ function SubmitData () {
       var newTableObject = document.getElementById('basicTable');
       sorttable.makeSortable(newTableObject);
     }
-
     </script>
 
     <script>
     function UpdateTrackerData () {
-
         console.log('in UpdateTrackerData function');
-
         $.ajax({
              type: "GET",
              contentType: "application/json; charset=utf-8",
@@ -634,9 +631,7 @@ function SubmitData () {
 
     <script>
     function StartTrackerData () {
-
         console.log('in StartTrackerData function');
-
         $.ajax({
              type: "GET",
              contentType: "application/json; charset=utf-8",
@@ -680,7 +675,6 @@ function SubmitData () {
             console.log(header_name);
             $('<th></th>').text(header_name).appendTo(header_row);}
         // header_row.append("<th>Q#</th>");
-
         for (var i = 0; i < rows; i++) {
             //var row = $('<tr></tr>').attr({ class: ["class1", "class2", "class3"].join(' ') }).appendTo(mytable);
             var row = $('<tr></tr>').appendTo(mytable);
@@ -698,7 +692,6 @@ function SubmitData () {
             }
                      
         }
-
         
         //console.log("TTTTT:"+mytable.html());
         mytable.appendTo("#tracker-goes-here");          
@@ -706,7 +699,6 @@ function SubmitData () {
       var newTableObject2 = document.getElementById('trackerTable');
       sorttable.makeSortable(newTableObject2);
     }
-
     </script>
     <script>
     var original_question_order = [];
@@ -734,7 +726,6 @@ function SubmitData () {
             console.log(header_name);
             $('<th></th>').text(header_name).appendTo(header_row);}
         // header_row.append("<th>Q#</th>");
-
         for (var i = 0; i < rows; i++) {
             //var row = $('<tr></tr>').attr({ class: ["class1", "class2", "class3"].join(' ') }).appendTo(mytable);
             var row = $('<tr></tr>').appendTo(mytable);
@@ -756,7 +747,6 @@ function SubmitData () {
             }
                      
         }
-
         
         //console.log("TTTTT:"+mytable.html());
         mytable.appendTo("#tracker-goes-here");          
@@ -801,14 +791,12 @@ function SubmitData () {
     <script>
     // http://www.abeautifulsite.net/whipping-file-inputs-into-shape-with-bootstrap-3/
     // also consider http://markusslima.github.io/bootstrap-filestyle/
-
     // $(document).on('change', '.btn-file :file', function() {
     //   var input = $(this),
     //       numFiles = input.get(0).files ? input.get(0).files.length : 1,
     //       label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
     //   input.trigger('fileselect', [numFiles, label]);
     // });
-
     // $(document).ready( function() {
     //     $('.btn-file :file').on('fileselect', function(event, numFiles, label) {
             
@@ -830,7 +818,6 @@ function SubmitData () {
 
 <script>
 var dragAndDrop = {
-
     limit: 10,
     count: 0,
     
@@ -855,9 +842,7 @@ var dragAndDrop = {
         this.count++;
     }
 };
-
 dragAndDrop.init();
-
 </script>
 <!-- Upload file -->
 <script>
@@ -884,7 +869,6 @@ $(function() {
 <script>
 // http://www.redips.net/javascript/adding-table-rows-and-columns/
 // append row to the HTML table
-
 function appendRow() {
     var tbl = document.getElementById('my-table'), // table reference
         row = tbl.insertRow(tbl.rows.length),      // append table row
@@ -913,7 +897,6 @@ function createCell(cell, text, i, style) {
 // http://stackoverflow.com/questions/1793046/is-it-possible-to-create-a-th-with-tablerow-insertcell
 // http://stackoverflow.com/questions/14999927/insert-th-in-thead
 // http://stackoverflow.com/questions/10043760/javascript-count-number-of-columns-in-a-table-row
-
 function appendColumn(tracker_data) {
     console.log('in appendColumn function');
     var tbl = document.getElementById('trackerTable'), // table reference
@@ -923,7 +906,6 @@ function appendColumn(tracker_data) {
         i;
         // one_row_id = getAttributeByIndex(one_row, 0),
     // console.log (one_row, one_row.length)
-
     for (var z = 1; z < row_list.length-1; z++) {
     console.log('id',row_list[z].id.slice(7));
     current_question_order[z] = row_list[z].id.slice(7);
@@ -934,7 +916,6 @@ function appendColumn(tracker_data) {
         // i;
     console.log('row_list_id: ', current_question_order.length, current_question_order);
     // var header2 = tbl.rows[0].cells.length;
-
     // var header = document.getElementById('trackerTable').rows[0].cells.length;
     // console.log (header2);
     // var tr = document.getElementById('trackerTable').tHead.children[0];
@@ -954,7 +935,6 @@ function appendColumn(tracker_data) {
         // th = document.createElement('th');
         // th.innerHTML = "New";
         // tr.appendChild(th);
-
         for (i = 0; i < tbl.rows.length - 1; i++) {
             console.log(tbl.rows.length);   
             if (i == 0) {console.log('header_row');
@@ -996,6 +976,10 @@ function appendColumn(tracker_data) {
             // } // else
         } // inner loop (= i)
     } // outer loop (= j)
+
+  var newTableObject2 = document.getElementById('trackerTable');
+  sorttable.makeSortable(newTableObject2);
+
 }; 
 </script>
 <script>
@@ -1006,7 +990,6 @@ function getExplorerIds () {
     var explorer_right_ids = [];
     var explorer_left_children = document.getElementById("explorer-left").children;
     var explorer_right_children = document.getElementById("explorer-right").children;
-
     for (var i = 0, len = explorer_left_children.length ; i < len; i++) {
         explorer_left_ids.push(explorer_left_children[i].id);
     }
@@ -1016,6 +999,45 @@ function getExplorerIds () {
     console.log(explorer_left_ids, explorer_right_ids);
     return explorer_right_ids.slice(1)
 };
+</script>
+<script>
+var num_segments = [],
+    rewind = [];
+    xls_out =[]
+    grid_search = []
+// Dropdown: number of segments
+// http://stackoverflow.com/questions/24620741/get-selected-item-value-from-bootstrap-dropdown-with-specific-id    
+$('#dropdown-menu-1 button').on('click', function(){
+    num_segments = $(this).text();
+    console.log(num_segments);
+    $('#dropdownMenu1-label').text('Seg: ' + num_segments);
+    // var x = document.getElementById('number-of-segments');
+    // x.innerHTML('this is a test');
+});
+// Dropdown: rewind explorer to prior run (RX)    
+$('#dropdown-menu-2 button').on('click', function(){
+    var rewind = $(this).text();
+    console.log(rewind);
+
+});
+// Button: Gridsearch?   
+var grid_search = $('#grid-on-off').text();
+$('#grid-button').on('click', function(){    
+    // $('#grid-on-off').text('on');
+    if (grid_search == 'off') {$('#grid-on-off').text('on'), grid_search = 'on';}
+    else {$('#grid-on-off').text('off'), grid_search = 'off';}
+    console.log('grid_search:', grid_search);
+});
+
+// Button: Excel export?
+var xls_out = $('#excel-on-off').text();    
+$('#excel-button').on('click', function(){
+    // var xls_out = $('#excel-on-off').text();
+    if (xls_out == 'off') {$('#excel-on-off').text('on'), xls_out = 'on';}
+    else {$('#excel-on-off').text('off'), xls_out = 'off';};
+    console.log('xls_out:', xls_out);
+
+});
 </script>
 
 <script> window.onload = StartTrackerData ();</script>
