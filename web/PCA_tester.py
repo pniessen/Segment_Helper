@@ -534,9 +534,13 @@ def update_run_tracker():
 			r_and_q_list.append(r_q_v)
 			#print tracker_list
 		
-		tracker = {'tracker': tracker_list}
+		#tracker = {'tracker': tracker_list}
 		#print tracker
 		print r_and_q_list
+
+		run_reports_list = run_report(keys_to_upload)
+		tracker = {'tracker': tracker_list, 'run_reports': run_reports_list}
+
 		return flask.jsonify(tracker)
 
 @app.route("/submit_data", methods=["POST"])
@@ -549,6 +553,7 @@ def submit_data():
 	# curl http://127.0.0.1:5000/submit_data -X POST -H 'Content-Type: applcation/json' -d '{u'segments': [6], u'questions': u'[q39_8,q39_4,q39_6,q48_28,q31_20,q07_18,q07_17,q07_11,q35_5,q16_8,q06_2,q08_5,q08_6,q06_8,q06_16,q35_8,q48_25,q48_27]'}'
 	# {"questions":"[q39_8,q39_4,q39_6,q48_28,q31_20,q07_18,q07_17,q07_11,q35_5,q16_8,q06_2,q08_5,q08_6,q06_8,q06_16,q35_8,q48_25,q48_27]", "segments":[6]} 
 	# 	
+	global cluster_seed
 
 	counter = 0
 	inbound_data = flask.request.json
@@ -561,8 +566,17 @@ def submit_data():
 
 	if 'questions' in keys:
 		print "----questions---"
-		questions = inbound_data['questions'].strip("[]").split(',')
-		questions = [q.encode('ascii', 'ignore') for q in questions]
+		questions = inbound_data['questions']
+		
+		if 'null' not in questions:
+			#is not None and questions.strip("[]").encode('ascii', 'ignore') is not 'null':
+			questions = questions.strip("[]").split(',')
+			questions = [q.encode('ascii', 'ignore') for q in questions]
+			cluster_seed_inbound = [names.index(question) for question in questions] # convert questions to index #
+
+		else:
+			cluster_seed_inbound = cluster_seed
+			print "no questions provided; using cluster seed"
 
 		print "questions:", len(questions), questions
 
@@ -593,11 +607,11 @@ def submit_data():
 
 		print "grid_search:", grid_search	
 
-	cluster_seed_2 = [names.index(question) for question in questions]
-	print "cluster_seed_2:", cluster_seed_2
+	#cluster_seed_inbound = [names.index(question) for question in questions]
+	print "cluster_seed_inbound:", cluster_seed_inbound
 
 	#cluster_seed = [60.0, 90.0, 24.0, 125.0, 72.0, 61.0, 30.0, 68.0, 14.0, 123.0, 144.0, 49.0, 65.0, 53.0, 50.0, 12.0, 58.0, 146.0, 112.0, 81.0, 48.0, 43.0, 134.0, 139.0, 51.0, 86.0, 4.0, 94.0, 111.0, 99.0]
-	cluster_seed = cluster_seed_2
+	#cluster_seed = cluster_seed_2
 	num_seg = num_segments
 	#grid_search = False
 	num_rep = 1
@@ -606,13 +620,14 @@ def submit_data():
 	#print "----run number:", len(results_dict.keys()), "-----------"
  
 	print "---------now running poLCA from submit_data function--------------"
-	results = run_poLCA (grid_search,cluster_seed,num_seg,num_rep,rebucketed_filename)	
+	results = run_poLCA (grid_search,cluster_seed_inbound,num_seg,num_rep,rebucketed_filename)	
 	timestamps = update_results_dict(results, X_rebucketed, names)
 
 	print "---question_dict:-----", len(question_dict)
 	print "---results_dict:------", len(results_dict)
 	
 	update_question_dict(timestamps)
+	run_report(timestamps)
 	clean_up(timestamps)
 
 	if xls:
@@ -748,6 +763,10 @@ def update_results_dict(results, X_rebucketed, names):
 	#results_dict = dict(Parallel(n_jobs=num_cores,verbose=5)(delayed(make_one_results_dict_entry_mp)(i,results_dict.keys()[i],results_dict[results_dict.keys()[i]], X_rebucketed, names) for i in range(len(results_dict.keys()))))
 	new_results_dict = dict(Parallel(n_jobs=num_cores,verbose=5)(delayed(make_one_results_dict_entry_mp)(i,timestamps[i],results_dict[timestamps[i]], X_rebucketed, names) for i in range(len(timestamps))))
 	results_dict.update(new_results_dict)
+
+	print "sample results_dict entry:",results_dict[results_dict.keys()[0]].keys()
+	print 'sample results_dict[cluster_counts] entry:', results_dict[results_dict.keys()[0]]['cluster_counts']
+	print 'sample results_dict[cluster_shares] entry:', results_dict[results_dict.keys()[0]]['cluster_shares']
 
 	print "results_dict complete with", len(results_dict.keys()), "entries"
 	print("------- Runtime: %.2f seconds -------" % (time.time() - start_time))
@@ -939,85 +958,6 @@ def save_results():
 
 	# outfile = 'results_dict_' + str(uuid.uuid4()) + '.json'
 
-	# ujson
-	method = 'ujson'
-	print "trying :", method
-	last_time = time.time()
-	try:
-		outfile = 'results_dict_' + str(uuid.uuid4()) + '.json'
-		with open (outfile, "wb") as f:
-			ujson.dumps(results_dict ,f) 
-		this_time = time.time()
-		elapsed_time = this_time - last_time
-		print method,": ", outfile, ' saved with ', len(results_dict), ' entries, in :' , elapsed_time
-		time_dict[method] = elapsed_time
-
-		next_time = time.time()
-		z = ujson.loads(outfile) 
-		elapsed_time = next_time - this_time
-		load_time_dict[method] = elapsed_time
-	
-	except:
-		pass
-
-	# json
-	method = 'json'
-	print "trying :", method
-	last_time = time.time()
-	try: 
-		outfile = 'results_dict_' + str(uuid.uuid4()) + '.json'
-		with open (outfile, "wb") as f:
-			json.dump(results_dict ,f) 
-		this_time = time.time()
-		elapsed_time = this_time - last_time
-		print method,": ", outfile, ' saved with ', len(results_dict), ' entries, in :' , elapsed_time
-		time_dict[method] = elapsed_time
-
-		next_time = time.time()
-		z = json.loads(outfile) 
-		elapsed_time = next_time - this_time
-		load_time_dict[method] = elapsed_time
-
-	except:
-		pass
-
-	# simplejson
-	method = 'simplejson'
-	print "trying :", method
-	last_time = time.time()
-	try:
-		outfile = 'results_dict_' + str(uuid.uuid4()) + '.json'
-		with open (outfile, "wb") as f:
-			simplejson.dumps(results_dict ,f) 
-		this_time = time.time()
-		elapsed_time = this_time - last_time
-		print method,": ", outfile, ' saved with ', len(results_dict), ' entries, in :' , elapsed_time
-		time_dict[method] = elapsed_time
-
-		next_time = time.time()
-		z = simplejson.loads(outfile) 
-		elapsed_time = next_time - this_time
-		load_time_dict[method] = elapsed_time	
-
-	except:
-		pass
-	
-	# marshal
-	method = 'marshal'
-	print "trying :", method
-	last_time = time.time()
-	try:
-		outfile = 'results_dict_' + str(uuid.uuid4()) + '.mar'
-		with open (outfile, "wb") as f:
-			marshal.dumps(results_dict ,f) 
-		this_time = time.time()
-		elapsed_time = this_time - last_time
-		print method,": ", outfile, ' saved with ', len(results_dict), ' entries, in :' , elapsed_time
-		time_dict[method] = elapsed_time
-	
-	except:
-		pass
-	
 	# cPickle
 	method = 'cPickle'
 	print "trying :", method
@@ -1026,50 +966,6 @@ def save_results():
 		outfile = 'results_dict_' + str(uuid.uuid4()) + '.pkl'
 		with open(outfile, 'wb') as handle:
 		    pickle.dump(results_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)		
-		this_time = time.time()
-		elapsed_time = this_time - last_time
-		print method,": ", outfile, ' saved with ', len(results_dict), ' entries, in :' , elapsed_time
-		time_dict[method] = elapsed_time
-
-		next_time = time.time()
-		pickle.load(open(outfile, 'rb'))
-		elapsed_time = next_time - this_time
-		load_time_dict[method] = elapsed_time
-	
-	except:
-		pass
-
-	# dill
-	import dill as pickle
-	method = 'dill'
-	print "trying :", method
-	last_time = time.time()
-	try:
-		outfile = 'results_dict_' + str(uuid.uuid4()) + '.pkl'
-		with open(outfile, 'wb') as handle:
-		    pickle.dump(results_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)	
-		this_time = time.time()
-		elapsed_time = this_time - last_time
-		print method,": ", outfile, ' saved with ', len(results_dict), ' entries, in :' , elapsed_time
-		time_dict[method] = elapsed_time
-
-		next_time = time.time()
-		pickle.load(open(outfile, 'rb'))
-		elapsed_time = next_time - this_time
-		load_time_dict[method] = elapsed_time
-	
-	except:
-		pass
-
-	# cloudpickle
-	import cloudpickle as pickle
-	method = 'cloudpickle'
-	print "trying :", method
-	last_time = time.time()
-	try:
-		outfile = 'results_dict_' + str(uuid.uuid4()) + '.pkl'
-		with open(outfile, 'wb') as handle:
-		    pickle.dump(results_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)	
 		this_time = time.time()
 		elapsed_time = this_time - last_time
 		print method,": ", outfile, ' saved with ', len(results_dict), ' entries, in :' , elapsed_time
@@ -1116,7 +1012,7 @@ def run_poLCA (grid_search,cluster_seed,num_seg,num_rep,rebucketed_filename):
 		# shortened_cluster_seeds = [x for x in itertools.combinations(cluster_seed, 28)]
 		# print "total cluster seeds: ", len(shortened_cluster_seeds)
 
-		num_seg = [5,6]#,7,8]#,9,10,11,12,13,14]
+		num_seg = [5,6,7,8]#,9,10,11,12,13,14]
 		
 		num_cores = multiprocessing.cpu_count()
 		#results = Parallel(n_jobs=num_cores,verbose=5)(delayed(poLCA)(i,cluster_seed, num_seg[i], num_rep, rebucketed_filename) for i in range(10))
@@ -1133,6 +1029,96 @@ def run_poLCA (grid_search,cluster_seed,num_seg,num_rep,rebucketed_filename):
 def func_name():
 	import traceback
 	return traceback.extract_stack(None, 2)[0][2]
+
+def run_report(timestamps):
+	'''
+	Detailed report from single segmenting run
+	'''
+	z = func_name(); print "------in function:", z, "---------------"
+
+	global results_dict
+
+	#  sample results_dict entry keys: ['cluster_shares', 'run_number', 'model_stats', 'response_shares', 'posterior_probabilities', 'cluster_number',
+	# 'cross_question_polarity', 'quest_list', 'predicted_clusters', 'response_counts', 'cluster_counts', 'polarity_scores', 'upload_state', 
+	# 'mean_cluster polarity', 'num_vars', 'response_polarity', 'average_cross_question_polarity', 'weighted_average_cluster_polarity']
+
+	print "timestamps: ", timestamps
+
+	run_reports = []
+	for run in timestamps:
+		print "run id: ", run
+
+		number_of_clusters = results_dict[run]['cluster_number'] 
+		run_report = []	
+
+		# header: question...bucket...segment_1,...segment_2...etc
+		segment_list = 	 ['S' + str((num + 1)) for num in range(number_of_clusters)]
+		
+		segment_counts = ['# in seg',   '']     + results_dict[run]['cluster_counts']  + [sum(results_dict[run]['cluster_counts'])] + [''] + ([''] * len(segment_list))
+		segment_shares = ['Pct in seg', '']     + ['{0:.1%}'.format(results_dict[run]['cluster_shares'][cluster]) for cluster in range(number_of_clusters)] + ['100.0%'] + [''] + ([''] * len(segment_list)) 
+		header_1 = 		 ['', '', 		  ]     + segment_list + ['Total']        + [''] + ([''] * len(segment_list)) 
+		header_2 = 		 ['Question', 'Bucket'] + segment_list + ['Average'] + [''] + segment_list
+		row_spacer = [''] * (len(header_2))
+		
+		header = [header_1] + [segment_counts] + [segment_shares] + [row_spacer] + [header_2] + [row_spacer] + [row_spacer]
+		run_report += header
+
+
+		# data: segment response shares			
+		for survey_question in results_dict[run]['response_shares'].keys():
+			
+			#print "result_dict entry: ", survey_question, len(results_dict[run]['response_shares'][survey_question]), results_dict[run]['response_shares'][survey_question]
+			top_bucket_data = [results_dict[run]['response_shares'][survey_question][cluster][0] for cluster in range(number_of_clusters)]
+			top_bucket = ['{0:.1%}'.format(item) for item in top_bucket_data]
+			top_bucket_average = sum([float(x)*float(y) for x,y in zip(top_bucket_data,results_dict[run]['cluster_shares'])])
+			top_bucket_avg = ['{0:.1%}'.format(top_bucket_average)]
+			top_bucket_index_scores = [int((float(share) / top_bucket_average) * 100) for share in top_bucket_data]
+			print "top bucket:", top_bucket
+			print 'top bucket weighted average:', top_bucket_average
+			print "top bucket index scores:", top_bucket_index_scores
+
+			middle_bucket_data = [results_dict[run]['response_shares'][survey_question][cluster][1] for cluster in range(number_of_clusters)]
+			middle_bucket = ['{0:.1%}'.format(item) for item in middle_bucket_data]
+			middle_bucket_average = sum([float(x)*float(y) for x,y in zip(middle_bucket_data,results_dict[run]['cluster_shares'])])
+			middle_bucket_avg = ['{0:.1%}'.format(middle_bucket_average)]
+			middle_bucket_index_scores = [int((float(share) / middle_bucket_average) * 100) for share in middle_bucket_data]
+
+			bottom_bucket_data = [results_dict[run]['response_shares'][survey_question][cluster][2] for cluster in range(number_of_clusters)]
+			bottom_bucket = ['{0:.1%}'.format(item) for item in bottom_bucket_data]
+			bottom_bucket_average = sum([float(x)*float(y) for x,y in zip(bottom_bucket_data,results_dict[run]['cluster_shares'])])
+			bottom_bucket_avg = ['{0:.1%}'.format(bottom_bucket_average)]
+			bottom_bucket_index_scores = [int((float(share) / bottom_bucket_average) * 100) for share in bottom_bucket_data]
+			
+			#top_bucket_average = sum([float(x)*float(y) for x,y in zip(results_dict[run]['cluster_shares']])
+			print 'top bucket weighted average:', top_bucket_average
+
+			# now format responses ('x' to be replaced by space)
+			top_row =    [survey_question,'T=1'] + top_bucket   + top_bucket_avg    + [''] + top_bucket_index_scores
+			middle_row = ['',            'M=2'] + middle_bucket + middle_bucket_avg + [''] + middle_bucket_index_scores
+			bottom_row = ['',            'B=3'] + bottom_bucket + bottom_bucket_avg + [''] + bottom_bucket_index_scores
+			row_spacer = [''] * (len(bottom_row))
+			
+			# make each row a dict, append dicts to run_report
+			key_list = range(number_of_clusters + 2)
+			# run_report.append(dict(zip(key_list,top_row)))
+			# run_report.append(dict(zip(key_list, middle_row)))
+			# run_report.append(dict(zip(key_list,bottom_row)))
+			# run_report.append(dict(zip(key_list,row_spacer)))
+
+			run_report.append(top_row)
+			run_report.append(middle_row)
+			run_report.append(bottom_row)
+			run_report.append(row_spacer)
+
+		run_reports.append(run_report)
+
+	print 'total length of run_reports:', len(run_reports)
+	print 'total length of one run_report', len(run_reports[0])
+	print 'header for one run_report:', run_reports[0][0]
+	print 'sample entry for one question in one run_report:', run_reports[0][1]
+ 				
+	return run_reports
+	
 
 if __name__ == "__main__":
 
@@ -1180,6 +1166,7 @@ if __name__ == "__main__":
 		update_question_dict(timestamps)
 		clean_up(timestamps)
 		save_results()
+		run_report(timestamps)
 	
 	print("------- Runtime: %.2f seconds -------" % (time.time() - start_time))
 
@@ -1220,9 +1207,10 @@ if __name__ == "__main__":
 	# (x) detect which questions are checked and/or selected in explorer
 	# (x) progress bar for data loading
 	# (x) update run_tracker by column baed on results_dict state change (how to handle batch mode?)
+	# (x) other param connectivity (num_clusers, grid_search, xls)
+	# conditional formatting for run_report
 	# grid search = largest
-	# mongo db for grid search = large
-	# other param connectivity (num_clusers, grid_search, xls)
+	# mongo db for grid search = largge
 	# other data types (continuous, dichotomous)
 	# coloring of questions by factor relationships?
 	# on mouseover support for run_tracker KPI?

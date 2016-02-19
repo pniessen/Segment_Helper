@@ -30,6 +30,16 @@
     <link href="http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" rel="stylesheet" type="text/css">
     <link href="http://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
 
+    <!-- fixed header table  -->
+    <link href="/static/css/fht-defaultTheme.css" rel="stylesheet">
+    <link href="/static/css/fht-fancytable.css" rel="stylesheet">
+    
+    <!-- Jquery UI-->
+    <link href="static/css/jquery-ui.css" rel="stylesheet">
+
+   <!--  Spinner -->
+ <!--    <link rel="stylesheet" type="text/css" href="/static/css/ui.spinner.css" /> -->
+
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -82,6 +92,35 @@
     #tracker-goes-here div.arrow { background:transparent url(arrows.png) no-repeat scroll 0px -16px; width:16px; height:16px; display:block;}
     #tracker-goes-here div.up { background-position:0px 0px;}
     #tracker-goes-here  { margin-left:auto; margin-right:auto;}
+
+    #run-report-goes-here { font-family:Arial, Helvetica, Sans-Serif; font-size:0.8em;}
+    #run-report-goes-here { border-collapse:collapse;}
+    #run-report-goes-here h4 { margin:0px; padding:0px;}
+    #run-report-goes-here img { float:right;}
+    #run-report-goes-here ul { margin:10px 0 10px 40px; padding:0px;}
+    #run-report-goes-here th { background:#7CB8E2 url(static/header_bkg.png) repeat-x scroll center left; color:#fff; padding:1px 4px; text-align:left;}
+    #run-report-goes-here td { background:#C7DDEE none repeat-x scroll center left; color:#000; padding:1px 4px; }
+    #run-report-goes-here tr td { background:#fff url(static/row_bkg.png) repeat-x scroll center left; cursor:pointer; }
+    #run-report-goes-here div.arrow { background:transparent url(arrows.png) no-repeat scroll 0px -16px; width:16px; height:16px; display:block;}
+    #run-report-goes-here div.up { background-position:0px 0px;}
+    #run-report-goes-here  { margin-left:auto; margin-right:auto;}
+    
+
+    .run-report { font-family:Arial, Helvetica, Sans-Serif; font-size:0.8em;}
+    .run-report { border-collapse:collapse;}
+    .run-report h4 { margin:0px; padding:0px;}
+    .run-report img { float:right;}
+    .run-report ul { margin:10px 0 10px 40px; padding:0px;}
+    .run-report th { background:#7CB8E2 url(static/header_bkg.png) repeat-x scroll center left; color:#fff; padding:1px 4px; text-align:left;}
+    .run-report td { background:#C7DDEE none repeat-x scroll center left; color:#000; padding:1px 4px; }
+    .run-report tr td { background:#fff url(static/row_bkg.png) repeat-x scroll center left; cursor:pointer; }
+    .run-report div.arrow { background:transparent url(arrows.png) no-repeat scroll 0px -16px; width:16px; height:16px; display:block;}
+    .run-report div.up { background-position:0px 0px;}
+    .run-report  { margin-left:auto; margin-right:auto;}
+
+    .good {background-color: #cf0 !important;}
+    .ui-spinner input {font-family:Arial, Helvetica, Sans-Serif; font-size:0.8em; width:50px;}
+
     </style>
     <style>
     .btn-file {
@@ -157,7 +196,7 @@
                         <a class="page-scroll" href="#explorer">Explorer</a>
                     </li>
                     <li>
-                        <a class="page-scroll" href="#run-tracker">Run Tracker</a>
+                        <a class="page-scroll" href="#tabz">Run Tracker</a>
                     </li>
                     <li>
                         <a class="page-scroll" href="#scorecard">Scorecard</a>
@@ -276,7 +315,7 @@
             <div class="col-md-1">5</div>
             <div class="col-md-1">6</div> -->
             <!-- <div class="col-md-1"></div> -->
-            <div class="col-md-1">
+<!--             <div class="col-md-1">
                 <button type="button" class="btn btn-primary"><i class="fa fa-play-circle"></i><a id="link-portfolio" href="#run-tracker" onclick="SubmitData()">Go!</button></a></div>
 
                 <button type="button" id = 'grid-button' class="btn btn-primary" data-toggle="button" aria-pressed="true" autocomplete="off">
@@ -286,7 +325,7 @@
 
                 <div class="col-md-1">                <div class="dropdown closed">
                   <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu1-label" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    # Seg<div id="number-of-segments"></div> 
+                    # Seg<div id="number-of-segments-2"></div> 
                   </button>
                   <div class="dropdown-menu" aria-labelledby="dropdownMenu2" id = 'dropdown-menu-1'>
                     <button class="dropdown-item" type="button" style="color:black">1</button>
@@ -315,7 +354,7 @@
                   </div>
                 </div>
             </div>
-        </div>
+        </div> -->
 
         <div class="row">
             <div class="col-lg-12 col-lg-offset-1">
@@ -338,24 +377,95 @@
     <!-- Run Tracker Section -->
         <section id="run-tracker" class="container content-section text-center">
             <h2>Run Tracker</h2>
-            <table class="tg" class="sortable" id = 'myTracker' >
-            <div id="tracker-goes-here" class = "center"></div>
-                <td><!-- Cats:  <input name="animal" type="checkbox" value="Cats" id = "box3"> --></td>
-                <td><!-- Dogs:  <input name="animal" type="checkbox" value="Dogs" id = "box4"> --></td>
+            <table class="tg" class="sortable" class="fancyTable" id = 'myTracker' cellpadding="0" cellspacing="0">
+            <!-- <div id="tracker-goes-here" class = "center"></div> -->
+<!--                 <td id = 'cat'>Cats:  <input name="animal" type="checkbox" value="Cats" id = "box3"></td>
+                <td id = 'dog'>Dogs:  <input name="animal" type="checkbox" value="Dogs" id = "box4"></td> -->
             <!-- </div>  -->
             </table>
         </section>
     
     <!-- Scorecard Section --> 
-        <section id="scorecard" class="content-section text-center">
+<!--         <section id="scorecards" class="content-section text-center">
             <h2>Cluster Scorecard</h2>
             <table class="tg" class="sortable" id = 'myTable' >
             <div id="table-goes-here" class = "center"></div> 
             </table>
         <!-- <ul id="navigation">
             <li><a id="link-portfolio" href="#data" onclick="GetTrainingData()">See Data</a></li>
-        </ul> -->
+        </ul> --> -->
         </section>
+
+        <!-- Tabs -->
+        <section id='tabz' class="content-section text-center">
+            <h2>Run Tracker 2</h2>
+        <div class="row">
+            <!-- <div class="col-md-5"></div> -->
+            <div class="col-md-1">
+                <a id="link-portfolio" href="#tabz" onclick="SubmitData()"><button type="button" class="btn btn-primary btn-block"><i class="fa fa-play-circle"></i>Go!</button></a>
+            </div>
+            <div class="col-md-1">
+                <button type="button" id = 'grid-button' class="btn btn-primary btn-block" data-toggle="button" aria-pressed="true" autocomplete="off">
+                    Grid:<div id='grid-on-off'>off</div></button>
+            </div>
+            <div class="col-md-1">    
+                <button type="button" id = 'excel-button' class="btn btn-primary btn-block" data-toggle="button" aria-pressed="false" autocomplete="off">
+                    Excel:<div id='excel-on-off'>off</div></button>
+            </div>
+            <div class="col-md-1">
+                <div class="dropdown closed">
+                  <button class="btn btn-secondary dropdown-toggle" type="button btn-block" id="dropdownMenu1-label-2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    # Seg<div id="number-of-segments"></div> 
+                  </button>
+                  <div class="dropdown-menu" aria-labelledby="dropdownMenu2" id = 'dropdown-menu-1'>
+                    <button class="dropdown-item" type="button" style="color:black">1</button>
+                    <button class="dropdown-item" type="button" style="color:black">2</button>
+                    <button class="dropdown-item" type="button" style="color:black">3</button>
+                    <button class="dropdown-item" type="button" style="color:black">4</button>
+                    <button class="dropdown-item" type="button" style="color:black">5</button>
+                    <button class="dropdown-item" type="button" style="color:black">6</button>
+                    <button class="dropdown-item" type="button" style="color:black">7</button>
+                    <button class="dropdown-item" type="button" style="color:black">8</button>
+                  </div>
+                </div>
+            </div>
+            <div class="col-md-1">
+                <div class="dropdown closed">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-play-circle fa-flip-horizontal"></i> Rewind</button>
+
+                     <div class="dropdown-menu" aria-labelledby="dropdownMenu2" id='dropdown-menu-2'>
+                    <button class="dropdown-item" type="button" style="color:black">R1</button>
+                    <button class="dropdown-item" type="button" style="color:black">R2</button>
+                    <button class="dropdown-item" type="button" style="color:black">R3</button>
+                    <button class="dropdown-item" type="button" style="color:black">R4</button>
+                    <button class="dropdown-item" type="button" style="color:black">R5</button>
+                    <button class="dropdown-item" type="button" style="color:black">R6</button>
+                    <button class="dropdown-item" type="button" style="color:black">R7</button>
+                    <button class="dropdown-item" type="button" style="color:black">R8</button>
+                  </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    <!-- <button id='add-tab'>Add tab</button> -->
+    <div class="row"></row>
+        <p>
+
+    <div class="row">
+            <!-- <h2 class="demoHeaders">Run Tracker 2</h2> -->
+            <div id="tabs">
+                <ul id='tester id'>
+                    <li><a href="#tabs-1">Tracker</a></li>
+<!--                     <li><a href="#tabs-2">R1</a></li>
+                    <li><a href="#tabs-3">R2</a></li> -->
+                </ul>
+                <div id="tabs-1"><div id="tracker-goes-here" class = "center"></div>some text</div>
+<!--                 <div id="tabs-2"><div id="run-report-goes-here" class = "center"></div>some more text </div>
+                <div id="tabs-3"><div id="run-report-goes-here-2" class = "center"></div>even more text again</div> -->
+            </div>
+        </div>  
+    </section>
 
     <!-- Contact Section -->
     <section id="contact" class="container content-section text-center">
@@ -365,7 +475,9 @@
                 <p>Feel free to email us to provide some feedback!</p>
                 <p><a href="mailto:peter.niessen@rosetta.com">peter.niessen@rosetta.com</a></p>
                 <p><a href="mailto:matt.dietly@rosetta.com">matt.dietly@rosetta.com</a></p>
+
             </div>
+            <p>Here is an example of a spinner: <input id="spinner2"> 
         </div>
     </section>
 
@@ -395,6 +507,8 @@
     </section> -->
     <!-- jQuery -->
     <script src="static/js/jquery.js"></script>
+    // <!-- <script src="//code.jquery.com/jquery-1.8.3.js"></script> -->
+    <script src="/static/js/jquery-ui.js"></script>
 
     <!-- Bootstrap Core JavaScript -->
     <script src="static/js/bootstrap.min.js"></script>
@@ -414,10 +528,19 @@
     <!-- Bootstrap-Switch (http://www.bootstrap-switch.org/) -->
     <script src="/static/js/bootstrap-switch.js"></script>
 
+    <!-- Fixed header and left column -->
+    <!-- https://github.com/markmalek/Fixed-Header-Table -->
+    <script src="/static/js/jquery.fixedheadertable.js"></script>
+
     <!-- Bootstrap - Switch -->
     <script>
     $("[name='gridsearch-checkbox']").bootstrapSwitch();
     $("[name='xls-checkbox']").bootstrapSwitch();
+    </script>
+
+<!--     // spinner (conditional fomatting threshold)
+    // https://github.com/btburnett3/jquery.ui.spinner -->
+  <!--   // <script type="text/javascript" src="/static/js/ui.spinner.js"></script> -->
  
     </script>
     <!-- box check event handler -->
@@ -541,8 +664,9 @@ function SubmitData () {
          data: data_to_send,
          success: function (data) {console.log(data);
                                 myApp.hidePleaseWait();
+                                // GetTrainingData();
                                 UpdateTrackerData ();
-                                GetTrainingData();
+
                                 // myApp.hidePleaseWait();
                                 // $('#pleaseWaitDialog').hide(); //hide loading message
                                     // MakeATable(data);
@@ -618,9 +742,18 @@ function SubmitData () {
              async: true,
              //data: data_to_send,
              success: function (tracker_data) {console.log(tracker_data);
+                                        console.log('tracker:', tracker_data.tracker.length);
+                                        console.log('run_reports:', tracker_data.run_reports.length);
+                                        console.log('run_reports[0][0].keys:', tracker_data.run_reports[0][0].keys());
+                                        console.log('run_reports[0][0].keys:', Object.keys(tracker_data.run_reports[0][0]));
+                                        console.log('run_reports[0][1].keys:', tracker_data.run_reports[0][1].keys());
+                                        console.log('run_reports[0][1].keys:', Object.keys(tracker_data.run_reports[0][1]));
+                                        console.log('run_reports[0][1][1]:', tracker_data.run_reports[0][1][1]);
+
                                         //MakeTable(training_data);
                                         // createTracker(tracker_data);
                                         appendColumn(tracker_data);
+                                        makeRunReport(tracker_data);
                                         //loadTrainingImage(training_data);
              },
              error: function (tracker_data) {console.log(tracker_data);
@@ -705,7 +838,7 @@ function SubmitData () {
     function startTracker(first_tracker_data){
         
         console.log('in startTracker function'); 
-        mytable = $('<table></table>').attr({ id: "trackerTable" }).attr({class: 'tg center table-goes-here'});
+        mytable = $('<table></table>').attr({ id: "trackerTable" }).attr({class: 'tg center table-goes-here fancyTable'});
         var rows = first_tracker_data.tracker.length;
         console.log (rows);
         //var rows = new Number($("#rowcount").val());
@@ -753,8 +886,88 @@ function SubmitData () {
       
       var newTableObject2 = document.getElementById('trackerTable');
       sorttable.makeSortable(newTableObject2);
+
+      // $('#trackerTable').fixedHeaderTable({
+      //   // altClass: 'odd',
+      //   footer: false,
+      //   fixedColumns: 2,
+      //   width: '600',
+      //   height: '500',
+      //   // width: 400,
+      //   });
     }
     </script>
+    <script>
+    function makeRunReport(tracker_data){
+        var num_runs = tracker_data.run_reports.length; // number of reports
+        
+        for (var h = 0; h < num_runs; h++) {
+            var num_tabs = $("div#tabs ul li").length + 1,
+                new_placeholder_id = '#run-report-goes-here-' + num_tabs;
+                new_run_report_id = 'run-report-' + num_tabs;
+            addNewTab();
+            console.log('in makeRunReport function'); 
+            mytable = $('<table></table>').attr({ id: 'run-report-' + num_tabs }).attr({class: 'tg center table-goes-here fancyTable'});
+            // var num_runs = tracker_data.run_reports.length; // number of reports
+            var num_rows =  tracker_data.run_reports[h].length; // length of 1 report
+            var num_cols = Object.keys(tracker_data.run_reports[h][0]).length; // cols in 1 report
+            console.log (num_runs, num_rows, num_cols);
+        
+            for (var i = 0; i < num_rows; i++) {
+                var row = $('<tr></tr>').appendTo(mytable);
+                    for (var j = 0; j < num_cols; j++) {
+                        $('<td></td>').text(tracker_data.run_reports[h][i][j]).appendTo(row); 
+                    } // inner loop (=j)
+                } // outer loop (=i)
+                mytable.appendTo(new_placeholder_id);
+           
+        // mytable.appendTo("#run-report-goes-here");  
+        // mytable.appendTo(new_placeholder_id);
+    
+        // conditional formating
+        // http://stackoverflow.com/questions/5066882/conditional-formatting-of-html-table-cells
+        // http://docs.joomlabamboo.com/getting-started/how-to-use-the-computed-panel-in-the-chrome-inspector
+        // https://api.jquery.com/gt-selector/
+        $(function() {
+        var headerskipper = $("#run-report-" + num_tabs).find("tr:first td").length *  7;
+        $("#run-report-" + num_tabs + " td:gt(" + headerskipper + ")").each(function(index) { // td:gt(96) excudes first 96 <td> (=top header)  
+            //var scale = [['vPoor', 10], ['poor', 50], ['avg', 250], ['good', 1250], ['vGood', 6250]];
+            var scale = [['good', 140]];
+            var score = $(this).text();
+            for (var i = 0; i < scale.length; i++) {
+                if (score >= scale[i][1]) {
+                    $(this).addClass(scale[i][0]);
+                    }
+                }
+            });
+        }); // end of conditional formatting function
+        $("#spinner-" + num_tabs).spinner();
+        $("#spinner-" + num_tabs).spinner("value", 140);
+        $('#spinner-' + num_tabs).on("spinstop", function(){
+            console.log($(this).spinner('value'));
+            var spinvalue = $(this).spinner('value');
+               
+                $(function() {
+                var headerskipper = $("#run-report-" + num_tabs).find("tr:first td").length *  7;
+                $("#run-report-" + num_tabs + " td:gt(" + headerskipper + ")").each(function(index) { // td:gt(96) excudes first 96 <td> (=top header)  
+                    //var scale = [['vPoor', 10], ['poor', 50], ['avg', 250], ['good', 1250], ['vGood', 6250]];
+                    var scale = [['good', spinvalue]];
+                    var score = $(this).text();
+
+                    for (var i = 0; i < scale.length; i++) {
+                        $(this).removeClass(scale[i][0])
+                        if (score >= scale[i][1]) {
+                            $(this).addClass(scale[i][0]);
+                            }
+                        }
+                    });
+                }); // end of conditional formatting function
+        });
+    } // outer outer loop (=h) 
+    };
+
+
+    </script>    
     <!--     check box event handler -->
     <script>
     // Get the element, add a click listener...
@@ -900,13 +1113,17 @@ function createCell(cell, text, i, style) {
 function appendColumn(tracker_data) {
     console.log('in appendColumn function');
     var tbl = document.getElementById('trackerTable'), // table reference
-        row_list = document.getElementsByTagName('tr')//.attr('id'),
+        // row_list = document.getElementsByTagName('tr'),//.attr('id'),
+        row_list = tbl.getElementsByTagName('tr'), // new method?
         one_row = row_list[1],
         current_question_order = [],
         i;
+
+    console.log('document.getElementByTagName:', row_list.length);
+    // console.log('tbl.getElementByTagName:', row_list_2.length);
         // one_row_id = getAttributeByIndex(one_row, 0),
     // console.log (one_row, one_row.length)
-    for (var z = 1; z < row_list.length-1; z++) {
+    for (var z = 1; z < row_list.length; z++) {//old: row_list.length-1
     console.log('id',row_list[z].id.slice(7));
     current_question_order[z] = row_list[z].id.slice(7);
     };
@@ -938,6 +1155,8 @@ function appendColumn(tracker_data) {
         for (i = 0; i < tbl.rows.length - 1; i++) {
             console.log(tbl.rows.length);   
             if (i == 0) {console.log('header_row');
+            // select via 'document.getElementsByClassName('fht-thead')[1].firstChild.firstChild.firstChild'
+            // should equal: 
             // var tr = document.getElementById('trackerTable').tHead.children[0];
             // var tr = tbl.tHead.children[0];
             // var keys = Object.keys(tracker_data.tracker[0]);
@@ -954,6 +1173,13 @@ function appendColumn(tracker_data) {
             x.outerHTML = ('<th id="ttable-'+ i + '-' + col_num + '">' + keys[j] + '</th>');
             // x.setAttribute('id', 'ttable-'+ (i) + "-" + (col_num-1));
             // createCell(tbl.rows[i+1].insertCell(tbl.rows[i+1].cells.length), txt, i, 'col');
+            // below is if fixed header table is used:
+            // var y = document.getElementsByClassName('fht-thead')[1].firstChild.firstChild.firstChild; // fht table header
+            // var yy = y.lastElementChild.firstElementChild; // div in last cell in table header
+            // yy.style.width='20px'; // = ('width=20px') // reduce width to offset scroll bar
+            // var yyy = y.insertCell(-1); // insert cell at end of table header
+            // yyy.outerHTML = ('<th id="ttable-'+ i + '-' + col_num + '">' + keys[j] + '</th>');
+            // now adjust width of former last element in header row?
             }
             // $('<th></th>').text('xx').appendTo(tbl);}
             // if (i = 0) {$('<th></th>').text('xx').appendTo(tbl);}
@@ -980,6 +1206,12 @@ function appendColumn(tracker_data) {
   var newTableObject2 = document.getElementById('trackerTable');
   sorttable.makeSortable(newTableObject2);
 
+  // $('#trackerTable').fixedHeaderTable({
+  //   // altClass: 'odd',
+  //   footer: false,
+  //   fixedColumns: 2,
+  //   height: 500,
+  //   });
 }; 
 </script>
 <script>
@@ -1010,7 +1242,7 @@ var num_segments = [],
 $('#dropdown-menu-1 button').on('click', function(){
     num_segments = $(this).text();
     console.log(num_segments);
-    $('#dropdownMenu1-label').text('Seg: ' + num_segments);
+    $('#dropdownMenu1-label-2').text('Seg: ' + num_segments);
     // var x = document.getElementById('number-of-segments');
     // x.innerHTML('this is a test');
 });
@@ -1039,6 +1271,92 @@ $('#excel-button').on('click', function(){
 
 });
 </script>
+<script src="static/js/jquery.js"></script>
+<script src="static/js/jquery-ui.js"></script>
+<script>
+$( "#tabs" ).tabs();
+</script>
+<script>
+// $(document).ready(function() {
+//     console.log('in fixedHeaderTable function');
+    //https://github.com/markmalek/Fixed-Header-Table
+    // $('#trackerTable').fixedHeaderTable({
+    //     altClass: 'odd',
+    //     footer: false,
+    //     fixedColumns: 2,
+    //     height: 150,
+    // });
+// });
+</script>
+<!-- add new tabs to run_report -->
+<script>
+//http://stackoverflow.com/questions/14702631/in-jquery-ui-1-9-how-do-you-create-new-tabs-dynamically
+function addNewTab() {
+    console.log('in addNewTab function');   
+    $("div#tabs").tabs();
+    var tab_index = $("div#tabs ul li").length;
+    var num_tabs = $("div#tabs ul li").length + 1;
+    $("div#tabs ul").append(
+    "<li><a href='#tab" + num_tabs + "'>R" + tab_index + "</a></li>"
+    );
+    $("div#tabs").append(
+    "<div id='tab" + num_tabs + "'><div><input id='spinner-" + num_tabs +"'></div><p>"
+    );
+    $("div#tab" + num_tabs).append(
+    "<div id='run-report-goes-here-" + num_tabs +"' class = 'center run-report'></div>"
+    ); 
+    $("div#tabs").tabs("refresh");
+};                
+</script>
+<!-- Sortable tabs -->
+<script>
+//https://jqueryui.com/tabs/#Sortable
+$(function() {
+var tabs = $( "#tabs" ).tabs();
+tabs.find( ".ui-tabs-nav" ).sortable({
+  axis: "x",
+  stop: function() {
+    tabs.tabs( "refresh" );
+  }
+});
+});
+</script>
+<!-- conditional formatting -->
+<script>
+// http://stackoverflow.com/questions/5066882/conditional-formatting-of-html-table-cells
+// $(function() {
+//     $('td').each(function(index) {
+//         //var scale = [['vPoor', 10], ['poor', 50], ['avg', 250], ['good', 1250], ['vGood', 6250]];
+//         var scale = [['good', 50]];
+//         var score = $(this).text();
+//         for (var i = 0; i < scale.length; i++) {
+//             if (score >= scale[i][1]) {
+//                 $(this).addClass(scale[i][0]);
+//             }
+//         }
+//     });
+// });
+</script>
+
+<script>
+// jQuery().ready(function($) {
+//     $('#spinner').spinner({ min: -100, max: 100 });
+// });
+</script>
+<script>
+// $("#spinner").spinner();
+// $("#spinner2").spinner();
+// $('#spinner').on("spinstop", function(){
+//    alert($(this).spinner('value'));
+// });
+// $('#spinner2').on("spinstop", function(){
+//    alert($(this).spinner('value'));
+// });
+</script>
+
+
+
+
 
 <script> window.onload = StartTrackerData ();</script>
 </body>
