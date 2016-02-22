@@ -12,7 +12,7 @@ import time
 import flask
 import pandas as pd
 import os
-from flask import Flask, request, jsonify, render_template, send_from_directory, url_for
+from flask import Flask, request, jsonify, render_template, send_from_directory, url_for, send_file
 from werkzeug import secure_filename
 from collections import Counter, OrderedDict
 import pprint
@@ -78,7 +78,7 @@ handler.setFormatter(
 app.logger.addHandler(handler)
 
 # These are the extension that we are accepting to be uploaded
-app.config['ALLOWED_EXTENSIONS'] = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'csv', 'xls'])
+app.config['ALLOWED_EXTENSIONS'] = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'csv', 'xls', 'xlsx'])
 
 # return basedir, basedir_for_upload, handler, xls, interactive_mode, web_mode, filename, grid_search, app, start_time
 
@@ -94,7 +94,12 @@ def get_PCA(filename, n_components):
 	z = func_name(); print "in function:", z
 	print "-----------in get_PCA function----------------"
 	
+	# reboot question and results containers
 	global question_dict
+	question_dict = {}
+
+	global results_dict
+	results_dict = {}
 	
 	names = list(np.genfromtxt(basedir+filename, delimiter=',', names=True).dtype.names)
 	
@@ -137,9 +142,9 @@ def get_PCA(filename, n_components):
 	print "sample row: ", factor_matrix[0]
 	print "max absolute value:", np.absolute(factor_matrix)[0].max()
 
-	return factor_matrix, names, X#, question_dict
+	return factor_matrix, names, X, question_dict, results_dict
 
-def top_n_factors (factor_matrix, top_n):
+def top_n_factors (factor_matrix, top_n, question_dict, names):
 	'''
 	Uses PCA to group survey questions by PCA factors: 
 		(a) rank order questions by largest PCA factor (factor_matrix) 
@@ -147,7 +152,12 @@ def top_n_factors (factor_matrix, top_n):
 	'''
 	z = func_name(); print "in function:", z
 	print "-----------in top_n_factors function----------------------"
-	global question_dict
+	
+	print "length of question_dict: ", len(question_dict)
+	print "question_dict keys: ", question_dict.keys()
+	print "length of question names list: ", len(names)
+	print "question names list: ", names
+	#global question_dict
 	
 	# factor_matrix, n, question_dict = factor_matrix, top_n, question_dict
 	# Step 3: identify largest PC factor for each question
@@ -204,13 +214,13 @@ def top_n_factors (factor_matrix, top_n):
 			print top_n_factors
 
 	print "found top 2 factors for", num_rows, " questions (=rows)"
-	#print question_dict
+	print "question_dict keys:", question_dict[question_dict.keys()[0]].keys()
 
 	print("Runtime: %s seconds ---" % (time.time() - start_time))
 
-	return factor_matrix, num_rows, num_cols, question_number, rh, best_factor, second_best_factor#, question_dict
+	return factor_matrix, num_rows, num_cols, question_number, rh, best_factor, second_best_factor, question_dict
 
-def rebucket(factor_matrix, names, X, rh):
+def rebucket(factor_matrix, names, X, rh, question_dict):
 	'''
 	Tries different bucketing techniques: [(2,3,2),(3,2,2), (2,2,3), (3,1,3), (1,3,3), (1,2,4)]
 	Chooses technique that best proxies normal distribution 
@@ -219,7 +229,10 @@ def rebucket(factor_matrix, names, X, rh):
 	'''
 	z = func_name(); print "in function:", z
 	print "-----------in rebucket function------------------"
-	global question_dict
+	
+	print "length of question_dict: ", len(question_dict)
+	print "question_dict keys: ", question_dict.keys()
+	#global question_dict
 
 	# factor_matrix, names, X, rh, question_dict = factor_matrix, names, X, rh, question_dict
 	# Step 4: calulate Rosetta Heuristic, identify optimal bucketing scheme, rebucket response matrix
@@ -313,15 +326,19 @@ def rebucket(factor_matrix, names, X, rh):
 
 	# print question_dict
 
-	return rebucketed_filename, X_rebucketed#, question_dict
+	return rebucketed_filename, X_rebucketed, question_dict
 
-def cluster_seed(factor_matrix, best_factor, question_number, num_cols, num_rows):
+def make_cluster_seed(factor_matrix, best_factor, question_number, num_cols, num_rows):
 	'''
 	Builds cluster_seed (size n_factors), grouping questions by highest PCA value then choosing lowest RH as cluster_seed
 
 	'''
 	z = func_name(); print "in function:", z
 	print "----------in cluster_seed function-------------------"
+	
+	global cluster_seed
+	cluster_seed=[]
+
 	# Step 5: now group questions by highest factor (=factor_matrix[best_factor], remember col #1 = index 0!)
 	# http://stackoverflow.com/questions/2828059/sorting-arrays-in-numpy-by-column
 	
@@ -337,7 +354,7 @@ def cluster_seed(factor_matrix, best_factor, question_number, num_cols, num_rows
 	# print unique_factor_list
 
 	# now group questions by primary factor and sort by RH to form cluster 'seed'
-	cluster_seed=[]
+
 	# print ("[question number, index value, rosetta heuristic]")
 	for factor in unique_factor_list:
 		# filter by primary factor, returns question indices, then list questions 
@@ -460,6 +477,33 @@ def scorecard_2():
 
 	return flask.jsonify(training_results)
 
+def scorecard_3(keys_to_upload):
+
+	print "in scorecard_3 function"
+	run_scorecards = []
+
+	print "keys_to_upload size: ", len(keys_to_upload)
+	print "keys_to_upload: ", keys_to_upload
+
+	for key in keys_to_upload:
+		#train_dict = {'a':key,'b':results_dict[key]['cluster_number'],'c':results_dict[key]['num_vars'],'d':esults_dict[key]['model_stats'],'e':16,'f':17}
+		run_scorecard = {'a':key[:10],'b':results_dict[key]['cluster_number'],'c':results_dict[key]['num_vars'],'d':round(results_dict[key]['model_stats'][0]),'e':round(results_dict[key]['model_stats'][1]),'f':round(results_dict[key]['model_stats'][2]), 'g':round(results_dict[key]['weighted_average_cluster_polarity'],4) ,'h':round(results_dict[key]['average_cross_question_polarity'],4)}
+		
+		#print "one train dict entry:", train_dict
+		#sorted(d, key=d.get)
+
+		# print key
+		# print "number of clusters:", results_dict[key]['cluster_number'] 
+		# print "number of variables", results_dict[key]['num_vars'] 
+		# print "model stats:", results_dict[key]['model_stats']
+		# print "weighted average cluster polarity: ", results_dict[key]['weighted_average_cluster_polarity']
+		# print "average cross-question polarity: ", results_dict[key]['average_cross_question_polarity']
+
+		run_scorecards.append(run_scorecard)
+		#print training_list
+
+	return run_scorecards
+
 @app.route("/create_tracker", methods=["GET"])
 def create_tracker():
 
@@ -539,7 +583,8 @@ def update_run_tracker():
 		print r_and_q_list
 
 		run_reports_list = run_report(keys_to_upload)
-		tracker = {'tracker': tracker_list, 'run_reports': run_reports_list}
+		run_scorecards_list = scorecard_3(keys_to_upload)
+		tracker = {'tracker': tracker_list, 'run_reports': run_reports_list, 'run_scorecard': run_scorecards_list}
 
 		return flask.jsonify(tracker)
 
@@ -554,6 +599,7 @@ def submit_data():
 	# {"questions":"[q39_8,q39_4,q39_6,q48_28,q31_20,q07_18,q07_17,q07_11,q35_5,q16_8,q06_2,q08_5,q08_6,q06_8,q06_16,q35_8,q48_25,q48_27]", "segments":[6]} 
 	# 	
 	global cluster_seed
+	global names
 
 	counter = 0
 	inbound_data = flask.request.json
@@ -653,7 +699,28 @@ def upldfile():
             updir = os.path.join(basedir_for_upload, 'uploads/')
             files.save(os.path.join(updir, filename))
             file_size = os.path.getsize(os.path.join(updir, filename))
-            return jsonify(name=filename, size=file_size)
+            filename = 'uploads/' + filename
+
+            global cluster_seed
+            global question_dict
+            global names
+
+            factor_matrix, names, X, question_dict, results_dict = get_PCA(filename, n_components)
+            factor_matrix, num_rows, num_cols, question_number, rh, best_factor, second_best_factor, question_dict = top_n_factors(factor_matrix, top_n, question_dict, names)
+            rebucketed_filename, X_rebucketed, question_dict = rebucket(factor_matrix, names, X, rh, question_dict)
+            cluster_seed = make_cluster_seed(factor_matrix, best_factor, question_number, num_cols, num_rows)
+            
+            return jsonify(name=filename, size=file_size)#, question_dict
+
+
+# download excel file
+# http://stackoverflow.com/questions/30024948/flask-download-a-csv-file-on-clicking-a-button
+@app.route('/download') # this is a job for GET, not POST
+def download_file():
+
+	filename = make_xls()
+
+	return send_file(filename, attachment_filename=filename, as_attachment=True) #mimetype='text/csv'
 
 def scorecard(timestamp, cluster_seeds, cluster_seed_names, num_seg):
 	'''
@@ -921,7 +988,7 @@ def make_xls():#results_dict):
 	workbook.close()
 
 	print "workbook exported: ", basedir+outfile
-	return
+	return basedir+outfile
 
 def clean_up (timestamps):
 	'''
@@ -1073,9 +1140,9 @@ def run_report(timestamps):
 			top_bucket_average = sum([float(x)*float(y) for x,y in zip(top_bucket_data,results_dict[run]['cluster_shares'])])
 			top_bucket_avg = ['{0:.1%}'.format(top_bucket_average)]
 			top_bucket_index_scores = [int((float(share) / top_bucket_average) * 100) for share in top_bucket_data]
-			print "top bucket:", top_bucket
-			print 'top bucket weighted average:', top_bucket_average
-			print "top bucket index scores:", top_bucket_index_scores
+			#print "top bucket:", top_bucket
+			#print 'top bucket weighted average:', top_bucket_average
+			#print "top bucket index scores:", top_bucket_index_scores
 
 			middle_bucket_data = [results_dict[run]['response_shares'][survey_question][cluster][1] for cluster in range(number_of_clusters)]
 			middle_bucket = ['{0:.1%}'.format(item) for item in middle_bucket_data]
@@ -1130,6 +1197,7 @@ if __name__ == "__main__":
 	num_cores = multiprocessing.cpu_count()
 	results_dict = {}
 	question_dict = {}
+	cluster_seed = []
 
 	#basedir = '/Users/pniessen/Rosetta_Desktop/Segmentation_2-point-0/sample_case_work/GoPro/'
 	# filename = 'test_raw_data_v1.csv' 
@@ -1151,10 +1219,10 @@ if __name__ == "__main__":
 	# weighting (module TBA)
 
 	# pre-processing pipeline:
-	factor_matrix, names, X = get_PCA(filename, n_components)
-	factor_matrix, num_rows, num_cols, question_number, rh, best_factor, second_best_factor = top_n_factors(factor_matrix, top_n)
-	rebucketed_filename, X_rebucketed = rebucket(factor_matrix, names, X, rh)
-	cluster_seed = cluster_seed(factor_matrix, best_factor, question_number, num_cols, num_rows)
+	factor_matrix, names, X, question_dict, results_dict = get_PCA(filename, n_components)
+	factor_matrix, num_rows, num_cols, question_number, rh, best_factor, second_best_factor, question_dict = top_n_factors(factor_matrix, top_n, question_dict, names)
+	rebucketed_filename, X_rebucketed, question_dict = rebucket(factor_matrix, names, X, rh, question_dict)
+	cluster_seed = make_cluster_seed(factor_matrix, best_factor, question_number, num_cols, num_rows)
 	# app.run()
 
 	print "cluster_seed: ", cluster_seed

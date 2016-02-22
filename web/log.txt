@@ -877,3 +877,34 @@ Traceback (most recent call last):
   File "PCA_tester.py", line 651, in scorecard
     print "Run number:", results_dict[timestamp]['run_number']
 KeyError: '7cd61de2-4530-4506-b4a2-9673ff2a455d'
+[2016-02-19 13:56:33] INFO     FileName: X_rebucketed.csv
+[2016-02-19 14:02:54] INFO     FileName: X_rebucketed.csv
+[2016-02-19 14:11:55] INFO     FileName: clustering_data_export.xlsx
+[2016-02-19 14:15:27] INFO     FileName: test_raw_data_v1.csv
+[2016-02-19 14:23:24] INFO     FileName: test_raw_data_v1.csv
+[2016-02-19 14:38:19] INFO     FileName: test_raw_data_v1.csv
+[2016-02-19 14:38:32] INFO     FileName: test_raw_data_v1.csv
+[2016-02-19 14:42:35] INFO     FileName: test_raw_data_v1_copy.csv
+[2016-02-19 14:50:30] INFO     FileName: test_raw_data_v1_zq_copy.csv
+[2016-02-19 14:58:58] INFO     FileName: test_raw_data_v1_copy.csv
+[2016-02-19 15:01:15] INFO     FileName: test_raw_data_v1_zq_copy.csv
+[2016-02-19 15:47:41] INFO     FileName: test_raw_data_v1_copy.csv
+[2016-02-19 15:50:24] INFO     FileName: test_raw_data_v1_copy.csv
+[2016-02-19 15:52:49] INFO     FileName: test_raw_data_v1_zq_copy.csv
+[2016-02-19 16:02:01] INFO     FileName: test_raw_data_v1_copy.csv
+[2016-02-19 16:03:33] INFO     FileName: test_raw_data_v1_zq_copy.csv
+[2016-02-19 16:08:06] INFO     FileName: test_raw_data_v1_copy.csv
+[2016-02-19 16:09:09] INFO     FileName: test_raw_data_v1_zq_copy.csv
+[2016-02-19 16:11:16] INFO     FileName: test_raw_data_v1_zq_copy.csv
+[2016-02-19 16:15:36] INFO     FileName: test_raw_data_v1_zq_copy.csv
+[2016-02-19 16:17:19] INFO     FileName: test_raw_data_v1_copy.csv
+[2016-02-19 16:23:35] INFO     FileName: test_raw_data_v1_zq_copy.csv
+[2016-02-19 16:27:15] INFO     FileName: test_raw_data_v1_zq_copy.csv
+[2016-02-19 19:26:17] INFO     FileName: test_raw_data_v1_copy.csv
+[2016-02-20 18:47:55] INFO     FileName: test_raw_data_v1_zq_copy.csv
+[2016-02-21 18:16:13] INFO     FileName: test_raw_data_v1.csv
+[2016-02-21 18:26:10] INFO     FileName: test_raw_data_v1_zq_copy.csv
+[2016-02-21 18:28:44] INFO     FileName: test_raw_data_v1_copy.csv
+[2016-02-21 18:39:37] INFO     FileName: test_raw_data_v1_zq_copy.csv
+[2016-02-21 18:40:44] INFO     FileName: test_raw_data_v1_copy.csv
+[2016-02-21 20:07:20] INFO     FileName: test_raw_data_v1_zq_copy.csv

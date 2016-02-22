@@ -27,8 +27,10 @@
     
     <!-- Custom Fonts -->
     <link href="/static/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-    <link href="http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" rel="stylesheet" type="text/css">
-    <link href="http://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
+    <!-- <link href="http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" rel="stylesheet" type="text/css"> -->
+    <link href = "/static/css/Lora-400,700,400italic,700italic.css" rel="stylesheet" type="text/css">
+    <!-- <link href="http://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css"> -->
+    <link href="/static/css/Montserrat-400,700.css" rel="stylesheet" type="text/css">
 
     <!-- fixed header table  -->
     <link href="/static/css/fht-defaultTheme.css" rel="stylesheet">
@@ -104,10 +106,11 @@
     #run-report-goes-here div.arrow { background:transparent url(arrows.png) no-repeat scroll 0px -16px; width:16px; height:16px; display:block;}
     #run-report-goes-here div.up { background-position:0px 0px;}
     #run-report-goes-here  { margin-left:auto; margin-right:auto;}
-    
 
+    .run-scoreboard {float: left;}
+    
     .run-report { font-family:Arial, Helvetica, Sans-Serif; font-size:0.8em;}
-    .run-report { border-collapse:collapse;}
+    .run-report { border-collapse:collapse; /*float: left;*/}
     .run-report h4 { margin:0px; padding:0px;}
     .run-report img { float:right;}
     .run-report ul { margin:10px 0 10px 40px; padding:0px;}
@@ -119,7 +122,7 @@
     .run-report  { margin-left:auto; margin-right:auto;}
 
     .good {background-color: #cf0 !important;}
-    .ui-spinner input {font-family:Arial, Helvetica, Sans-Serif; font-size:0.8em; width:50px;}
+    .ui-spinner input {font-family:Arial, Helvetica, Sans-Serif; font-size:0.8em; width:50px; text-align: center;}
 
     </style>
     <style>
@@ -402,15 +405,16 @@
         <div class="row">
             <!-- <div class="col-md-5"></div> -->
             <div class="col-md-1">
-                <a id="link-portfolio" href="#tabz" onclick="SubmitData()"><button type="button" class="btn btn-primary btn-block"><i class="fa fa-play-circle"></i>Go!</button></a>
+                <a id="link-portfolio" href="#tabz" onclick="SubmitData()"><button type="button" class="btn btn-primary "><i class="fa fa-play-circle"></i>Go!</button></a>
             </div>
             <div class="col-md-1">
-                <button type="button" id = 'grid-button' class="btn btn-primary btn-block" data-toggle="button" aria-pressed="true" autocomplete="off">
+                <button type="button" id = 'grid-button' class="btn btn-primary" data-toggle="button" aria-pressed="true" autocomplete="off">
                     Grid:<div id='grid-on-off'>off</div></button>
             </div>
-            <div class="col-md-1">    
-                <button type="button" id = 'excel-button' class="btn btn-primary btn-block" data-toggle="button" aria-pressed="false" autocomplete="off">
-                    Excel:<div id='excel-on-off'>off</div></button>
+            <div class="col-md-1"> 
+            <a href = '/download' class="btn btn-primary">Download!</a>   
+                <a href = '/download' button type="button" id = 'excel-button' class="btn btn-primary" data-toggle="button" aria-pressed="false" autocomplete="off">
+                    Excel:<div id='excel-on-off'>off</div></button></a>
             </div>
             <div class="col-md-1">
                 <div class="dropdown closed">
@@ -431,17 +435,17 @@
             </div>
             <div class="col-md-1">
                 <div class="dropdown closed">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-play-circle fa-flip-horizontal"></i> Rewind</button>
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-play-circle fa-flip-horizontal"></i> Method</button>
 
                      <div class="dropdown-menu" aria-labelledby="dropdownMenu2" id='dropdown-menu-2'>
-                    <button class="dropdown-item" type="button" style="color:black">R1</button>
-                    <button class="dropdown-item" type="button" style="color:black">R2</button>
-                    <button class="dropdown-item" type="button" style="color:black">R3</button>
-                    <button class="dropdown-item" type="button" style="color:black">R4</button>
-                    <button class="dropdown-item" type="button" style="color:black">R5</button>
-                    <button class="dropdown-item" type="button" style="color:black">R6</button>
-                    <button class="dropdown-item" type="button" style="color:black">R7</button>
-                    <button class="dropdown-item" type="button" style="color:black">R8</button>
+                    <button class="dropdown-item" type="button" style="color:black">LCA</button>
+                    <button class="dropdown-item" type="button" style="color:black">K-means</button>
+                    <button class="dropdown-item" type="button" style="color:black">DBScan</button>
+                    <button class="dropdown-item" type="button" style="color:black">TensorFlow</button>
+                    <button class="dropdown-item" type="button" style="color:black">AffinityProp</button>
+                    <button class="dropdown-item" type="button" style="color:black">Ensemble</button>
+<!--                     <button class="dropdown-item" type="button" style="color:black">R7</button>
+                    <button class="dropdown-item" type="button" style="color:black">R8</button> -->
                   </div>
                 </div>
             </div>
@@ -455,14 +459,10 @@
     <div class="row">
             <!-- <h2 class="demoHeaders">Run Tracker 2</h2> -->
             <div id="tabs">
-                <ul id='tester id'>
+                <ul id='tab-list'>
                     <li><a href="#tabs-1">Tracker</a></li>
-<!--                     <li><a href="#tabs-2">R1</a></li>
-                    <li><a href="#tabs-3">R2</a></li> -->
                 </ul>
                 <div id="tabs-1"><div id="tracker-goes-here" class = "center"></div>some text</div>
-<!--                 <div id="tabs-2"><div id="run-report-goes-here" class = "center"></div>some more text </div>
-                <div id="tabs-3"><div id="run-report-goes-here-2" class = "center"></div>even more text again</div> -->
             </div>
         </div>  
     </section>
@@ -508,7 +508,7 @@
     <!-- jQuery -->
     <script src="static/js/jquery.js"></script>
     // <!-- <script src="//code.jquery.com/jquery-1.8.3.js"></script> -->
-    <script src="/static/js/jquery-ui.js"></script>
+    <script src="static/js/jquery-ui.js"></script>
 
     <!-- Bootstrap Core JavaScript -->
     <script src="static/js/bootstrap.min.js"></script>
@@ -523,8 +523,9 @@
     <script src="static/js/grayscale.js"></script>
     
     <!-- Sorttable -->
-    <script src="http://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
-    
+    // <!-- <script src="http://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script> -->
+    <script src="/static/js/sorttable.js"></script>
+
     <!-- Bootstrap-Switch (http://www.bootstrap-switch.org/) -->
     <script src="/static/js/bootstrap-switch.js"></script>
 
@@ -623,7 +624,7 @@
              //data: data_to_send,
              success: function (training_data) {console.log(training_data);
                                         //MakeTable(training_data);
-                                        createTable(training_data);
+                                        //createTable(training_data);
                                         //loadTrainingImage(training_data);
              },
              error: function (training_data) {console.log(training_data);
@@ -666,6 +667,7 @@ function SubmitData () {
                                 myApp.hidePleaseWait();
                                 // GetTrainingData();
                                 UpdateTrackerData ();
+                                GetTrainingData (); 
 
                                 // myApp.hidePleaseWait();
                                 // $('#pleaseWaitDialog').hide(); //hide loading message
@@ -749,6 +751,11 @@ function SubmitData () {
                                         console.log('run_reports[0][1].keys:', tracker_data.run_reports[0][1].keys());
                                         console.log('run_reports[0][1].keys:', Object.keys(tracker_data.run_reports[0][1]));
                                         console.log('run_reports[0][1][1]:', tracker_data.run_reports[0][1][1]);
+                                        console.log('run_scorecard:', tracker_data.run_scorecard.length);
+                                        console.log('run_scorecard[0]:', tracker_data.run_scorecard[0]);
+                                        console.log('run_scorecard[0].a:', tracker_data.run_scorecard[0].a);
+
+
 
                                         //MakeTable(training_data);
                                         // createTracker(tracker_data);
@@ -773,6 +780,7 @@ function SubmitData () {
              async: true,
              //data: data_to_send,
              success: function (first_tracker_data) {console.log(first_tracker_data);
+                                console.log('in StartTrackerData function');
                                         //MakeTable(training_data);
                                         startTracker(first_tracker_data);
                                         fillExplorer(first_tracker_data);
@@ -827,7 +835,8 @@ function SubmitData () {
         }
         
         //console.log("TTTTT:"+mytable.html());
-        mytable.appendTo("#tracker-goes-here");          
+        mytable.appendTo("#tracker-goes-here");
+        mytable.style.display = 'inline-block';          
       
       var newTableObject2 = document.getElementById('trackerTable');
       sorttable.makeSortable(newTableObject2);
@@ -882,7 +891,8 @@ function SubmitData () {
         }
         
         //console.log("TTTTT:"+mytable.html());
-        mytable.appendTo("#tracker-goes-here");          
+        mytable.appendTo("#tracker-goes-here");
+        document.getElementById('tabs-1').style.display = 'inline-block';          
       
       var newTableObject2 = document.getElementById('trackerTable');
       sorttable.makeSortable(newTableObject2);
@@ -897,6 +907,14 @@ function SubmitData () {
       //   });
     }
     </script>
+            // header_row.append("<th>Run ID</th>");
+        // header_row.append("<th>Clusters</th>");
+        // header_row.append("<th>Variables</th>");
+        // header_row.append("<th>MLE</th>");
+        // header_row.append("<th>Chi-Sq</th>");
+        // header_row.append("<th>BIC</th>");
+        // header_row.append("<th>Cohesiveness</th>");
+        // header_row.append("<th>Differentiation</th>");
     <script>
     function makeRunReport(tracker_data){
         var num_runs = tracker_data.run_reports.length; // number of reports
@@ -907,6 +925,24 @@ function SubmitData () {
                 new_run_report_id = 'run-report-' + num_tabs;
             addNewTab();
             console.log('in makeRunReport function'); 
+
+            // update run_scorecard
+            var num_segments = document.getElementById('run-scoreboard-segments-' + num_tabs);
+            var num_variables = document.getElementById('run-scoreboard-variables-' + num_tabs);
+            var seg_coh = document.getElementById('run-scoreboard-cohesiveness-' + num_tabs);
+            var seg_diff = document.getElementById('run-scoreboard-diff-' + num_tabs);
+            var run_mle = document.getElementById('run-scoreboard-mle-' + num_tabs);
+            var run_chisq = document.getElementById('run-scoreboard-chisq-' + num_tabs);
+            var run_bic = document.getElementById('run-scoreboard-bic-' + num_tabs);
+
+            num_segments.innerHTML = tracker_data.run_scorecard[h].b;
+            num_variables.innerHTML = tracker_data.run_scorecard[h].c;
+            seg_coh.innerHTML = tracker_data.run_scorecard[h].g;
+            seg_diff.innerHTML = tracker_data.run_scorecard[h].h;
+            run_mle.innerHTML = tracker_data.run_scorecard[h].d;
+            run_chisq.innerHTML = tracker_data.run_scorecard[h].e;
+            run_bic.innerHTML = tracker_data.run_scorecard[h].f;
+
             mytable = $('<table></table>').attr({ id: 'run-report-' + num_tabs }).attr({class: 'tg center table-goes-here fancyTable'});
             // var num_runs = tracker_data.run_reports.length; // number of reports
             var num_rows =  tracker_data.run_reports[h].length; // length of 1 report
@@ -1063,6 +1099,7 @@ dragAndDrop.init();
 // https://github.com/moremorefor/flask-fileupload-ajax-example/blob/master/app.py
 $(function() {
     $('#upload-file-btn').click(function() {
+        myApp.showPleaseWait();
         var form_data = new FormData($('#upload-file')[0]);
         $.ajax({
             type: 'POST',
@@ -1071,14 +1108,57 @@ $(function() {
             contentType: false,
             cache: false,
             processData: false,
-            async: false,
+            async: true ,
             success: function(data) {
                 console.log('Success!');
+                console.log('Data:', data);
+                myApp.hidePleaseWait();
+                clearTabs ();
+                console.log('tabs cleared');
+                StartTrackerData ();
             },
         });
     });
 });
 </script>
+<script>
+function clearTabs() {
+    // clear run_tracker
+    var elem = document.getElementById('trackerTable');
+    elem.parentNode.removeChild(elem);
+    // clear run_reports
+    var tab_labels = document.getElementById('tab-list').children,
+        tab_fields = document.getElementById('tabs').children,
+        tab_labels_length = tab_labels.length,
+        tab_fields_length = tab_fields.length;
+
+        // remove all tab_labels except tab_label[0]
+            console.log('tab_labels length (i):', tab_labels_length);
+        console.log('tab_fields length (j):', tab_fields_length);
+        
+        for (i = 1; i < tab_labels_length; i++) {
+            console.log('i:', i);
+            tab_labels[1].parentNode.removeChild(tab_labels[1]);
+        }
+        // remove all tab_fields except tab_field[0], tab_field[1]
+        for (j = 2; j < tab_fields_length; j++) {
+            console.log('j:', j);
+            tab_fields[2].parentNode.removeChild(tab_fields[2]);
+        }
+};
+</script>
+<!-- //tab labels
+a = document.getElementById('tester id')
+b = a.children
+b[2].parentNode.removeChild(b[2])
+remove all except b[0]
+
+//tab fields
+z = document.getElementById('tabs')
+y = z.children
+y[2].parentNode.removeChild(y[2])
+remove all except y[0], y[1] -->
+
 <script>
 // http://www.redips.net/javascript/adding-table-rows-and-columns/
 // append row to the HTML table
@@ -1300,13 +1380,19 @@ function addNewTab() {
     "<li><a href='#tab" + num_tabs + "'>R" + tab_index + "</a></li>"
     );
     $("div#tabs").append(
-    "<div id='tab" + num_tabs + "'><div><input id='spinner-" + num_tabs +"'></div><p>"
+    "<div id='tab" + num_tabs + "'></div>"
+    );
+    $("div#tab" + num_tabs).append(
+    "<div class = 'run-report run-scoreboard' id = 'run-scoreboard-" + num_tabs + "'><table id = 'run-scoreboard-"+ num_tabs + "'><tr><td>Method</td><td>poLCA</td></tr><tr><td>Date:</td><td></td></tr><tr><td># segments:</td><td id = 'run-scoreboard-segments-" + num_tabs + "'></td></tr><tr><td># variables</td><td id='run-scoreboard-variables-" + num_tabs + "'></td></tr><tr><td>Seg Coh:</td><td id='run-scoreboard-cohesiveness-" + num_tabs + "'></td></tr><tr><td>Seg Diff:</td><td id='run-scoreboard-diff-" + num_tabs + "'></td></tr><tr><td>MLE:</td><td id='run-scoreboard-mle-" + num_tabs + "'></td></tr><tr><td>Chi-Sq:</td><td id='run-scoreboard-chisq-" + num_tabs + "'></td></tr><tr><td>BIC:</td><td id='run-scoreboard-bic-" + num_tabs + "'></td></tr><tr><td>Highlight</td><td><input id='spinner-" + num_tabs +"'></td></tr></table></div>"
     );
     $("div#tab" + num_tabs).append(
     "<div id='run-report-goes-here-" + num_tabs +"' class = 'center run-report'></div>"
     ); 
     $("div#tabs").tabs("refresh");
-};                
+};
+
+
+              
 </script>
 <!-- Sortable tabs -->
 <script>
@@ -1353,11 +1439,6 @@ tabs.find( ".ui-tabs-nav" ).sortable({
 //    alert($(this).spinner('value'));
 // });
 </script>
-
-
-
-
-
 <script> window.onload = StartTrackerData ();</script>
 </body>
 </html>
