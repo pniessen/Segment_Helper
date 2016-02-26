@@ -108,6 +108,7 @@
     #run-report-goes-here  { margin-left:auto; margin-right:auto;}
 
     .run-scoreboard {float: left;}
+    .movie {float:left;}
     
     .run-report { font-family:Arial, Helvetica, Sans-Serif; font-size:0.8em;}
     .run-report { border-collapse:collapse; /*float: left;*/}
@@ -123,6 +124,10 @@
 
     .good {background-color: #cf0 !important;}
     .ui-spinner input {font-family:Arial, Helvetica, Sans-Serif; font-size:0.8em; width:50px; text-align: center;}
+   
+    #control-table {left: 50%; margin-left: 300px;}
+    #control-table td {padding: 10px 10px 10px 10px; float: center}
+
 
     </style>
     <style>
@@ -177,7 +182,7 @@
                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-main-collapse">
                     <i class="fa fa-bars"></i>
                 </button>
-                <a class="navbar-brand page-scroll" href="#scorecard" onclick="GetTrackerData(), GetTrainingData()">
+                <a class="navbar-brand page-scroll" href="#tabz">
                     <i class="fa fa-play-circle"></i>  <span class="light">Start</span> Segment Helper
                 </a>
             </div>
@@ -192,18 +197,18 @@
                     <li>
                         <a class="page-scroll" href="#about">About</a>
                     </li>
-                    <li>
+<!--                     <li>
                         <a class="page-scroll" href="#settings">Control Panel</a>
                     </li>
                     <li>
                         <a class="page-scroll" href="#explorer">Explorer</a>
-                    </li>
+                    </li> -->
                     <li>
                         <a class="page-scroll" href="#tabz">Run Tracker</a>
                     </li>
-                    <li>
+<!--                     <li>
                         <a class="page-scroll" href="#scorecard">Scorecard</a>
-                    </li>
+                    </li> -->
                     <li>
                         <a class="page-scroll" href="#contact">Contact</a>
                     </li>
@@ -221,7 +226,6 @@
                 <div class="row">
                     <div class="col-md-8 col-md-offset-2">
                         <h1> Rosetta Segment Helper (Beta)</h1>
-                        <!-- <h2>Rosetta Segment Helper</h2> -->
                         <p class="intro-text">A simple tool to explore segmenting using survey data<br></p>
                         <a href="#about" class="btn btn-circle page-scroll">
                             <i class="fa fa-angle-double-down animated"></i>
@@ -241,7 +245,7 @@
                 <li><p>Choose variables to segment by</p></li>
                 <li><p>Review results</p></li>
                 <li><p>Repeat</p></li>
-                <a href="#settings" class="btn btn-circle page-scroll">
+                <a href="#tabz" class="btn btn-circle page-scroll">
                     <i class="fa fa-angle-double-down animated"></i>
                 </a>
             </div>
@@ -251,7 +255,7 @@
                     <li><p>Segment Helper suggests cluster seed</p></li>
                     <li><p>Review results</p></li>
                     <li><p>Repeat</p></li>
-                <a href="#settings" class="btn btn-circle page-scroll">
+                <a href="#tabz" class="btn btn-circle page-scroll">
                     <i class="fa fa-angle-double-down animated"></i>
                 </a>
             </div>
@@ -261,7 +265,7 @@
                     <li><p>Segment Helper suggests cluster seed, runs grid search</p></li>
                     <li><p>Review results</p></li>
                     <li><p>Repeat</p></li>
-                <a href="#settings" class="btn btn-circle page-scroll">
+                <a href="#tabz" class="btn btn-circle page-scroll">
                     <i class="fa fa-angle-double-down animated"></i>
                 </a>
             </div>
@@ -269,26 +273,24 @@
     </section>
     
     <!-- Settings Section -->
-        <section id="settings" class="container content-section ">
+<!--         <section id="settings" class="container content-section ">
             <div class="row">
                 <div class="col-lg-8 col-lg-offset-2">
                     <h2>Settings</h2>
-                    <form id="upload-file" method="post" enctype="multipart/form-data">
+                    <p>Load data:
+                    <form id="upload-file-2" method="post" enctype="multipart/form-data"> 
                         <fieldset>
-                            <label for="file">Select a file</label>
-                            <input name="file" type="file">
-                            <button id="upload-file-btn" type="button">Upload</button>
+                            <div class="input-group">  --> <!-- binds button and file name field together -->
+                                <!-- <span class="input-group-btn">   --><!-- also seems to bind button and file name field -->
+                                    <!-- <span class="btn btn-primary btn-file"> -->  <!-- makes button square (vs default) -->
+                                       <!--  Browse&hellip; <input id = 'upload-button' type="file"> -->
+                                    <!-- </span> -->
+                               <!--  </span>
+                                <input id = 'upload-field' type="text" class="form-control" readonly>
+                            </div -->> <!-- input-group -->
+<!--                             <button id="upload-file-btn-2" type="button">Upload</button>
                         </fieldset>
-                    </form>                   
-                    <p>Load data:    
-                        <div class="input-group">
-                            <span class="input-group-btn">
-                                <span class="btn btn-primary btn-file">
-                                    Browse&hellip; <input type="file" multiple>
-                                </span>
-                            </span>
-                            <input type="text" class="form-control" readonly>
-                        </div>
+                    </form> 
                     <p>Number of clusters: <input type="text" style="color:black" color="black" value="6"</p>
                     <p>Export to Excel (yes/no)  <input type="checkbox" name="xls-checkbox" ></p>
                     <p>Grid search (yes/no)  <input type="checkbox" name="gridsearch-checkbox" ></p>
@@ -301,17 +303,17 @@
                 </div>
             </div>
         </div>
-        </section>
+        </section> -->
    <!-- Explorer Section -->
    <!-- see http://jsfiddle.net/TylerODonnell/h42w6t8j/ -->
   <!--  also see http://v4-alpha.getbootstrap.com/components/buttons/ -->
-        <section id="explorer" class="container content-section text-center">
+<!--         <section id="explorer" class="container content-section text-center"> -->
 
 <!--             Cats:  <input name="animal" type="checkbox" value="Cats" id = "box1">
             Dogs:  <input name="animal" type="checkbox" value="Dogs" id = "box2"> -->
 
-        <div class="row"><h2>Explorer</h2>
-            <div class="col-md-5"><h4>Pick the questions for clustering:</h4></div>
+<!--         <div class="row"><h2>Explorer</h2>
+            <div class="col-md-5"><h4>Pick the questions for clustering:</h4></div> -->
 <!--             <div class="col-md-1">2</div>
             <div class="col-md-1">3</div>
             <div class="col-md-1">4</div>
@@ -359,12 +361,12 @@
             </div>
         </div> -->
 
-        <div class="row">
+<!--         <div class="row">
             <div class="col-lg-12 col-lg-offset-1">
                     <div class="container2" id = 'explorer-left'> 
                         <h5>Potential Variables</h5>
                             <div id='ex-a'>q_01: I like cheese</div>
-                        <!-- </div> -->
+                        </div>
                     </div>
                     <div class="container2" id="explorer-right"><h5>Variables to use in this run</h5></div>
                     <div class="container2 text-left" id="right2"><h5>Results</h5><class="text-left"><p>
@@ -375,18 +377,18 @@
                     </div>
                 </div>     
             </div>
-       </section>
+       </section> -->
 
     <!-- Run Tracker Section -->
-        <section id="run-tracker" class="container content-section text-center">
+<!--         <section id="run-tracker" class="container content-section text-center">
             <h2>Run Tracker</h2>
             <table class="tg" class="sortable" class="fancyTable" id = 'myTracker' cellpadding="0" cellspacing="0">
-            <!-- <div id="tracker-goes-here" class = "center"></div> -->
-<!--                 <td id = 'cat'>Cats:  <input name="animal" type="checkbox" value="Cats" id = "box3"></td>
+            <div id="tracker-goes-here" class = "center"></div>
+                <td id = 'cat'>Cats:  <input name="animal" type="checkbox" value="Cats" id = "box3"></td>
                 <td id = 'dog'>Dogs:  <input name="animal" type="checkbox" value="Dogs" id = "box4"></td> -->
             <!-- </div>  -->
-            </table>
-        </section>
+            <!-- </table> -->
+        <!-- </section> --> -->
     
     <!-- Scorecard Section --> 
 <!--         <section id="scorecards" class="content-section text-center">
@@ -397,58 +399,84 @@
         <!-- <ul id="navigation">
             <li><a id="link-portfolio" href="#data" onclick="GetTrainingData()">See Data</a></li>
         </ul> --> -->
-        </section>
+        <!-- </section> -->
 
         <!-- Tabs -->
         <section id='tabz' class="content-section text-center">
-            <h2>Run Tracker 2</h2>
+            <h2>Run Tracker</h2>
         <div class="row">
+            <table id = 'control-table'>
+                <tr>
             <!-- <div class="col-md-5"></div> -->
-            <div class="col-md-1">
-                <a id="link-portfolio" href="#tabz" onclick="SubmitData()"><button type="button" class="btn btn-primary "><i class="fa fa-play-circle"></i>Go!</button></a>
-            </div>
-            <div class="col-md-1">
-                <button type="button" id = 'grid-button' class="btn btn-primary" data-toggle="button" aria-pressed="true" autocomplete="off">
+<!--             <div class="col-md-1"> -->
+                <td>
+                    <a id="link-portfolio" href="#tabz" onclick="SubmitData()"><button type="button" class="btn btn-primary "><i class="fa fa-play-circle"></i>Go!</button></a>
+                </td>
+<!--             </div> -->
+<!--             <div class="col-md-1"> -->
+                <td>
+                    <button type="button" id = 'grid-button' class="btn btn-primary" data-toggle="button" aria-pressed="true" autocomplete="off">
                     Grid:<div id='grid-on-off'>off</div></button>
-            </div>
-            <div class="col-md-1"> 
-            <a href = '/download' class="btn btn-primary">Download!</a>   
-                <a href = '/download' button type="button" id = 'excel-button' class="btn btn-primary" data-toggle="button" aria-pressed="false" autocomplete="off">
-                    Excel:<div id='excel-on-off'>off</div></button></a>
-            </div>
-            <div class="col-md-1">
-                <div class="dropdown closed">
-                  <button class="btn btn-secondary dropdown-toggle" type="button btn-block" id="dropdownMenu1-label-2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    # Seg<div id="number-of-segments"></div> 
-                  </button>
-                  <div class="dropdown-menu" aria-labelledby="dropdownMenu2" id = 'dropdown-menu-1'>
-                    <button class="dropdown-item" type="button" style="color:black">1</button>
-                    <button class="dropdown-item" type="button" style="color:black">2</button>
-                    <button class="dropdown-item" type="button" style="color:black">3</button>
-                    <button class="dropdown-item" type="button" style="color:black">4</button>
-                    <button class="dropdown-item" type="button" style="color:black">5</button>
-                    <button class="dropdown-item" type="button" style="color:black">6</button>
-                    <button class="dropdown-item" type="button" style="color:black">7</button>
-                    <button class="dropdown-item" type="button" style="color:black">8</button>
-                  </div>
-                </div>
-            </div>
-            <div class="col-md-1">
-                <div class="dropdown closed">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-play-circle fa-flip-horizontal"></i> Method</button>
+                </td>
+<!--             </div> -->
+<!--             <div class="col-md-1">  -->
+                <td>
+                    <a href = '/download' class="btn btn-primary">Download!</a>  
+                </td> 
+               <!--  <a href = '/download' button type="button" id = 'excel-button' class="btn btn-primary" data-toggle="button" aria-pressed="false" autocomplete="off">
+                    Excel:<div id='excel-on-off'>off</div></button></a> -->
+<!--             </div> -->
+<!--             <div class="col-md-1"> -->
+                <td>
+                    <div class="dropdown closed">
+                      <button class="btn btn-secondary dropdown-toggle" type="button btn-block" id="dropdownMenu1-label-2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        # Seg<div id="number-of-segments"></div> 
+                      </button>
+                      <div class="dropdown-menu" aria-labelledby="dropdownMenu2" id = 'dropdown-menu-1'>
+                        <button class="dropdown-item" type="button" style="color:black">1</button>
+                        <button class="dropdown-item" type="button" style="color:black">2</button>
+                        <button class="dropdown-item" type="button" style="color:black">3</button>
+                        <button class="dropdown-item" type="button" style="color:black">4</button>
+                        <button class="dropdown-item" type="button" style="color:black">5</button>
+                        <button class="dropdown-item" type="button" style="color:black">6</button>
+                        <button class="dropdown-item" type="button" style="color:black">7</button>
+                        <button class="dropdown-item" type="button" style="color:black">8</button>
+                      </div>
+                    </div>
+                </td>
+<!--             </div> -->
+            <!-- <div class="col-md-1"> -->
+                <td>
+                    <div class="dropdown closed">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-play-circle fa-flip-horizontal"></i> Method</button>
 
-                     <div class="dropdown-menu" aria-labelledby="dropdownMenu2" id='dropdown-menu-2'>
-                    <button class="dropdown-item" type="button" style="color:black">LCA</button>
-                    <button class="dropdown-item" type="button" style="color:black">K-means</button>
-                    <button class="dropdown-item" type="button" style="color:black">DBScan</button>
-                    <button class="dropdown-item" type="button" style="color:black">TensorFlow</button>
-                    <button class="dropdown-item" type="button" style="color:black">AffinityProp</button>
-                    <button class="dropdown-item" type="button" style="color:black">Ensemble</button>
-<!--                     <button class="dropdown-item" type="button" style="color:black">R7</button>
-                    <button class="dropdown-item" type="button" style="color:black">R8</button> -->
-                  </div>
-                </div>
-            </div>
+                         <div class="dropdown-menu" aria-labelledby="dropdownMenu2" id='dropdown-menu-2'>
+                        <button class="dropdown-item" type="button" style="color:black">LCA</button>
+                        <button class="dropdown-item" type="button" style="color:black">K-means</button>
+                        <button class="dropdown-item" type="button" style="color:black">DBScan</button>
+                        <button class="dropdown-item" type="button" style="color:black">TensorFlow</button>
+                        <button class="dropdown-item" type="button" style="color:black">AffinityProp</button>
+                        <button class="dropdown-item" type="button" style="color:black">Ensemble</button>
+                      </div>
+                    </div>
+                </td>
+                <td>
+                    <form id="upload-file" method="post" enctype="multipart/form-data">
+                        <fieldset>
+                            <div class='input-group'>
+                                <span class="input-group-btn">
+                                    <span class="btn btn-primary btn-file">
+                                        Browse&hellip;<input id = 'file-search-2' name="file" type="file">
+                                    </span>
+                                </span><input id = 'upload-field-2' type="text" class="form-control" readonly>
+                            </div>
+                            <button id="upload-file-btn" class="btn btn-primary btn-file" type="button">Upload</button>
+                        </fieldset>
+                    </form> 
+                </td>
+            </tr>
+        </table>
+<!--             </div> -->
         </div>
     </div>
     </div>
@@ -477,7 +505,6 @@
                 <p><a href="mailto:matt.dietly@rosetta.com">matt.dietly@rosetta.com</a></p>
 
             </div>
-            <p>Here is an example of a spinner: <input id="spinner2"> 
         </div>
     </section>
 
@@ -490,21 +517,7 @@
             <p>Copyright &copy; Your Website 2014</p>
         </div>
     </footer>
-    <!-- Please wait dialog for ajax POST call -->
-    <!-- http://stackoverflow.com/questions/2509711/display-loading-image-while-post-with-ajax -->
-    <!-- http://dotnetspeak.com/2013/05/creating-simple-please-wait-dialog-with-twitter-bootstrap -->
-<!--     <section>
-        <div class="modal hide" id="pleaseWaitDialog" data-backdrop="static" data-keyboard="false" style='display:none'>
-            <div class="modal-header">
-                <h1>Processing...</h1>
-            </div>
-            <div class="modal-body">
-                <div class="progress progress-striped active">
-                    <div class="bar" style="width: 100%;"></div>
-                </div>
-            </div>
-        </div>
-    </section> -->
+
     <!-- jQuery -->
     <script src="static/js/jquery.js"></script>
     // <!-- <script src="//code.jquery.com/jquery-1.8.3.js"></script> -->
@@ -535,8 +548,8 @@
 
     <!-- Bootstrap - Switch -->
     <script>
-    $("[name='gridsearch-checkbox']").bootstrapSwitch();
-    $("[name='xls-checkbox']").bootstrapSwitch();
+    // $("[name='gridsearch-checkbox']").bootstrapSwitch();
+    // $("[name='xls-checkbox']").bootstrapSwitch();
     </script>
 
 <!--     // spinner (conditional fomatting threshold)
@@ -690,47 +703,47 @@ function SubmitData () {
 
     <!-- create scorecard_table -->
     <script>
-    function createTable(training_data){
+    // function createTable(training_data){
          
-        mytable = $('<table></table>').attr({ id: "basicTable" }).attr({class: 'tg center table-goes-here'});
-        var rows = training_data.training.length;
-        console.log (rows);
-        //var rows = new Number($("#rowcount").val());
-        //var cols = new Number($("#columncount").val());
-        //var cols = training_data.training[0].length
-        var cols = 8;
-        var tr = [];
-        var header_row = $('<tr></tr>').appendTo(mytable);
-        header_row.append("<th>Run ID</th>");
-        header_row.append("<th>Clusters</th>");
-        header_row.append("<th>Variables</th>");
-        header_row.append("<th>MLE</th>");
-        header_row.append("<th>Chi-Sq</th>");
-        header_row.append("<th>BIC</th>");
-        header_row.append("<th>Cohesiveness</th>");
-        header_row.append("<th>Differentiation</th>");
-        for (var i = 0; i < rows; i++) {
-            //var row = $('<tr></tr>').attr({ class: ["class1", "class2", "class3"].join(' ') }).appendTo(mytable);
-            var row = $('<tr></tr>').appendTo(mytable);
-            row.append("<td>" + training_data.training[i].a + "</td>").attr({id:'table-' + (i+1) + '-1'});
-            row.append("<td>" + training_data.training[i].b + "</td>").attr({id:'table-' + (i+1) + '-1'});
-            row.append("<td>" + training_data.training[i].c + "</td>").attr({id:'table-' + (i+1) + '-1'});
-            row.append("<td>" + training_data.training[i].d + "</td>").attr({id:'table-' + (i+1) + '-1'});
-            row.append("<td>" + training_data.training[i].e + "</td>").attr({id:'table-' + (i+1) + '-1'});
-            row.append("<td>" + training_data.training[i].f + "</td>").attr({id:'table-' + (i+1) + '-1'});
-            row.append("<td>" + training_data.training[i].g + "</td>").attr({id:'table-' + (i+1) + '-1'});
-            row.append("<td>" + training_data.training[i].h + "</td>").attr({id:'table-' + (i+1) + '-1'});
-            //for (var j = 0; j < cols; j++) {
-                //$('<td></td>').text("text1").attr({id:'table-'+ (i+1) + "-" + (j+1)}).appendTo(row); 
-            //}
+    //     mytable = $('<table></table>').attr({ id: "basicTable" }).attr({class: 'tg center table-goes-here'});
+    //     var rows = training_data.training.length;
+    //     console.log (rows);
+    //     //var rows = new Number($("#rowcount").val());
+    //     //var cols = new Number($("#columncount").val());
+    //     //var cols = training_data.training[0].length
+    //     var cols = 8;
+    //     var tr = [];
+    //     var header_row = $('<tr></tr>').appendTo(mytable);
+    //     header_row.append("<th>Run ID</th>");
+    //     header_row.append("<th>Clusters</th>");
+    //     header_row.append("<th>Variables</th>");
+    //     header_row.append("<th>MLE</th>");
+    //     header_row.append("<th>Chi-Sq</th>");
+    //     header_row.append("<th>BIC</th>");
+    //     header_row.append("<th>Cohesiveness</th>");
+    //     header_row.append("<th>Differentiation</th>");
+    //     for (var i = 0; i < rows; i++) {
+    //         //var row = $('<tr></tr>').attr({ class: ["class1", "class2", "class3"].join(' ') }).appendTo(mytable);
+    //         var row = $('<tr></tr>').appendTo(mytable);
+    //         row.append("<td>" + training_data.training[i].a + "</td>").attr({id:'table-' + (i+1) + '-1'});
+    //         row.append("<td>" + training_data.training[i].b + "</td>").attr({id:'table-' + (i+1) + '-1'});
+    //         row.append("<td>" + training_data.training[i].c + "</td>").attr({id:'table-' + (i+1) + '-1'});
+    //         row.append("<td>" + training_data.training[i].d + "</td>").attr({id:'table-' + (i+1) + '-1'});
+    //         row.append("<td>" + training_data.training[i].e + "</td>").attr({id:'table-' + (i+1) + '-1'});
+    //         row.append("<td>" + training_data.training[i].f + "</td>").attr({id:'table-' + (i+1) + '-1'});
+    //         row.append("<td>" + training_data.training[i].g + "</td>").attr({id:'table-' + (i+1) + '-1'});
+    //         row.append("<td>" + training_data.training[i].h + "</td>").attr({id:'table-' + (i+1) + '-1'});
+    //         //for (var j = 0; j < cols; j++) {
+    //             //$('<td></td>').text("text1").attr({id:'table-'+ (i+1) + "-" + (j+1)}).appendTo(row); 
+    //         //}
                      
-        }
-        //console.log("TTTTT:"+mytable.html());
-        mytable.appendTo("#table-goes-here");          
+    //     }
+    //     //console.log("TTTTT:"+mytable.html());
+    //     mytable.appendTo("#table-goes-here");          
       
-      var newTableObject = document.getElementById('basicTable');
-      sorttable.makeSortable(newTableObject);
-    }
+    //   var newTableObject = document.getElementById('basicTable');
+    //   sorttable.makeSortable(newTableObject);
+    // }
     </script>
 
     <script>
@@ -783,7 +796,7 @@ function SubmitData () {
                                 console.log('in StartTrackerData function');
                                         //MakeTable(training_data);
                                         startTracker(first_tracker_data);
-                                        fillExplorer(first_tracker_data);
+                                        // fillExplorer(first_tracker_data);
                                         //loadTrainingImage(training_data);
              },
              error: function (first_tracker_data) {console.log(first_tracker_data);
@@ -916,14 +929,16 @@ function SubmitData () {
         // header_row.append("<th>Cohesiveness</th>");
         // header_row.append("<th>Differentiation</th>");
     <script>
-    function makeRunReport(tracker_data){
+    window.images = [];
+    console.log('images', images) //Array()
+    function makeRunReport(tracker_data, images){
         var num_runs = tracker_data.run_reports.length; // number of reports
-        
+        console.log('images', images);
         for (var h = 0; h < num_runs; h++) {
             var num_tabs = $("div#tabs ul li").length + 1,
                 new_placeholder_id = '#run-report-goes-here-' + num_tabs;
                 new_run_report_id = 'run-report-' + num_tabs;
-            addNewTab();
+            addNewTab(tracker_data,h);
             console.log('in makeRunReport function'); 
 
             // update run_scorecard
@@ -997,44 +1012,66 @@ function SubmitData () {
                             }
                         }
                     });
-                }); // end of conditional formatting function
+                }); // end of conditional formatting function tracker_data.run_scorecard[h].b
         });
-    } // outer outer loop (=h) 
-    };
+        $("#seg-spinner-" + num_tabs).spinner({min: 0, max:tracker_data.run_scorecard[h].b});
+        $("#seg-spinner-" + num_tabs).spinner("value", 0);
+        var timestamp = tracker_data.run_scorecard[h].a;
 
+        // https://perishablepress.com/3-ways-preload-images-css-javascript-ajax/
+        // http://stackoverflow.com/questions/24822631/object-htmlimageelement-showing-instead-of-image
+        window.images[num_tabs] = [];
+        for (i = 0; i < tracker_data.run_scorecard[h].b + 1; i++) {
+            window.images[num_tabs][i] = new Image();
+            window.images[num_tabs][i].src = 'static/plots/seg_graph_' + tracker_data.run_scorecard[h].a + '_' + i + '.png'
+        };
+
+
+        $('#seg-spinner-' + num_tabs).on("spinstop", function(tracker_data,h,images){
+            console.log($(this).spinner('value'));
+            console.log(timestamp);
+            var seg_clicked = $(this).spinner('value');
+            var seg_plot = document.getElementById('seg-plot-' + num_tabs);
+            seg_plot.innerHTML = window.images[num_tabs][seg_clicked].outerHTML;
+            //console.log(seg_plot);
+
+
+            });// end of seg-spinner action         
+        } // outer outer loop (=h) 
+    };
 
     </script>    
     <!--     check box event handler -->
     <script>
     // Get the element, add a click listener...
-    var sophie = document.getElementById('q39_8');
-    console.log('sophie', sophie);
-    document.getElementById('q39_8').addEventListener("change", function(e) {
-        console.log('item clicked', e.target.nodeName, e.target.nodeValue);
-    });
+    // var sophie = document.getElementById('q39_8');
+    // console.log('sophie', sophie);
+    // document.getElementById('q39_8').addEventListener("change", function(e) {
+    //     console.log('item clicked', e.target.nodeName, e.target.nodeValue);
+    // });
     </script>
     <!-- append explorer data to div = "explorer-left" -->
-    <script>
-    // http://stackoverflow.com/questions/14004117/create-div-and-append-div-dynamically
-    function fillExplorer(first_tracker_data){
-        // var num_questions = first_tracker_data.tracker.length;
-        var num_questions = 10;
-        var right_div = document.getElementById('explorer-left');
-        for (i = 0; i < num_questions; i++) {
-            var cols_names = Object.keys(first_tracker_data.tracker[i]);
-            var question_name = first_tracker_data.tracker[i][cols_names[0]];
-            console.log(question_name);
-            var innerDiv = document.createElement('div');
-            innerDiv.textContent = question_name; 
-            innerDiv.id = question_name;
-            right_div.appendChild(innerDiv);
-        }
-        var innerDiv = document.createElement('div');
-        innerDiv.className = 'block-2';
-        innerDiv.textContent = "New text"; 
-        right_div.appendChild(innerDiv);
-    };
-    </script>
+    // <script>
+    // // http://stackoverflow.com/questions/14004117/create-div-and-append-div-dynamically
+    // function fillExplorer(first_tracker_data){
+    //     // var num_questions = first_tracker_data.tracker.length;
+    //     var num_questions = 10;
+    //     var right_div = document.getElementById('explorer-left');
+    //     for (i = 0; i < num_questions; i++) {
+    //         var cols_names = Object.keys(first_tracker_data.tracker[i]);
+    //         var question_name = first_tracker_data.tracker[i][cols_names[0]];
+    //         console.log(question_name);
+    //         var innerDiv = document.createElement('div');
+    //         innerDiv.textContent = question_name; 
+    //         innerDiv.id = question_name;
+    //         right_div.appendChild(innerDiv);
+    //     }
+    //     var innerDiv = document.createElement('div');
+    //     innerDiv.className = 'block-2';
+    //     innerDiv.textContent = "New text"; 
+    //     right_div.appendChild(innerDiv);
+    // };
+    // </script>
 
     <!-- Load data -->
     <script>
@@ -1099,8 +1136,10 @@ dragAndDrop.init();
 // https://github.com/moremorefor/flask-fileupload-ajax-example/blob/master/app.py
 $(function() {
     $('#upload-file-btn').click(function() {
-        myApp.showPleaseWait();
         var form_data = new FormData($('#upload-file')[0]);
+        if( document.getElementById('upload-field-2').value.length > 0 ) { // empty field test
+        myApp.showPleaseWait();
+        console.log('form data: ', form_data.files); 
         $.ajax({
             type: 'POST',
             url: '/upload',
@@ -1118,6 +1157,7 @@ $(function() {
                 StartTrackerData ();
             },
         });
+    } else {return}
     });
 });
 </script>
@@ -1350,6 +1390,13 @@ $('#excel-button').on('click', function(){
     console.log('xls_out:', xls_out);
 
 });
+// http://stackoverflow.com/questions/5670769/jquery-detecting-if-a-file-has-been-selected-in-the-file-input
+$('#file-search-2').on('change', function(){
+    var upfile_name = document.getElementById('file-search-2').value.slice(12);
+    var upload_field = document.getElementById('upload-field-2');
+    upload_field.value = upfile_name;
+    console.log(upfile_name, upload_field.value);
+});
 </script>
 <script src="static/js/jquery.js"></script>
 <script src="static/js/jquery-ui.js"></script>
@@ -1371,7 +1418,7 @@ $( "#tabs" ).tabs();
 <!-- add new tabs to run_report -->
 <script>
 //http://stackoverflow.com/questions/14702631/in-jquery-ui-1-9-how-do-you-create-new-tabs-dynamically
-function addNewTab() {
+function addNewTab(tracker_data, h) {
     console.log('in addNewTab function');   
     $("div#tabs").tabs();
     var tab_index = $("div#tabs ul li").length;
@@ -1383,16 +1430,18 @@ function addNewTab() {
     "<div id='tab" + num_tabs + "'></div>"
     );
     $("div#tab" + num_tabs).append(
-    "<div class = 'run-report run-scoreboard' id = 'run-scoreboard-" + num_tabs + "'><table id = 'run-scoreboard-"+ num_tabs + "'><tr><td>Method</td><td>poLCA</td></tr><tr><td>Date:</td><td></td></tr><tr><td># segments:</td><td id = 'run-scoreboard-segments-" + num_tabs + "'></td></tr><tr><td># variables</td><td id='run-scoreboard-variables-" + num_tabs + "'></td></tr><tr><td>Seg Coh:</td><td id='run-scoreboard-cohesiveness-" + num_tabs + "'></td></tr><tr><td>Seg Diff:</td><td id='run-scoreboard-diff-" + num_tabs + "'></td></tr><tr><td>MLE:</td><td id='run-scoreboard-mle-" + num_tabs + "'></td></tr><tr><td>Chi-Sq:</td><td id='run-scoreboard-chisq-" + num_tabs + "'></td></tr><tr><td>BIC:</td><td id='run-scoreboard-bic-" + num_tabs + "'></td></tr><tr><td>Highlight</td><td><input id='spinner-" + num_tabs +"'></td></tr></table></div>"
+    "<div class = 'run-report run-scoreboard' id = 'run-scoreboard-" + num_tabs + "'><table id = 'run-scoreboard-"+ num_tabs + "'><tr><td>Method</td><td>poLCA</td></tr><tr><td>Date:</td><td></td></tr><tr><td># segments:</td><td id = 'run-scoreboard-segments-" + num_tabs + "'></td></tr><tr><td># variables</td><td id='run-scoreboard-variables-" + num_tabs + "'></td></tr><tr><td>Seg Coh:</td><td id='run-scoreboard-cohesiveness-" + num_tabs + "'></td></tr><tr><td>Seg Diff:</td><td id='run-scoreboard-diff-" + num_tabs + "'></td></tr><tr><td>MLE:</td><td id='run-scoreboard-mle-" + num_tabs + "'></td></tr><tr><td>Chi-Sq:</td><td id='run-scoreboard-chisq-" + num_tabs + "'></td></tr><tr><td>BIC:</td><td id='run-scoreboard-bic-" + num_tabs + "'></td></tr><tr><td>Highlight</td><td><input id='spinner-" + num_tabs +"'></td></tr><tr><td>View Segment </td><td><input id='seg-spinner-" + num_tabs +"'></td></tr><tr><td rowspan = '2' id = 'seg-plot-" + num_tabs +"'><img src = 'static/plots/seg_graph_" + tracker_data.run_scorecard[h].a + "_0.png'></td></tr></table></div>"
     );
+    $("div#tab" + num_tabs).append(
+    "<div class = 'hidden'></div>"
+    ); 
     $("div#tab" + num_tabs).append(
     "<div id='run-report-goes-here-" + num_tabs +"' class = 'center run-report'></div>"
     ); 
     $("div#tabs").tabs("refresh");
 };
 
-
-              
+             
 </script>
 <!-- Sortable tabs -->
 <script>

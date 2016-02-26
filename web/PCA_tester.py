@@ -16,13 +16,19 @@ from flask import Flask, request, jsonify, render_template, send_from_directory,
 from werkzeug import secure_filename
 from collections import Counter, OrderedDict
 import pprint
-from numpy import loadtxt
+from numpy import loadtxt, eye, asarray, dot, sum, diag
+from numpy.linalg import svd
 from joblib import Parallel, delayed
 import multiprocessing
 import random
 import xlsxwriter
 import sys, getopt
 import itertools
+from sklearn.cluster import KMeans, SpectralClustering, AgglomerativeClustering, DBSCAN, AffinityPropagation, MeanShift, KMeans, Birch
+import matplotlib.pyplot as plt
+from matplotlib import cm
+from mpl_toolkits.mplot3d import axes3d
+import uuid
 
 #def init():
 # default options
@@ -87,12 +93,12 @@ app.config['ALLOWED_EXTENSIONS'] = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif
 # Step 1: load datasets, namess
 # load datafile
 
-def get_PCA(filename, n_components):
+def get_PCA(filename):
 	'''
 	Uses sclearn.decomposition for principal componets analysis of survey response data
 	'''
-	z = func_name(); print "in function:", z
-	print "-----------in get_PCA function----------------"
+	z = func_name(); print "--------in function: ", z, " -------------"
+	
 	
 	# reboot question and results containers
 	global question_dict
@@ -114,7 +120,12 @@ def get_PCA(filename, n_components):
 
 	X = np.genfromtxt(basedir+filename, delimiter=',', skip_header=1)
 
+	# generate weights_filename from filename - 'test_file.csv --> 'test_file_weights.csv'
+	weights_filename = filename[:len(filename)-4] + '_weights' + filename[len(filename)-4:] 
+	X_weights = np.asmatrix(np.genfromtxt(basedir + weights_filename, delimiter=',', skip_header=1))
+
 	print filename, "loaded"
+	print weights_filename, "loaded"
 	print X.shape
 	print X[0] # print one row
 	#print X.dtype.names
@@ -128,21 +139,121 @@ def get_PCA(filename, n_components):
 
 	# step 2: Principal Components Analysis
 
-	pca = PCA(n_components=n_components)
-	pca.fit(X)
+	#pca = PCA(n_components=n_components)
+	#pca.fit(X)
 
-	print "number of components:" , pca.n_components_
-	print("Runtime: %s seconds ---" % (time.time() - start_time))
+	#print "number of components:" , pca.n_components_
+	#print("Runtime: %s seconds ---" % (time.time() - start_time))
 	#print pca.components_.shape
 
 	# transpose to get compontents on X axis and questions on Y
 	global factor_matrix
-	factor_matrix = pca.components_.T
-	print factor_matrix.shape
+	#factor_matrix = pca.components_.T # <type 'numpy.ndarray'>
+	factor_matrix = homebrew_factor_matrix(X, X_weights) 
+	print "factor matrix d_type:", type(factor_matrix)
+	
+	print "factor_matrix shape:", factor_matrix.shape
 	print "sample row: ", factor_matrix[0]
 	print "max absolute value:", np.absolute(factor_matrix)[0].max()
 
 	return factor_matrix, names, X, question_dict, results_dict
+
+def homebrew_factor_matrix(X_unweighted, X_weights):
+	'''
+	Inputs raw survey data + weights, yields rotated factor matrix using varimax method
+	'''
+	z = func_name(); print "--------in function: ", z, " -------------"
+
+	# input raw data, center, apply weights
+	# (raw_data(i) - raw_data(mean)) * sqrt(weight)
+	# http://stats.stackexchange.com/questions/113485/weighted-principal-components-analysis
+
+	# unweighted_filename = '/Users/pniessen/Rosetta_Desktop/Segmentation_2-point-0/sample_case_work/GoPro/gopro_raw_data_v1.csv'
+	# weights_filename = '/Users/pniessen/Rosetta_Desktop/Segmentation_2-point-0/segmentr/web/gopro_weights.csv'
+
+	#X_names = list(np.genfromtxt(unweighted_filename, delimiter=',', names=True).dtype.names)
+	#X_unweighted = np.asmatrix(np.genfromtxt(unweighted_filename, delimiter=',', skip_header=1))
+	#X_weights = np.asmatrix(np.genfromtxt(weights_filename, delimiter=',', skip_header=1))
+
+	X_unweighted_mean = (np.mean(X_unweighted, axis = 0))
+	X_unweighted_centered = X_unweighted - X_unweighted_mean
+	X_weighted = np.multiply(X_unweighted_centered.T,np.sqrt(X_weights))
+	X = X_weighted.T
+
+	# following http://sebastianraschka.com/Articles/2014_pca_step_by_step.html
+	# correlation matrix
+	X_cor_mat = np.corrcoef(X.T)
+
+	# get eigenvectors and eigenvalues for the from the correlation matrix
+	eig_val_cor, eig_vec_cor = np.linalg.eig(X_cor_mat)
+
+	# initialize empty loading_factor_matrix of (0 x length of eigenvector)
+	eig_vec_cors_length = eig_vec_cor[:,1].shape[0]
+	loading_factors_matrix = np.asmatrix(np.zeros((0,eig_vec_cors_length))) # matrix shape must be tupple
+
+	# filter for eigvec > 1.0, generate loading factor, add to loading_factors_matrix
+	# eigenvec < 1.0 contribute less than original variables
+	for i in range(len(eig_val_cor)):
+	    one_eigenvector = eig_vec_cor[:,i].reshape(1,eig_vec_cors_length).T # unit vector, direction
+	    one_eigenvalue = eig_val_cor[i] # scale
+	    
+	    if one_eigenvalue >=1:
+	        # http://stats.stackexchange.com/questions/143905/loadings-vs-eigenvectors-in-pca-when-to-use-one-or-another
+	        loading_factor = one_eigenvector * np.sqrt(one_eigenvalue)
+	        loading_factors_matrix = np.r_[loading_factors_matrix,loading_factor.T]
+
+	print loading_factors_matrix.shape
+	print loading_factors_matrix.T[:,1].sum()
+	print loading_factors_matrix.T.sum()
+
+	loading_factors_matrix_rotated = varimax(loading_factors_matrix.T) # <class 'numpy.matrixlib.defmatrix.matrix'>
+	loading_factors_matrix_rotated = np.asarray(loading_factors_matrix_rotated) # backwards compatability with pca.components_ output
+	print loading_factors_matrix_rotated.shape
+
+	'''
+	tested vs SPSS output using gopro data:
+	for explanation of SPSS output
+	see http://www.ats.ucla.edu/stat/spss/output/principal_components.htm
+	----------------
+	SPSS loading factor matrix files:
+	spss_unrotated: (148, 32) 468.803663037
+	spss_rotated: (148, 32) sum: 381.386018769
+	----------------
+	Homebrew loading factor matrix files:
+	homebrew_unrotated: (148, 32) sum: 468.845148151
+	homebrew_rotated: (148, 32) sum: 380.83076567
+	-----pairwise comparison-------------
+	unrotated loading_factors_matrix are similar using np.isclose @ atol = 1e-04
+	rotated loading_factors_matrix are similar using np.isclose @ atol = 1e-04
+	'''
+	return loading_factors_matrix_rotated
+	        
+def varimax(Phi, gamma = 1.0, q = 100, tol = 1e-10):
+	'''
+	Orthogonal factor matrix rotation - this helps to filter out 'midrange' factors
+	# http://stackoverflow.com/questions/17628589/perform-varimax-rotation-in-python-using-numpy
+    # gamma = 1.0: varimax
+    # gamma = 0.0: quartimax  (https://github.com/rossfadely/consomme/blob/master/consomme/rotate_factor.py)
+    '''
+	z = func_name(); print "--------in function: ", z, " -------------"
+
+	p,k = Phi.shape
+	R = eye(k) # identity matrix
+	d=0
+
+	for i in xrange(q):
+		d_old = d
+    	Lambda = dot(Phi, R)
+    	u,s,vh = svd(dot(Phi.T,asarray(Lambda)**3 - (gamma/p) * dot(Lambda, diag(diag(dot(Lambda.T,Lambda))))))
+    	R = dot(u,vh)
+    	d = sum(s)
+    	#print i
+    	
+    	if d_old!=0 and d/d_old < 1 + tol:
+    		print "convergence in: ", i, "iterations"
+    		#break
+
+	return dot(Phi, R)
 
 def top_n_factors (factor_matrix, top_n, question_dict, names):
 	'''
@@ -150,13 +261,12 @@ def top_n_factors (factor_matrix, top_n, question_dict, names):
 		(a) rank order questions by largest PCA factor (factor_matrix) 
 		(b) take largest (top_n)
 	'''
-	z = func_name(); print "in function:", z
-	print "-----------in top_n_factors function----------------------"
+	z = func_name(); print "--------in function: ", z, " -------------"
 	
-	print "length of question_dict: ", len(question_dict)
-	print "question_dict keys: ", question_dict.keys()
-	print "length of question names list: ", len(names)
-	print "question names list: ", names
+	#print "length of question_dict: ", len(question_dict)
+	#print "question_dict keys: ", question_dict.keys()
+	#print "length of question names list: ", len(names)
+	#print "question names list: ", names
 	#global question_dict
 	
 	# factor_matrix, n, question_dict = factor_matrix, top_n, question_dict
@@ -167,7 +277,7 @@ def top_n_factors (factor_matrix, top_n, question_dict, names):
 
 	# add extra cols for row (=question) index, #1 factor, #2 factor, best_rh
 	factor_matrix_size = factor_matrix.shape # = C x R
-	print factor_matrix_size
+	#print factor_matrix_size
 	num_rows = factor_matrix_size[0]
 	num_cols = factor_matrix_size[1]
 	print "number of rows: " , num_rows
@@ -188,7 +298,7 @@ def top_n_factors (factor_matrix, top_n, question_dict, names):
 	for row in range(num_rows):
 		#row = 0
 		one_question_vector = np.absolute(factor_matrix[row])
-		#print "before:", one_question_vector
+		#print "one_question_vector:", len(one_question_vector), one_question_vector
 		#print "max_value: ", one_question_vector.max()
 		#print "max value is with component number", one_question_vector.tolist().index(one_question_vector.max())+1
 
@@ -227,11 +337,11 @@ def rebucket(factor_matrix, names, X, rh, question_dict):
 	"Rosetta Heuristic" is (approxminately) a ranking of how far from standard deviation - lower is better
 	Rosetta_heuristic = np.absolute((top_bucket - .26)) + np.absolute((bottom_bucket - .26)) + np.absolute((middle_bucket - .48)) + np.absolute((top_bucket - bottom_bucket)) * 100
 	'''
-	z = func_name(); print "in function:", z
-	print "-----------in rebucket function------------------"
+	z = func_name(); print "--------in function: ", z, " -------------"
 	
 	print "length of question_dict: ", len(question_dict)
-	print "question_dict keys: ", question_dict.keys()
+	#print "question_dict keys: ", question_dict.keys()
+	#print "names: ", names
 	#global question_dict
 
 	# factor_matrix, names, X, rh, question_dict = factor_matrix, names, X, rh, question_dict
@@ -282,7 +392,7 @@ def rebucket(factor_matrix, names, X, rh, question_dict):
 		factor_matrix[column][rh] = best_rh
 		#print "after after: ", factor_matrix[column]
 		#print column, " :", bucket_schemes[best_scheme], "Best RH:", min(rosetta_heuristics)
-	print best_schemes[:10]
+	#print best_schemes[:10]
 
 	# now rebucket response matrix
 	# could this all be redone using map()?
@@ -300,6 +410,7 @@ def rebucket(factor_matrix, names, X, rh, question_dict):
 		question_dict[names[col]]['rebucket_shares_1'], question_dict[names[col]]['rebucket_shares_2'], question_dict[names[col]]['rebucket_shares_3'] = [float(value) / sum(rebucket_counts) for value in rebucket_counts]
 
 	X_rebucketed_df = pd.DataFrame(X_rebucketed, columns=names)
+	#print "X_rebucketed_df.columns:", X_rebucketed_df.columns.tolist()
 
 	# rebucketed_filename = 'X_rebucketed.csv'
 	# np.savetxt(basedir + rebucketed_filename, X_rebucketed, fmt='%.2f', delimiter=",")
@@ -326,15 +437,14 @@ def rebucket(factor_matrix, names, X, rh, question_dict):
 
 	# print question_dict
 
-	return rebucketed_filename, X_rebucketed, question_dict
+	return rebucketed_filename, X_rebucketed, question_dict, X_rebucketed_df
 
 def make_cluster_seed(factor_matrix, best_factor, question_number, num_cols, num_rows):
 	'''
 	Builds cluster_seed (size n_factors), grouping questions by highest PCA value then choosing lowest RH as cluster_seed
 
 	'''
-	z = func_name(); print "in function:", z
-	print "----------in cluster_seed function-------------------"
+	z = func_name(); print "--------in function: ", z, " -------------"
 	
 	global cluster_seed
 	cluster_seed=[]
@@ -382,9 +492,8 @@ def poLCA(i, cluster_seed, num_seg, num_rep, rebucketed_filename):
 	'''
 	Runs poLCA script in R - see http://dlinzer.github.io/poLCA/
 	'''
-	z = func_name(); print "in function:", z
+	z = func_name(); print "--------in function: ", z, " -------------"
 
-	print "------------in poLCA function---------------"
 	import subprocess
 	import base64
 	import uuid
@@ -450,7 +559,8 @@ def hello():
 @app.route("/data", methods=["GET"])
 def scorecard_2():
 
-	print "in scorecard_2 function"
+	z = func_name(); print "--------in function: ", z, " -------------"
+
 	training_list = []
 
 	print "results_dict size: ", len(results_dict.keys())
@@ -479,7 +589,8 @@ def scorecard_2():
 
 def scorecard_3(keys_to_upload):
 
-	print "in scorecard_3 function"
+	z = func_name(); print "--------in function: ", z, " -------------"
+
 	run_scorecards = []
 
 	print "keys_to_upload size: ", len(keys_to_upload)
@@ -487,7 +598,7 @@ def scorecard_3(keys_to_upload):
 
 	for key in keys_to_upload:
 		#train_dict = {'a':key,'b':results_dict[key]['cluster_number'],'c':results_dict[key]['num_vars'],'d':esults_dict[key]['model_stats'],'e':16,'f':17}
-		run_scorecard = {'a':key[:10],'b':results_dict[key]['cluster_number'],'c':results_dict[key]['num_vars'],'d':round(results_dict[key]['model_stats'][0]),'e':round(results_dict[key]['model_stats'][1]),'f':round(results_dict[key]['model_stats'][2]), 'g':round(results_dict[key]['weighted_average_cluster_polarity'],4) ,'h':round(results_dict[key]['average_cross_question_polarity'],4)}
+		run_scorecard = {'a':key,'b':results_dict[key]['cluster_number'],'c':results_dict[key]['num_vars'],'d':round(results_dict[key]['model_stats'][0]),'e':round(results_dict[key]['model_stats'][1]),'f':round(results_dict[key]['model_stats'][2]), 'g':round(results_dict[key]['weighted_average_cluster_polarity'],4) ,'h':round(results_dict[key]['average_cross_question_polarity'],4)}
 		
 		#print "one train dict entry:", train_dict
 		#sorted(d, key=d.get)
@@ -508,14 +619,14 @@ def scorecard_3(keys_to_upload):
 def create_tracker():
 
 	tracker_list = []
-	print "in create_tracker function"
+	z = func_name(); print "--------in function: ", z, " -------------"
 	print question_dict.keys()
 	print question_dict[question_dict.keys()[0]]
 	print question_dict[question_dict.keys()[0]].keys()
 
 	# if len(results_dict) == 0 and 'run_tracker' not in question_dict[question_dict.keys()[0]].keys():
 	for key in question_dict:
-		tracker_dict = OrderedDict([('001_Q#',key),('002_Q_name','n/a'),('003_Dim','n/a'), ('004_PCA', round(question_dict[key]['first_factor_value'],3)),('005_#1 Factor', question_dict[key]['first_factor']),('006_#2 Factor', question_dict[key]['second_factor']),('007_Bucket', question_dict[key]['bucket_scheme']),('008_%T(=1)', round(question_dict[key]['rebucket_shares_1']*100)),('009_%M(=2)', round(question_dict[key]['rebucket_shares_2']*100)),('010_%L(=3)', round(question_dict[key]['rebucket_shares_3']*100)), ('011_RH',round(question_dict[key]['best_rh'],2))])
+		tracker_dict = OrderedDict([('001_Q#',key),('002_Q_name','n/a'),('003_Dim','n/a'), ('004_LF', round(question_dict[key]['first_factor_value'],3)),('005_#1 Factor', question_dict[key]['first_factor']),('006_#2 Factor', question_dict[key]['second_factor']),('007_Bucket', question_dict[key]['bucket_scheme']),('008_%T(=1)', round(question_dict[key]['rebucket_shares_1']*100)),('009_%M(=2)', round(question_dict[key]['rebucket_shares_2']*100)),('010_%L(=3)', round(question_dict[key]['rebucket_shares_3']*100)), ('011_RH',round(question_dict[key]['best_rh'],2))])
 		tracker_list.append(tracker_dict)
 	
 	tracker = {'tracker': tracker_list}
@@ -528,6 +639,7 @@ def create_tracker():
 	
 @app.route("/tracker", methods=["GET"])
 def update_run_tracker():
+	z = func_name(); print "--------in function: ", z, " -------------"
 # could we use intersection of two dictionaries (resuts_dict_old, resuts_dict_current) and update difference?
 # http://code.activestate.com/recipes/576644-diff-two-dictionaries/
 # or dict.viewitems() - see http://zetcode.com/lang/python/dictionaries/
@@ -536,10 +648,10 @@ def update_run_tracker():
 
 	tracker_list = []
 	r_and_q_list = []
-	print "in update_run_tracker function"
-	print question_dict.keys()
-	print question_dict[question_dict.keys()[0]]
-	print question_dict[question_dict.keys()[0]].keys()
+	#print "in update_run_tracker function"
+	#print question_dict.keys()
+	#print question_dict[question_dict.keys()[0]]
+	#print question_dict[question_dict.keys()[0]].keys()
 
 	keys_to_upload = [key for key in results_dict if results_dict[key]['upload_state'] == False]
 	starting_run = len(results_dict.keys()) - len(keys_to_upload)
@@ -580,7 +692,7 @@ def update_run_tracker():
 		
 		#tracker = {'tracker': tracker_list}
 		#print tracker
-		print r_and_q_list
+		#print r_and_q_list
 
 		run_reports_list = run_report(keys_to_upload)
 		run_scorecards_list = scorecard_3(keys_to_upload)
@@ -590,6 +702,7 @@ def update_run_tracker():
 
 @app.route("/submit_data", methods=["POST"])
 def submit_data():
+	z = func_name(); print "--------in function: ", z, " -------------"
 
     # read the data that came with the POST request as a dict
     # inbound request example: http://127.0.0.1:5000/predict -X POST -H 'Content-Type: application/json' -d '{"example": [154]}'
@@ -600,6 +713,7 @@ def submit_data():
 	# 	
 	global cluster_seed
 	global names
+	global X_rebucketed_df
 
 	counter = 0
 	inbound_data = flask.request.json
@@ -674,6 +788,7 @@ def submit_data():
 	
 	update_question_dict(timestamps)
 	run_report(timestamps)
+	make_visual(X_rebucketed_df, timestamps)
 	clean_up(timestamps)
 
 	if xls:
@@ -691,10 +806,14 @@ def submit_data():
 # Route that will process the file upload
 @app.route('/upload', methods=['POST'])
 def upldfile():
-    if request.method == 'POST':
-        files = request.files['file']
+	z = func_name(); print "--------in function: ", z, " -------------"
+
+	if request.method == 'POST':
+		files = request.files['file']
+        print files
         if files and allowed_file(files.filename):
             filename = secure_filename(files.filename)
+            print filename
             app.logger.info('FileName: ' + filename)
             updir = os.path.join(basedir_for_upload, 'uploads/')
             files.save(os.path.join(updir, filename))
@@ -704,10 +823,11 @@ def upldfile():
             global cluster_seed
             global question_dict
             global names
+            global X_rebucketed_df
 
-            factor_matrix, names, X, question_dict, results_dict = get_PCA(filename, n_components)
+            factor_matrix, names, X, question_dict, results_dict = get_PCA(filename)
             factor_matrix, num_rows, num_cols, question_number, rh, best_factor, second_best_factor, question_dict = top_n_factors(factor_matrix, top_n, question_dict, names)
-            rebucketed_filename, X_rebucketed, question_dict = rebucket(factor_matrix, names, X, rh, question_dict)
+            rebucketed_filename, X_rebucketed, question_dict, X_rebucketed_df = rebucket(factor_matrix, names, X, rh, question_dict)
             cluster_seed = make_cluster_seed(factor_matrix, best_factor, question_number, num_cols, num_rows)
             
             return jsonify(name=filename, size=file_size)#, question_dict
@@ -726,8 +846,8 @@ def scorecard(timestamp, cluster_seeds, cluster_seed_names, num_seg):
 	'''
 	Yields scorecard for single segmentation run - legacy module, does not run off results_dict
 	'''
-	z = func_name(); print "in function:", z
-	print "------------in scorecard function---------------------"
+	z = func_name(); print "--------in function: ", z, " -------------"
+
 	# step 7: load predicted clusters from file, add back to original data matrix (X)	
 	# also calculate cluster scorecard metrics
 	#timestamp, cluster_seeds, cluster_seed_names, num_seg = results
@@ -772,8 +892,8 @@ def update_results_dict(results, X_rebucketed, names):
 	''''
 	Updates results_dict after poLCA run
 	'''
-	z = func_name(); print "in function:", z
-	print "----------in make_results_dict function-------------"
+	z = func_name(); print "--------in function: ", z, " -------------"
+
 	global results_dict
 	global question_dict
 
@@ -844,8 +964,8 @@ def make_one_results_dict_entry_mp(i, key, results_dict_entry, X_rebucketed, nam
 	'''
 	Breaks apart results_dict update into threads if multiprocessing possible
 	'''
-	z = func_name(); print "in function:", z
-	print "---------in make_one_results_dict_entry_mp function-----------------"
+	z = func_name(); print "--------in function: ", z, " -------------"
+	
 	results_dict = dict(results_dict_entry) #not same as global var; should change name!
 	
 	pred_clusters = np.array(results_dict['predicted_clusters'])
@@ -893,12 +1013,12 @@ def update_question_dict(timestamps):#question_dict, results_dict):
 	'''
 	Updates question_dict after poLCA run, adding back a boolean run inclusion tracker for each question 
 	'''
-	z = func_name(); print "in function:", z
+	z = func_name(); print "--------in function: ", z, " -------------"
 
 	global results_dict
 	global question_dict
 
-	print "--------in update_question_dict function--------------"
+	z = func_name(); print "--------in function: ", z, " -------------"
 	print "number of keys in question_dict:", len(question_dict.keys())
 	
 	# # initialize question_dict['run_tracker'] with null for all vars, since not all are used
@@ -940,7 +1060,7 @@ def make_xls():#results_dict):
 	'''
 	Excel export - currently only detailed run results
 	'''
-	z = func_name(); print "in function:", z
+	z = func_name(); print "--------in function:", z, "-------------"
 
 	global results_dict
 
@@ -994,8 +1114,8 @@ def clean_up (timestamps):
 	'''
 	Deletes working files from poLCA run (easiest way R>Python)
 	'''
-	z = func_name(); print "in function:", z
-	print "----in clean_up function----"
+	z = func_name(); print "--------in function: ", z, " -------------"
+	
 	# now clean up!
 	for timestamp in timestamps:
 		os.remove(basedir+"/static/model/model_stats_"+timestamp+".txt")
@@ -1056,7 +1176,7 @@ def run_poLCA (grid_search,cluster_seed,num_seg,num_rep,rebucketed_filename):
 	'''
 	Runs single or gridsearch, also uses multiprocessing for gridsearch (if possible)
 	'''
-	z = func_name(); print "in function:", z
+	z = func_name(); print "--------in function: ", z, " -------------"
 
 	if grid_search == False:
 		print '--------in grid_search == False function--------------'
@@ -1134,6 +1254,30 @@ def run_report(timestamps):
 		# data: segment response shares			
 		for survey_question in results_dict[run]['response_shares'].keys():
 			
+			'''
+			number_of_buckets = len([results_dict[run]['response_shares'][survey_question][cluster])
+
+			for bucket in range(number_of_buckets):
+				bucket_data = [results_dict[run]['response_shares'][survey_question][cluster][bucket] for cluster in range(number_of_clusters)]
+				bucket_shares = ['{0:.1%}'.format(item) for item in bucket_data]
+				bucket_average = sum([float(x)*float(y) for x,y in zip(bucket_data,results_dict[run]['cluster_shares'])])
+				bucket_avg = ['{0:.1%}'.format(bucket_average)]
+				bucket_index_scores = [int((float(share) / bucket_average) * 100) for share in bucket_data]
+
+				if bucket = 0:
+					row =    [survey_question, bucket] + bucket_shares + bucket_avg + [''] + bucket_index_scores
+
+				else:
+					row = 	  ['',             bucket] + bucket_shares + bucket_avg + [''] + bucket_index_scores
+
+				run_report.append(row)
+
+				if bucket = number_of_buckets: # last bucket
+					row_spacer = [''] * (len(bottom_row))
+					run_report.append(row_spacer)
+
+			'''
+
 			#print "result_dict entry: ", survey_question, len(results_dict[run]['response_shares'][survey_question]), results_dict[run]['response_shares'][survey_question]
 			top_bucket_data = [results_dict[run]['response_shares'][survey_question][cluster][0] for cluster in range(number_of_clusters)]
 			top_bucket = ['{0:.1%}'.format(item) for item in top_bucket_data]
@@ -1157,7 +1301,7 @@ def run_report(timestamps):
 			bottom_bucket_index_scores = [int((float(share) / bottom_bucket_average) * 100) for share in bottom_bucket_data]
 			
 			#top_bucket_average = sum([float(x)*float(y) for x,y in zip(results_dict[run]['cluster_shares']])
-			print 'top bucket weighted average:', top_bucket_average
+			#print 'top bucket weighted average:', top_bucket_average
 
 			# now format responses ('x' to be replaced by space)
 			top_row =    [survey_question,'T=1'] + top_bucket   + top_bucket_avg    + [''] + top_bucket_index_scores
@@ -1185,19 +1329,111 @@ def run_report(timestamps):
 	print 'sample entry for one question in one run_report:', run_reports[0][1]
  				
 	return run_reports
+
+def get_segments(X_rebucketed_df, names, cluster_seed, method):
+	'''
+	Performs range of clustering methods 
+	'''
+	z = func_name(); print "------in function:", z, "---------------"
+
+	number_clusters = 10
+
+	print "X_rebucketed_df_columns(): ", list(X_rebucketed_df)
+ 	# http://stackoverflow.com/questions/19482970/get-list-from-pandas-dataframe-column-headers
+	question_names = X_rebucketed_df.columns.values.tolist()
+	cluster_seed_names = [names[int(seed)] for seed in cluster_seed]
+	# print "cluster_seed_names: ", cluster_seed_names
+
+	methods = [AgglomerativeClustering(linkage='ward'), MeanShift(), DBSCAN(eps = 0.5, min_samples = 2, metric ='euclidean'), KMeans(n_clusters=number_clusters, init='random'), AffinityPropagation(), Birch(n_clusters=number_clusters), SpectralClustering(n_clusters=number_clusters, n_init=10)]
+	keys = ['agclust', 'meanshift', 'dbscan', 'kmeans', 'affinityprop', 'birch', 'spectral']
+	methods_dict = dict(zip(keys,methods))
+
+	clusters = []
+	m = methods_dict[method]
+
+	m.fit(X_rebucketed_df[cluster_seed_names])
 	
+	clusters = m.labels_.tolist()
+
+	return clusters 
+
+def make_visual(X_rebucketed_df, timestamps):
+	'''
+	makes 3-d visual using PCA 
+	'''
+	z = func_name(); print "------in function:", z, "---------------"
+
+	# visualize in 3D
+	# 	https://zulko.wordpress.com/2012/09/29/animate-your-3d-plots-with-pythons-matplotlib/
+	from matplotlib import pyplot as plt
+	from mpl_toolkits.mplot3d import Axes3D
+	
+	question_names = X_rebucketed_df.columns.values.tolist()
+	# print "X_rebucketed_df.columns.values:", question_names
+
+	for timestamp in timestamps:	
+
+		cluster_seed_names = results_dict[timestamp]['quest_list']
+		print "cluster_seed_names: ", cluster_seed_names
+
+		number_clusters = results_dict[timestamp]['cluster_number']
+		print "number of clusters: ", number_clusters
+		
+		number_components = 3
+		pca = PCA(n_components=number_components)
+		c = pca.fit(X_rebucketed_df[cluster_seed_names].T).components_
+
+		clusters = results_dict[timestamp]['predicted_clusters']
+		print "clusters:", len(clusters)
+
+		clusters_array = np.array(clusters)
+		clusters_array_2 = clusters_array.reshape(len(clusters),1)
+		print c.shape
+		print clusters_array_2.shape
+		d = np.concatenate((c.T, clusters_array_2), axis=1)
+		print d.shape
+		
+		# generate list of random colors for graph		
+		# color_dict = {0:'red',1:'blue',2:'green',3:'black',4:'yellow', 5:'pink', 6:'orange',7:'grey', 8:'brown', 9:'purple', 10:'indigo', 11:'light blue', 12:'light green'}
+		colors = [np.random.rand(3,) for x in range(number_clusters + 1)]
+
+		#3D plot
+		for num in range(number_clusters + 1):
+			fig = plt.figure(figsize=(3.5,3.5), tight_layout=True)
+			ax = fig.add_subplot(111, projection='3d') # row-col-num
+			plt.plot(d[:,0],d[:,1],d[:,2],'o', markersize=7, color='grey', alpha=0.05)
+			plt.plot(d[d[:,3]==num][:,0],d[d[:,3]==num][:,1],d[d[:,3]==num][:,2],'o', markersize=7, color=colors[num], alpha=0.3)
+			ax.xaxis.set_ticklabels([])
+			ax.yaxis.set_ticklabels([])
+			ax.set_zticks([])
+			filename = 'static/plots/seg_graph_' + str(timestamp) + '_' + str(num) + '.png'
+			fig.savefig(filename)
+			print 'file saved: ', filename
+			plt.close(fig)
+			# plt.show()
+
+		#2D plot
+		#for num in range(cluster):
+	    #    plt.plot(d[d[:,3]==num][:,0],d[d[:,3]==num][:,1],'o', markersize=7, color=colors[num], alpha=0.5)#, label = labels)
+
+		 #print len(clusters), clusters
+
+	return
+
+
 
 if __name__ == "__main__":
 
 	#app = Flask(__name__)
 	num_seg = 5
 	num_rep = 1
-	n_components = 30
+	#n_components = 30
 	top_n = 2
 	num_cores = multiprocessing.cpu_count()
 	results_dict = {}
 	question_dict = {}
 	cluster_seed = []
+	method = 'kmeans'
 
 	#basedir = '/Users/pniessen/Rosetta_Desktop/Segmentation_2-point-0/sample_case_work/GoPro/'
 	# filename = 'test_raw_data_v1.csv' 
@@ -1219,10 +1455,12 @@ if __name__ == "__main__":
 	# weighting (module TBA)
 
 	# pre-processing pipeline:
-	factor_matrix, names, X, question_dict, results_dict = get_PCA(filename, n_components)
+	factor_matrix, names, X, question_dict, results_dict = get_PCA(filename)
 	factor_matrix, num_rows, num_cols, question_number, rh, best_factor, second_best_factor, question_dict = top_n_factors(factor_matrix, top_n, question_dict, names)
-	rebucketed_filename, X_rebucketed, question_dict = rebucket(factor_matrix, names, X, rh, question_dict)
+	rebucketed_filename, X_rebucketed, question_dict, X_rebucketed_df = rebucket(factor_matrix, names, X, rh, question_dict)
 	cluster_seed = make_cluster_seed(factor_matrix, best_factor, question_number, num_cols, num_rows)
+	# get_segments(X_rebucketed_df, names, cluster_seed, method)
+	# make_visual(X_rebucketed_df, cluster_seed_inbound, timestamps, names)
 	# app.run()
 
 	print "cluster_seed: ", cluster_seed
@@ -1276,9 +1514,21 @@ if __name__ == "__main__":
 	# (x) progress bar for data loading
 	# (x) update run_tracker by column baed on results_dict state change (how to handle batch mode?)
 	# (x) other param connectivity (num_clusers, grid_search, xls)
-	# conditional formatting for run_report
+	# (x) conditional formatting for run_report
+	# (x) upload = empty file blocker
+	# (x) 3-d visualization: 3D (users, PCA(questions)(:3), clusters)
+	# (x) loading factor matrix - audit vs SPSS
+	# (x) varimax rotation 
+	# clean up /plots subdirectory on lauch?
+	# close matplotlib.plt files (memory issues - RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).)
+	# validation traps - # of variables > num_seg, etc
+	# % of variance 3D PCA explains
+	# audit how weights are used in rebucketing - X passed in, currently unweighted (2/25/2016)
+	# draggable / tiled run_report?
+	# reorder run_report with segmenting variables at top
+	# refactor run_report boolean - add to end, not compeltely regenerate each run
 	# grid search = largest
-	# mongo db for grid search = largge
+	# mongo db for grid search = large
 	# other data types (continuous, dichotomous)
 	# coloring of questions by factor relationships?
 	# on mouseover support for run_tracker KPI?
@@ -1289,7 +1539,6 @@ if __name__ == "__main__":
 	# control panel: small vs large gridsearch
 	# 2-d plot of runs - cohesive (X) vs differentiation (Y)?
 	# timestamp resuls_dict and question_dict for web service to multiple cases?
-	# visualization - 3D (users, PCA(questions)(:3), clusters)
 	# Cython for frequently used modules?
 	# data cleanup
 	#	- time: (hcapturetotaltime	hedittotaltime	hmanagetotaltime	hsharetotaltime	henjoytotaltime	hpersonaltotaltime	hadditionaltotaltime	htotaltimeinminutes)
