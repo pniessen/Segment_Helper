@@ -197,14 +197,14 @@
                     <li>
                         <a class="page-scroll" href="#about">About</a>
                     </li>
-<!--                     <li>
-                        <a class="page-scroll" href="#settings">Control Panel</a>
-                    </li>
                     <li>
+                        <a class="page-scroll" href="#objective-function">Objective Function</a>
+                    </li>
+<!--                     <li>
                         <a class="page-scroll" href="#explorer">Explorer</a>
                     </li> -->
                     <li>
-                        <a class="page-scroll" href="#tabz">Run Tracker</a>
+                        <a class="page-scroll" href="#tabz">Run Manager</a>
                     </li>
 <!--                     <li>
                         <a class="page-scroll" href="#scorecard">Scorecard</a>
@@ -307,7 +307,7 @@
    <!-- Explorer Section -->
    <!-- see http://jsfiddle.net/TylerODonnell/h42w6t8j/ -->
   <!--  also see http://v4-alpha.getbootstrap.com/components/buttons/ -->
-<!--         <section id="explorer" class="container content-section text-center"> -->
+        <section id="objective-function" class="container content-section text-center">
 
 <!--             Cats:  <input name="animal" type="checkbox" value="Cats" id = "box1">
             Dogs:  <input name="animal" type="checkbox" value="Dogs" id = "box2"> -->
@@ -361,23 +361,40 @@
             </div>
         </div> -->
 
-<!--         <div class="row">
-            <div class="col-lg-12 col-lg-offset-1">
-                    <div class="container2" id = 'explorer-left'> 
-                        <h5>Potential Variables</h5>
-                            <div id='ex-a'>q_01: I like cheese</div>
-                        </div>
-                    </div>
-                    <div class="container2" id="explorer-right"><h5>Variables to use in this run</h5></div>
-                    <div class="container2 text-left" id="right2"><h5>Results</h5><class="text-left"><p>
-                        <h6>Metric 1:</h6>
-                        <h6>Metric 2:</h6>
-                        <h6>Metric 3:</h6>
-                        <h6>Metric 4:</h6>
-                    </div>
-                </div>     
+        <div class="row">
+            <!-- <div class="col-lg-12 col-lg-offset-1"> -->
+                    <div class="container2" id = 'explorer-left'> <h5>Potential Variables</h5></div>
+                    <div class="container2" id="explorer-right"><h5>Objective Function</h5><input id='objective-function-field' style="color:black" type = text></div>
+                <button type="button" id = 'objective-function-button' onclick=getExplorerIds() class="btn btn-primary ">Create</button>
+             <div class="col-lg-10">
+                <div class="dropdown">
+                  <button id = 'objective-function-chooser' class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Objective Functions
+                  <span class="caret"></span></button>
+                      <ul id = 'objective-function-dropdown' class="dropdown-menu dropdown-menu-right">
+                        <li class="dropdown-item"><a href="#">HTML</a></li>
+                        <li><a href="#">CSS</a></li>
+                        <li><a href="#">JavaScript</a></li>
+                      </ul>
+                </div>
             </div>
-       </section> -->
+        </div>  
+            <div class="dropdown">
+              <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                Dropdown
+                <span class="caret"></span>
+              </button>
+              <ul id = 'dropdown-test' class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenu1">
+                <li>Action</li>
+                <li><a href="#!">Another action</a></li>
+                <li><a href="#!">Something else here</a></li>
+              </ul>
+            </div>
+            <select id="ddlViewBy">
+              <option value="1">test1</option>
+              <option value="2" selected="selected">test2</option>
+              <option value="3">test3</option>
+            </select>   
+       </section>
 
     <!-- Run Tracker Section -->
 <!--         <section id="run-tracker" class="container content-section text-center">
@@ -646,6 +663,28 @@
     };      
     </script>
 <script>
+function SubmitObjectiveFunction (objective_functions) {
+    console.log('in SubmitObjectiveFunction function');  
+    console.log(objective_functions);
+    var data_to_send = JSON.stringify(objective_functions);
+    console.log(data_to_send);      
+    $.ajax({
+         type: "POST",
+         contentType: "application/json; charset=utf-8",
+         url: "/submit_objective_function",
+         dataType: "json",
+         async: true,
+         // data: "{\"keywords\": \"romantic,beer,family\", \"neighborhoods\":\"\", \"cuisines\":\"Sushi\"}",
+         data: data_to_send,
+         success: function (data_to_send) {console.log('success', data_to_send);
+
+         },
+         error: function (results3) {console.log('error', results);
+        }
+       });
+    };
+</script>
+<script>
 function SubmitData () {
     console.log('in SubmitData function');  
     // var explorer_ids = getExplorerIds();
@@ -655,16 +694,14 @@ function SubmitData () {
     if (grid_search == 'off') {grid_search_flag = false} else {grid_search_flag = true};
     if (xls_out == 'off') {xls_out_flag = false} else {xls_out_flag = true};
     if (num_segments <= 0){num_segments = 5};   
-    // var num_segments = 6;
-    // var data_to_send = checkbox_ids;
-    //var data_to_send = '{"example": [154]}'
-    // var checkbox_id = [1,2,3,4];
-    // var checkbox_ids = checkbox_id.toString();
-    // var explorer_ids = explorer_id.toString();
-    // var data_to_send = "{\"questions\":\"[" + checkbox_ids + "]\", \"segments\":[" + num_segments + "]}";
-    var data_to_send = "{\"questions\":\"[" + checkbox_ids + "]\", \"segments\":[" + num_segments + "], \"xls\":\"[" + xls_out_flag + "]\", \"grid_search\":\"[" + grid_search_flag + "]\"}";
-    // var data_to_send = "{\"questions\":\"[" + checkbox_ids + "]\", \"segments\":[6]}";
-    // var data_to_send = "{\"questions\":" + checkbox_ids + ", \"segments\":" + num_segments + "}";
+
+    var data_to_send = {};
+    data_to_send['questions'] = checkbox_ids;
+    data_to_send['segments'] = num_segments;
+    data_to_send['xls'] = xls_out_flag;
+    data_to_send['grid_search'] = grid_search_flag;
+    var data_to_send = JSON.stringify(data_to_send);
+   
     console.log(data_to_send, checkbox_ids);      
     //$('#pleaseWaitDialog').show(); // show loading message
     myApp.showPleaseWait();
@@ -680,22 +717,9 @@ function SubmitData () {
                                 myApp.hidePleaseWait();
                                 // GetTrainingData();
                                 UpdateTrackerData ();
-                                GetTrainingData (); 
-
-                                // myApp.hidePleaseWait();
-                                // $('#pleaseWaitDialog').hide(); //hide loading message
-                                    // MakeATable(data);
-                                    // console.log('table made');
-                                    // loadImage(data);
-                                    // console.log('images loaded');
-                                    // mapRecommendations(data);
-                                    // console.log('locations plotted');
-                                    // MakeHeatChart(data);
-                                    // MakeAWildCardTable(data);
-                                    // loadWildCardImage(data);
-                                    // mapWildCardRecommendations(data); 
+                                GetTrainingData ();  
          },
-         error: function (result) {console.log(data);
+         error: function (result) {console.log(result);
         }
        });
     };
@@ -796,7 +820,7 @@ function SubmitData () {
                                 console.log('in StartTrackerData function');
                                         //MakeTable(training_data);
                                         startTracker(first_tracker_data);
-                                        // fillExplorer(first_tracker_data);
+                                        fillExplorer(first_tracker_data);
                                         //loadTrainingImage(training_data);
              },
              error: function (first_tracker_data) {console.log(first_tracker_data);
@@ -920,14 +944,7 @@ function SubmitData () {
       //   });
     }
     </script>
-            // header_row.append("<th>Run ID</th>");
-        // header_row.append("<th>Clusters</th>");
-        // header_row.append("<th>Variables</th>");
-        // header_row.append("<th>MLE</th>");
-        // header_row.append("<th>Chi-Sq</th>");
-        // header_row.append("<th>BIC</th>");
-        // header_row.append("<th>Cohesiveness</th>");
-        // header_row.append("<th>Differentiation</th>");
+
     <script>
     window.images = [];
     console.log('images', images) //Array()
@@ -1052,25 +1069,25 @@ function SubmitData () {
     </script>
     <!-- append explorer data to div = "explorer-left" -->
     // <script>
-    // // http://stackoverflow.com/questions/14004117/create-div-and-append-div-dynamically
-    // function fillExplorer(first_tracker_data){
-    //     // var num_questions = first_tracker_data.tracker.length;
-    //     var num_questions = 10;
-    //     var right_div = document.getElementById('explorer-left');
-    //     for (i = 0; i < num_questions; i++) {
-    //         var cols_names = Object.keys(first_tracker_data.tracker[i]);
-    //         var question_name = first_tracker_data.tracker[i][cols_names[0]];
-    //         console.log(question_name);
-    //         var innerDiv = document.createElement('div');
-    //         innerDiv.textContent = question_name; 
-    //         innerDiv.id = question_name;
-    //         right_div.appendChild(innerDiv);
-    //     }
-    //     var innerDiv = document.createElement('div');
-    //     innerDiv.className = 'block-2';
-    //     innerDiv.textContent = "New text"; 
-    //     right_div.appendChild(innerDiv);
-    // };
+    // http://stackoverflow.com/questions/14004117/create-div-and-append-div-dynamically
+    function fillExplorer(first_tracker_data){
+        // var num_questions = first_tracker_data.tracker.length;
+        var num_questions = 10;
+        var right_div = document.getElementById('explorer-left');
+        for (i = 0; i < num_questions; i++) {
+            var cols_names = Object.keys(first_tracker_data.tracker[i]);
+            var question_name = first_tracker_data.tracker[i][cols_names[0]];
+            console.log(question_name);
+            var innerDiv = document.createElement('div');
+            innerDiv.textContent = question_name; 
+            innerDiv.id = question_name;
+            right_div.appendChild(innerDiv);
+        }
+        var innerDiv = document.createElement('div');
+        innerDiv.className = 'block-2';
+        innerDiv.textContent = "New text"; 
+        right_div.appendChild(innerDiv);
+    };
     // </script>
 
     <!-- Load data -->
@@ -1336,21 +1353,68 @@ function appendColumn(tracker_data) {
 </script>
 <script>
 // http://stackoverflow.com/questions/27629122/how-to-get-all-ids-inside-of-a-div-using-pure-javascript
+var objective_functions = {};
 function getExplorerIds () {
     console.log('in getExplorerIds function')
     var explorer_left_ids = [];
     var explorer_right_ids = [];
     var explorer_left_children = document.getElementById("explorer-left").children;
     var explorer_right_children = document.getElementById("explorer-right").children;
+    var objective_function_name = document.getElementById("objective-function-field").value;
+
+    // test for null values
+    if (explorer_right_children.length < 3) {console.log('no vars selected'); return};
+    if (objective_function_name == '') {objective_function_name = 'objective_function_' + Object.keys(objective_functions).length};
+    console.log(objective_function_name);
     for (var i = 0, len = explorer_left_children.length ; i < len; i++) {
         explorer_left_ids.push(explorer_left_children[i].id);
     }
     for (var i = 0, len = explorer_right_children.length ; i < len; i++) {
         explorer_right_ids.push(explorer_right_children[i].id);
     }
-    console.log(explorer_left_ids, explorer_right_ids);
-    return explorer_right_ids.slice(1)
+    //console.log(explorer_left_ids, explorer_right_ids);
+    console.log(objective_function_name);
+    objective_functions[objective_function_name] = explorer_right_ids.slice(2);
+    console.log(Object.keys(objective_functions));
+    //return objective_function_name + explorer_right_ids.slice(1)
+    // return objective_functions[objective_function_name];
+
+    var select = document.getElementById("objective-function-dropdown"); 
+    var options = Object.keys(objective_functions); // ["1", "2", "3", "4", "5"]; 
+    console.log(options);
+    while (select.firstChild) { select.removeChild(select.firstChild);} // clear menu
+    //select.parentNode.removeChild(select); // clear menu
+
+    // http://stackoverflow.com/questions/4772774/how-do-i-create-a-link-using-javascript
+    for(var i = 0; i < options.length; i++) {
+        var opt = options[i];
+        var el = document.createElement("li");
+        var link = document.createElement("a");
+        link.innerHTML = opt;
+        link.href ='#!'
+        //el.style.color = 'black';
+        //el.id = 'test-123'
+        el.appendChild(link)
+        select.appendChild(el);
+    };
+    // clear input box
+    var objective_function_field = document.getElementById("objective-function-field");
+    objective_function_field.value = "";
+
+    // clear right box
+    var right_box = document.getElementById('explorer-right');
+    while (right_box.childElementCount > 2) { right_box.removeChild(right_box.lastChild);}
+
+    SubmitObjectiveFunction (objective_functions);
 };
+
+// var a = document.createElement('a');
+// var linkText = document.createTextNode("my title text");
+// a.appendChild(linkText);
+// a.title = "my title text";
+// a.href = "http://example.com";
+// document.body.appendChild(a);
+
 </script>
 <script>
 var num_segments = [],
@@ -1372,6 +1436,34 @@ $('#dropdown-menu-2 button').on('click', function(){
     console.log(rewind);
 
 });
+// Dropdown: objective function chooser  
+// http://codepedia.info/2015/02/click-event-for-dynamic-button-jquery/  
+$('#objective-function-dropdown').on('click', 'li a', function(){
+    var chosen_objective_function = $(this).text();
+    console.log('click!', chosen_objective_function);
+    console.log(objective_functions[chosen_objective_function].length);    
+    // now use chosen_objective_function to repopulate right_container
+    var right_box = document.getElementById('explorer-right');
+    console.log(right_box);
+     
+    // clear right_box
+    while (right_box.childElementCount > 2) { right_box.removeChild(right_box.lastChild);}
+    
+    // repopulate with chosen objective function vars
+    field_name = document.getElementById('objective-function-field');
+    field_name.value = chosen_objective_function;
+    var new_vars = objective_functions[chosen_objective_function];
+    for(var i = 0; i < new_vars.length; i++) {
+
+        var question_name = new_vars[i]
+        console.log(question_name);
+        var innerDiv = document.createElement('div');
+        innerDiv.textContent = question_name; 
+        innerDiv.id = question_name;
+        right_box.appendChild(innerDiv);
+    };
+});
+
 // Button: Gridsearch?   
 var grid_search = $('#grid-on-off').text();
 $('#grid-button').on('click', function(){    

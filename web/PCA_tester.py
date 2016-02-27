@@ -730,7 +730,7 @@ def submit_data():
 		
 		if 'null' not in questions:
 			#is not None and questions.strip("[]").encode('ascii', 'ignore') is not 'null':
-			questions = questions.strip("[]").split(',')
+			#questions = questions.split(',')
 			questions = [q.encode('ascii', 'ignore') for q in questions]
 			cluster_seed_inbound = [names.index(question) for question in questions] # convert questions to index #
 
@@ -742,15 +742,15 @@ def submit_data():
 
 	if "segments" in keys:
 		print "---segments----"
-		num_seg = inbound_data['segments']
-		num_segments = num_seg[0]
+		num_segments = inbound_data['segments']
+		#num_segments = num_seg[0]
 		
 		print "num_segments:", num_segments
 
 	if 'xls' in keys:
 		xls = False
 		print '---excel export----'
-		xl_flag = inbound_data['xls'].strip("[]")
+		xl_flag = inbound_data['xls']#.strip("[]")
 
 		if xl_flag == 'true':
 			xls = True
@@ -760,7 +760,7 @@ def submit_data():
 	if 'grid_search' in keys:
 		grid_search = False
 		print '---grid search----'
-		gs_flag = inbound_data['grid_search'].strip("[]")
+		gs_flag = inbound_data['grid_search']#.strip("[]")
 		
 		if gs_flag == 'true':
 			grid_search = True
@@ -797,6 +797,29 @@ def submit_data():
 
 	results2 = {"example": [155]}
 	return flask.jsonify(results2)
+
+@app.route('/submit_objective_function', methods=['POST'])
+def objective_function():
+	z = func_name(); print "--------in function: ", z, " -------------"
+	inbound_data = flask.request.json
+
+	print "inbound data", inbound_data
+	keys = inbound_data.keys(); print keys
+
+	objective_functions_dict = dict([(key.encode('ascii', 'ignore'), [value.encode('ascii', 'ignore') for value in values]) for key, values in inbound_data.items()])
+
+	# for key in inbound_data:
+	# 	print key, inbound_data[key], type(inbound_data[key])
+		
+	# 	key2 = [key.encode('ascii', 'ignore')
+	# 	vals2 = [value.encode('ascii', 'ignore') for value in inbound_data[key]]	
+
+	# 	objective_functions_dict[key2] = vals2
+
+	print objective_functions_dict
+
+	results3 = {"example": [666]}
+	return flask.jsonify(results3)
 
 # file upload section
 # see http://code.runnable.com/UiPcaBXaxGNYAAAL/how-to-upload-a-file-to-the-server-in-flask-for-python
@@ -1519,6 +1542,7 @@ if __name__ == "__main__":
 	# (x) 3-d visualization: 3D (users, PCA(questions)(:3), clusters)
 	# (x) loading factor matrix - audit vs SPSS
 	# (x) varimax rotation 
+	# (x) objective function selector, connection to DB
 	# clean up /plots subdirectory on lauch?
 	# close matplotlib.plt files (memory issues - RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).)
 	# validation traps - # of variables > num_seg, etc
