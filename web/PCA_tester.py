@@ -29,6 +29,7 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from mpl_toolkits.mplot3d import axes3d
 import uuid
+import shutil
 
 #def init():
 # default options
@@ -106,7 +107,12 @@ def get_PCA(filename):
 
 	global results_dict
 	results_dict = {}
-	
+
+	# clean up /plots directory
+	d = 'static/plots/'
+	if os.path.exists(d):
+		shutil.rmtree(d); os.makedirs(d)
+
 	names = list(np.genfromtxt(basedir+filename, delimiter=',', names=True).dtype.names)
 	
 	for question_name in names:
@@ -204,9 +210,10 @@ def homebrew_factor_matrix(X_unweighted, X_weights):
 
 	print loading_factors_matrix.shape
 	print loading_factors_matrix.T[:,1].sum()
-	print loading_factors_matrix.T.sum()
+	print 'loading factors matrix sum:', abs(loading_factors_matrix.T).sum()
 
 	loading_factors_matrix_rotated = varimax(loading_factors_matrix.T) # <class 'numpy.matrixlib.defmatrix.matrix'>
+	print 'loading factors matrx rotated sum: ', abs(loading_factors_matrix_rotated).sum()
 	loading_factors_matrix_rotated = np.asarray(loading_factors_matrix_rotated) # backwards compatability with pca.components_ output
 	print loading_factors_matrix_rotated.shape
 
@@ -235,6 +242,7 @@ def varimax(Phi, gamma = 1.0, q = 100, tol = 1e-10):
     # gamma = 1.0: varimax
     # gamma = 0.0: quartimax  (https://github.com/rossfadely/consomme/blob/master/consomme/rotate_factor.py)
     '''
+
 	z = func_name(); print "--------in function: ", z, " -------------"
 
 	p,k = Phi.shape
@@ -242,18 +250,25 @@ def varimax(Phi, gamma = 1.0, q = 100, tol = 1e-10):
 	d=0
 
 	for i in xrange(q):
+		
 		d_old = d
-    	Lambda = dot(Phi, R)
-    	u,s,vh = svd(dot(Phi.T,asarray(Lambda)**3 - (gamma/p) * dot(Lambda, diag(diag(dot(Lambda.T,Lambda))))))
-    	R = dot(u,vh)
-    	d = sum(s)
-    	#print i
-    	
-    	if d_old!=0 and d/d_old < 1 + tol:
-    		print "convergence in: ", i, "iterations"
-    		#break
+		Lambda = dot(Phi, R)
+		u,s,vh = svd(dot(Phi.T,asarray(Lambda)**3 - (gamma/p) * dot(Lambda, diag(diag(dot(Lambda.T,Lambda))))))
+		R = dot(u,vh)
+		d = sum(s)
 
-	return dot(Phi, R)
+		delta = d / d_old
+		#print i, delta
+		
+		if d_old !=0 and delta <(1 + tol):
+			print 'varimax covergence in:', i, 'iterations'
+			break
+
+	result = dot(Phi, R)
+	
+	print 'result: ', abs(result).sum()
+
+	return result
 
 def top_n_factors (factor_matrix, top_n, question_dict, names):
 	'''
@@ -629,7 +644,11 @@ def create_tracker():
 		tracker_dict = OrderedDict([('001_Q#',key),('002_Q_name','n/a'),('003_Dim','n/a'), ('004_LF', round(question_dict[key]['first_factor_value'],3)),('005_#1 Factor', question_dict[key]['first_factor']),('006_#2 Factor', question_dict[key]['second_factor']),('007_Bucket', question_dict[key]['bucket_scheme']),('008_%T(=1)', round(question_dict[key]['rebucket_shares_1']*100)),('009_%M(=2)', round(question_dict[key]['rebucket_shares_2']*100)),('010_%L(=3)', round(question_dict[key]['rebucket_shares_3']*100)), ('011_RH',round(question_dict[key]['best_rh'],2))])
 		tracker_list.append(tracker_dict)
 	
-	tracker = {'tracker': tracker_list}
+	corr_matrix = np.corrcoef(X.T)
+	corr_matrix_list = dict(zip(names,[dict(zip(names, corr_matrix[:,row].tolist())) for row in range(corr_matrix.shape[1])]))
+	print 'correlation matrix shape: ', corr_matrix.shape
+
+	tracker = {'tracker': tracker_list, 'corr_matrix': corr_matrix_list}
 	#print "create_run_tracker: ", tracker
 
 	tracker_json = flask.jsonify(tracker)
@@ -728,24 +747,26 @@ def submit_data():
 		print "----questions---"
 		questions = inbound_data['questions']
 		
-		if 'null' not in questions:
+		if questions != None:
 			#is not None and questions.strip("[]").encode('ascii', 'ignore') is not 'null':
 			#questions = questions.split(',')
 			questions = [q.encode('ascii', 'ignore') for q in questions]
 			cluster_seed_inbound = [names.index(question) for question in questions] # convert questions to index #
+			print "questions:", len(questions), questions
 
 		else:
 			cluster_seed_inbound = cluster_seed
 			print "no questions provided; using cluster seed"
 
-		print "questions:", len(questions), questions
-
 	if "segments" in keys:
 		print "---segments----"
 		num_segments = inbound_data['segments']
-		#num_segments = num_seg[0]
+		num_segments = int(num_segments)
+		# while type(num_segments) != 'int':
+		# 	num_segments = int(num_segments.encode('ascii','ignore'))
 		
 		print "num_segments:", num_segments
+		print 'num_segments type:', type(num_segments)
 
 	if 'xls' in keys:
 		xls = False
@@ -762,7 +783,7 @@ def submit_data():
 		print '---grid search----'
 		gs_flag = inbound_data['grid_search']#.strip("[]")
 		
-		if gs_flag == 'true':
+		if gs_flag == True:
 			grid_search = True
 
 		print "grid_search:", grid_search	
@@ -800,6 +821,10 @@ def submit_data():
 
 @app.route('/submit_objective_function', methods=['POST'])
 def objective_function():
+
+	global question_dict
+	print "questions: ", question_dict.keys()
+
 	z = func_name(); print "--------in function: ", z, " -------------"
 	inbound_data = flask.request.json
 
@@ -808,15 +833,17 @@ def objective_function():
 
 	objective_functions_dict = dict([(key.encode('ascii', 'ignore'), [value.encode('ascii', 'ignore') for value in values]) for key, values in inbound_data.items()])
 
-	# for key in inbound_data:
-	# 	print key, inbound_data[key], type(inbound_data[key])
-		
-	# 	key2 = [key.encode('ascii', 'ignore')
-	# 	vals2 = [value.encode('ascii', 'ignore') for value in inbound_data[key]]	
-
-	# 	objective_functions_dict[key2] = vals2
-
 	print objective_functions_dict
+
+	for key, questions in objective_functions_dict.iteritems():
+		for question in questions:
+			 question_dict[question]['dimension'] = key
+
+	print 'question_dict[dimension] updated:'
+
+	for key, questions in objective_functions_dict.iteritems():
+		for question in questions:
+			 print question, ": ", question_dict[question]['dimension']
 
 	results3 = {"example": [666]}
 	return flask.jsonify(results3)
@@ -1086,13 +1113,52 @@ def make_xls():#results_dict):
 	z = func_name(); print "--------in function:", z, "-------------"
 
 	global results_dict
+	global question_dict
+	global X
+	global X_rebucketed
+	global factor_matrix
+
 
 	# uses http://xlsxwriter.readthedocs.org/getting_started.html
-	# sample of results_dict[key]['response_shares']:
-	#q16_5 response shares: [[0.36829268292682926, 0.4121951219512195, 0.21951219512195122], [0.2006172839506173, 0.41975308641975306, 0.37962962962962965], [0.2997032640949555, 0.5252225519287834, 0.17507418397626112], [0.09090909090909091, 0.5844155844155844, 0.3246753246753247], [0.07824427480916031, 0.7519083969465649, 0.16984732824427481]]
-
 	outfile = 'clustering_data_export.xlsx'
 	workbook = xlsxwriter.Workbook(basedir+outfile)
+
+	tables = ['X', 'X_rebucketed', 'factor_matrix']
+	worksheet_names = ['original_data', 'rebucketed_data', 'factor_matrix']
+	x_axis_labels = ['names', 'names', 'range(x_cs)']
+	y_axis_labels = ['range(x_rs)', 'range(x_rs)', 'names']
+
+	for i,t in enumerate(tables):
+		row = 0; col = 0 # reset
+		table = eval(t)
+
+		print '----writing .xls table: ', t, '-----'
+		worksheet_name = worksheet_names[i]
+		worksheet = workbook.add_worksheet(worksheet_name)
+		x_rs,x_cs = table.shape # rows, cols
+		x_axis_label = eval(x_axis_labels[i])
+		y_axis_label = eval(y_axis_labels[i])
+
+		print "table.shape:",  table.shape
+
+		for x_r in xrange(x_rs):
+			col = 0
+
+			if x_r == 0:
+				for label in x_axis_label: 
+					worksheet.write(row, col+1, label)
+					col = col +1 
+				col = 0
+			#col = col + 1
+			for x_c in xrange(x_cs):
+				if col == 0:
+					print y_axis_label[row]
+					worksheet.write(row+1,col,y_axis_label[row])
+				data = table[row,col]
+				worksheet.write(row+1, col+1, data)
+				col = col + 1
+			row = row + 1
+
 	run_number = 0
 
 	for run in results_dict:
@@ -1213,7 +1279,7 @@ def run_poLCA (grid_search,cluster_seed,num_seg,num_rep,rebucketed_filename):
 		print '---------in grid search == True function---------'
 		# run clustering in parallel if possible
 		shortened_cluster_seeds = []
-		num_remove = 5
+		num_remove = 0
 		random.shuffle(cluster_seed)
 		
 		shortened_cluster_seeds = [cluster_seed[0:(len(cluster_seed)-num)] for num in range(num_remove+1) ]
@@ -1274,11 +1340,17 @@ def run_report(timestamps):
 		run_report += header
 
 
-		# data: segment response shares			
-		for survey_question in results_dict[run]['response_shares'].keys():
+		# order responses: segmenting variables, objective functions, other
+		clustering_variables = results_dict[run]['quest_list']
+		all_questions = results_dict[run]['response_shares'].keys()
+		non_clustering_variables = [q for q in all_questions if q not in clustering_variables]
+		ordered_variables = clustering_variables + non_clustering_variables
+
+		#for survey_question in results_dict[run]['response_shares'].keys():
+		for survey_question in ordered_variables:
 			
-			'''
-			number_of_buckets = len([results_dict[run]['response_shares'][survey_question][cluster])
+			# new method starts here
+			number_of_buckets = len(results_dict[run]['response_shares'][survey_question][0])
 
 			for bucket in range(number_of_buckets):
 				bucket_data = [results_dict[run]['response_shares'][survey_question][cluster][bucket] for cluster in range(number_of_clusters)]
@@ -1287,17 +1359,23 @@ def run_report(timestamps):
 				bucket_avg = ['{0:.1%}'.format(bucket_average)]
 				bucket_index_scores = [int((float(share) / bucket_average) * 100) for share in bucket_data]
 
-				if bucket = 0:
+				if bucket == 0:
 					row =    [survey_question, bucket] + bucket_shares + bucket_avg + [''] + bucket_index_scores
 
 				else:
-					row = 	  ['',             bucket] + bucket_shares + bucket_avg + [''] + bucket_index_scores
+					row = 	 ['',              bucket] + bucket_shares + bucket_avg + [''] + bucket_index_scores
 
 				run_report.append(row)
 
-				if bucket = number_of_buckets: # last bucket
-					row_spacer = [''] * (len(bottom_row))
+				if bucket + 1 == number_of_buckets: # last bucket
+					row_spacer = [''] * (len(row))
 					run_report.append(row_spacer)
+
+			if survey_question not in clustering_variables and non_clustering_variables.index(survey_question) == 0:
+				row_spacer = [''] * (len(row))
+				run_report.append(row_spacer)
+				run_report.append(row_spacer)
+				run_report.append(row_spacer)
 
 			'''
 
@@ -1343,6 +1421,7 @@ def run_report(timestamps):
 			run_report.append(middle_row)
 			run_report.append(bottom_row)
 			run_report.append(row_spacer)
+			'''
 
 		run_reports.append(run_report)
 
@@ -1543,8 +1622,11 @@ if __name__ == "__main__":
 	# (x) loading factor matrix - audit vs SPSS
 	# (x) varimax rotation 
 	# (x) objective function selector, connection to DB
-	# clean up /plots subdirectory on lauch?
-	# close matplotlib.plt files (memory issues - RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).)
+	# (x) clean up /plots subdirectory on lauch?
+	# (x) close matplotlib.plt files (memory issues - RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).)
+	# (x) JSON.stringify for flask i/o
+	# no duplicate question_ids in objective function (one or across objective functions - reduce left side by all elements of objective_functions)
+	# drag back 
 	# validation traps - # of variables > num_seg, etc
 	# % of variance 3D PCA explains
 	# audit how weights are used in rebucketing - X passed in, currently unweighted (2/25/2016)

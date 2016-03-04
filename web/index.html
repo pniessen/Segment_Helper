@@ -128,6 +128,10 @@
     #control-table {left: 50%; margin-left: 300px;}
     #control-table td {padding: 10px 10px 10px 10px; float: center}
 
+    .tab-name {display:none;width:120px;} //[type=text] 
+    .tab-name a{display:block;}
+
+   /*   */
 
     </style>
     <style>
@@ -198,7 +202,7 @@
                         <a class="page-scroll" href="#about">About</a>
                     </li>
                     <li>
-                        <a class="page-scroll" href="#objective-function">Objective Function</a>
+                        <a class="page-scroll" href="#objective-function">Dimension</a>
                     </li>
 <!--                     <li>
                         <a class="page-scroll" href="#explorer">Explorer</a>
@@ -361,24 +365,27 @@
             </div>
         </div> -->
 
+           <!-- http://www.erummunir.com/240/clear-text-on-input-field-on-click -->
+        <div class="row">
+                    <div class="btn-group" role="group" aria-label="...">
+                    <button type="button" id = 'objective-function-button' onclick=getExplorerIds() class="btn btn-primary ">Create</button>
+                    <div class="btn-group" role="group" aria-label="...">
+                        <div class="dropdown">
+                    <button id = 'objective-function-chooser' class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Dimensions
+                      <span class="caret"></span></button>
+                      <ul id = 'objective-function-dropdown' class="dropdown-menu dropdown-menu-right">
+                      </ul>
+                    </div>
+                </div>  
+            </div>
+            <p>
+        </div>  
         <div class="row">
             <!-- <div class="col-lg-12 col-lg-offset-1"> -->
-                    <div class="container2" id = 'explorer-left'> <h5>Potential Variables</h5></div>
-                    <div class="container2" id="explorer-right"><h5>Objective Function</h5><input id='objective-function-field' style="color:black" type = text></div>
-                <button type="button" id = 'objective-function-button' onclick=getExplorerIds() class="btn btn-primary ">Create</button>
-             <div class="col-lg-10">
-                <div class="dropdown">
-                  <button id = 'objective-function-chooser' class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Objective Functions
-                  <span class="caret"></span></button>
-                      <ul id = 'objective-function-dropdown' class="dropdown-menu dropdown-menu-right">
-                        <li class="dropdown-item"><a href="#">HTML</a></li>
-                        <li><a href="#">CSS</a></li>
-                        <li><a href="#">JavaScript</a></li>
-                      </ul>
-                </div>
-            </div>
-        </div>  
-            <div class="dropdown">
+            <div class="container2" id = 'explorer-left'> <h5>Potential Variables</h5></div>
+            <div class="container2" id="explorer-right"><h5>Dimension</h5><input id='objective-function-field' style="color:black" type = text onclick="this.value='';" onfocus="this.select()" onblur="this.value=!this.value?'<enter name>':this.value;" value="<enter name>"></div>
+        </div> 
+<!--             <div class="dropdown">
               <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                 Dropdown
                 <span class="caret"></span>
@@ -393,7 +400,7 @@
               <option value="1">test1</option>
               <option value="2" selected="selected">test2</option>
               <option value="3">test3</option>
-            </select>   
+            </select>   --> 
        </section>
 
     <!-- Run Tracker Section -->
@@ -420,30 +427,77 @@
 
         <!-- Tabs -->
         <section id='tabz' class="content-section text-center">
-            <h2>Run Tracker</h2>
-        <div class="row">
+            <h2>Run Manager</h2>
+        <div class = 'row'>
+            <div class="btn-toolbar center" role="toolbar" aria-label="...">
+                <div class="btn-group" role="group" aria-label="...">
+                <a id="link-portfolio" href="#tabz" onclick="SubmitData()"><button type="button" class="btn btn-primary "><i class="fa fa-play-circle"></i> Go!</button></a>
+                  <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-primary dropdown-toggle" id="dropdownMenu1-label-2a" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      # Seg 
+                      <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" id = 'dropdown-menu-1a'>
+                      <li><a href="#!">4</a></li>
+                      <li><a href="#!">5</a></li>
+                      <li><a href="#!">6</a></li>
+                      <li><a href="#!">7</a></li>
+                      <li><a href="#!">8</a></li>
+                      <li><a href="#!">9</a></li>
+                      <li><a href="#!">10</a></li>
+                      <li><a href="#!">11</a></li>
+                      <li><a href="#!">12</a></li>
+                    </ul>
+                  </div> <!-- btn-group dropdown wrapper -->
+                </div>
+                <div class="btn-group" role="group" aria-label="...">
+                  <!-- <button type="button" class="btn btn-primary">Method</button> -->
+                  <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-primary dropdown-toggle" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      Method 
+                      <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" id = 'dropdown-menu-2'>
+                      <li><a href="#!">poLCA</a></li>
+                      <li class="disabled"><a href="#!">Kmeans</a></li>
+                      <li class="disabled"><a href="#!">DBScan</a></li>
+                      <li class="disabled"><a href="#!">AffinityProp</a></li>
+                      <li class="disabled"><a href="#!">Ensemble</a></li>
+                    </ul>
+                  </div> <!-- btn-group dropdown wrapper -->
+       <!--            <button type="button" class="btn btn-primary">Grid?</button> -->
+                  <button type="button" id = 'grid-button' class="btn btn-primary" data-toggle="button" aria-pressed="true" autocomplete="off">
+                    Grid<!-- <div id='grid-on-off'>off</div> --></button>
+                  <button id = 'objective-function-toggle' type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal2">Obj Func</button>
+                  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal"><span class="glyphicon glyphicon-upload"></span> Upload</button>
+
+                  <a href = '/download' class="btn btn-primary"><span class="glyphicon glyphicon-download"></span> Download</a> 
+                </div>
+            </div>
+        </div>
+        <!-- <div class="row">
             <table id = 'control-table'>
                 <tr>
-            <!-- <div class="col-md-5"></div> -->
-<!--             <div class="col-md-1"> -->
+            <div class="col-md-5"></div>
+            <div class="col-md-1">
                 <td>
                     <a id="link-portfolio" href="#tabz" onclick="SubmitData()"><button type="button" class="btn btn-primary "><i class="fa fa-play-circle"></i>Go!</button></a>
                 </td>
-<!--             </div> -->
-<!--             <div class="col-md-1"> -->
+            </div>
+            <div class="col-md-1">
                 <td>
                     <button type="button" id = 'grid-button' class="btn btn-primary" data-toggle="button" aria-pressed="true" autocomplete="off">
                     Grid:<div id='grid-on-off'>off</div></button>
                 </td>
-<!--             </div> -->
-<!--             <div class="col-md-1">  -->
+            </div>
+            <div class="col-md-1"> 
                 <td>
                     <a href = '/download' class="btn btn-primary">Download!</a>  
                 </td> 
-               <!--  <a href = '/download' button type="button" id = 'excel-button' class="btn btn-primary" data-toggle="button" aria-pressed="false" autocomplete="off">
-                    Excel:<div id='excel-on-off'>off</div></button></a> -->
-<!--             </div> -->
-<!--             <div class="col-md-1"> -->
+                <a href = '/download' button type="button" id = 'excel-button' class="btn btn-primary" data-toggle="button" aria-pressed="false" autocomplete="off">
+                    Excel:<div id='excel-on-off'>off</div></button></a>
+            </div>
+            <div class="col-md-1">
                 <td>
                     <div class="dropdown closed">
                       <button class="btn btn-secondary dropdown-toggle" type="button btn-block" id="dropdownMenu1-label-2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -459,10 +513,10 @@
                         <button class="dropdown-item" type="button" style="color:black">7</button>
                         <button class="dropdown-item" type="button" style="color:black">8</button>
                       </div>
-                    </div>
+                    </div> 
                 </td>
-<!--             </div> -->
-            <!-- <div class="col-md-1"> -->
+            </div>
+            <div class="col-md-1">
                 <td>
                     <div class="dropdown closed">
                         <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-play-circle fa-flip-horizontal"></i> Method</button>
@@ -493,7 +547,7 @@
                 </td>
             </tr>
         </table>
-<!--             </div> -->
+            </div> -->
         </div>
     </div>
     </div>
@@ -505,7 +559,7 @@
             <!-- <h2 class="demoHeaders">Run Tracker 2</h2> -->
             <div id="tabs">
                 <ul id='tab-list'>
-                    <li><a href="#tabs-1">Tracker</a></li>
+                    <li class = 'tab'><input id = 'tab-name-1' style="color:black" class="tab-name" type="text"/><a href="#tabs-1">Tracker</a></li>
                 </ul>
                 <div id="tabs-1"><div id="tracker-goes-here" class = "center"></div>some text</div>
             </div>
@@ -526,7 +580,64 @@
     </section>
 
     <!-- Map Section -->
-<!--     <div id="map"></div> -->
+    <!-- Modal -->
+    <div id="myModal" class="modal fade" role="dialog">
+      <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title" style="color:black">Choose a file to upload</h4>
+          </div>
+          <div class="modal-body">
+            <form id="upload-file" method="post" enctype="multipart/form-data">
+                        <fieldset>
+                            <div class='input-group'>
+                                <span class="input-group-btn">
+                                    <span class="btn btn-primary btn-file">
+                                        Browse&hellip;<input id = 'file-search-2' name="file" type="file">
+                                    </span>
+                                </span><input id = 'upload-field-2' type="text" class="form-control" readonly>
+                            </div>
+
+                            <button id="upload-file-btn" class="btn btn-primary btn-file" type="button">Upload</button>
+                        </fieldset>
+                    </form> 
+           <!--  <p>Some text in the modal.</p> -->
+          </div>
+<!--           <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div> -->
+        </div>
+
+      </div>
+    </div>
+    <!-- another modial -->
+ <div id="myModal2" class="modal fade" role="dialog">
+      <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title" style="color:black">Create an objective function:</h4>
+          </div>
+          <div class="modal-body">
+           <!--  <p>Some text in the modal.</p> -->
+           <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-primary dropdown-toggle" id="dropdownMenu1-label-2a" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      Question
+                      <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" id = 'dropdown-menu-3'>
+
+                  </div> <!-- btn-group dropdown wrapper -->
+                  <button id="create-objective-btn" class="btn btn-primary btn-file" type="button">Create Objective Function Anchor</button>
+          </div>
+        </div>
+      </div>
+    </div> <!-- end Mymodial2 -->
 
     <!-- Footer -->
     <footer>
@@ -563,44 +674,9 @@
     <!-- https://github.com/markmalek/Fixed-Header-Table -->
     <script src="/static/js/jquery.fixedheadertable.js"></script>
 
-    <!-- Bootstrap - Switch -->
-    <script>
-    // $("[name='gridsearch-checkbox']").bootstrapSwitch();
-    // $("[name='xls-checkbox']").bootstrapSwitch();
-    </script>
+    <!--  Closeable  https://github.com/andrewwatts/ui.tabs.closable -->
+    <script src="/static/js/ui.tabs.closable.js"></script>
 
-<!--     // spinner (conditional fomatting threshold)
-    // https://github.com/btburnett3/jquery.ui.spinner -->
-  <!--   // <script type="text/javascript" src="/static/js/ui.spinner.js"></script> -->
- 
-    </script>
-    <!-- box check event handler -->
-    <script>
-    // $("[name='animal']").change(function() {
-    // console.log("Handler for .change() called.");
-    // alert( "Handler for .change() called." );
-    // });
-    </script>
-    <!-- Grid Search parameters on? -->
-    <script>
-    // document.forms['gridsearch']['num-clusters'].disabled = true;
-    // document.forms['gridsearch']['num-variables'].disabled = true;
-    
-    // //http://stackoverflow.com/questions/31345638/bootstrap-switch-change-state-after-clicking-on-button?rq=1
-    // $("[name='gridsearch-checkbox']").on('switchChange.bootstrapSwitch', function () {
-    //     console.log('in grid search switch function'); 
-    //     if ($('[name="gridsearch-checkbox"]').is(':checked')){ 
-    //     // alert('checked');
-    //     console.log('grid search activated');
-    //     document.forms['gridsearch']['num-clusters'].disabled = false;
-    //     document.forms['gridsearch']['num-variables'].disabled = false;
-    //     } 
-    //     else { 
-    //     // alert('not checked');
-    //     console.log('grid search deactivated');
-    //     };
-    // });
-    </script>
     <script>
     // turns on / off waiting screen
     // http://dotnetspeak.com/2013/05/creating-simple-please-wait-dialog-with-twitter-bootstrap
@@ -726,49 +802,6 @@ function SubmitData () {
 </script>
 
     <!-- create scorecard_table -->
-    <script>
-    // function createTable(training_data){
-         
-    //     mytable = $('<table></table>').attr({ id: "basicTable" }).attr({class: 'tg center table-goes-here'});
-    //     var rows = training_data.training.length;
-    //     console.log (rows);
-    //     //var rows = new Number($("#rowcount").val());
-    //     //var cols = new Number($("#columncount").val());
-    //     //var cols = training_data.training[0].length
-    //     var cols = 8;
-    //     var tr = [];
-    //     var header_row = $('<tr></tr>').appendTo(mytable);
-    //     header_row.append("<th>Run ID</th>");
-    //     header_row.append("<th>Clusters</th>");
-    //     header_row.append("<th>Variables</th>");
-    //     header_row.append("<th>MLE</th>");
-    //     header_row.append("<th>Chi-Sq</th>");
-    //     header_row.append("<th>BIC</th>");
-    //     header_row.append("<th>Cohesiveness</th>");
-    //     header_row.append("<th>Differentiation</th>");
-    //     for (var i = 0; i < rows; i++) {
-    //         //var row = $('<tr></tr>').attr({ class: ["class1", "class2", "class3"].join(' ') }).appendTo(mytable);
-    //         var row = $('<tr></tr>').appendTo(mytable);
-    //         row.append("<td>" + training_data.training[i].a + "</td>").attr({id:'table-' + (i+1) + '-1'});
-    //         row.append("<td>" + training_data.training[i].b + "</td>").attr({id:'table-' + (i+1) + '-1'});
-    //         row.append("<td>" + training_data.training[i].c + "</td>").attr({id:'table-' + (i+1) + '-1'});
-    //         row.append("<td>" + training_data.training[i].d + "</td>").attr({id:'table-' + (i+1) + '-1'});
-    //         row.append("<td>" + training_data.training[i].e + "</td>").attr({id:'table-' + (i+1) + '-1'});
-    //         row.append("<td>" + training_data.training[i].f + "</td>").attr({id:'table-' + (i+1) + '-1'});
-    //         row.append("<td>" + training_data.training[i].g + "</td>").attr({id:'table-' + (i+1) + '-1'});
-    //         row.append("<td>" + training_data.training[i].h + "</td>").attr({id:'table-' + (i+1) + '-1'});
-    //         //for (var j = 0; j < cols; j++) {
-    //             //$('<td></td>').text("text1").attr({id:'table-'+ (i+1) + "-" + (j+1)}).appendTo(row); 
-    //         //}
-                     
-    //     }
-    //     //console.log("TTTTT:"+mytable.html());
-    //     mytable.appendTo("#table-goes-here");          
-      
-    //   var newTableObject = document.getElementById('basicTable');
-    //   sorttable.makeSortable(newTableObject);
-    // }
-    </script>
 
     <script>
     function UpdateTrackerData () {
@@ -781,24 +814,8 @@ function SubmitData () {
              async: true,
              //data: data_to_send,
              success: function (tracker_data) {console.log(tracker_data);
-                                        console.log('tracker:', tracker_data.tracker.length);
-                                        console.log('run_reports:', tracker_data.run_reports.length);
-                                        console.log('run_reports[0][0].keys:', tracker_data.run_reports[0][0].keys());
-                                        console.log('run_reports[0][0].keys:', Object.keys(tracker_data.run_reports[0][0]));
-                                        console.log('run_reports[0][1].keys:', tracker_data.run_reports[0][1].keys());
-                                        console.log('run_reports[0][1].keys:', Object.keys(tracker_data.run_reports[0][1]));
-                                        console.log('run_reports[0][1][1]:', tracker_data.run_reports[0][1][1]);
-                                        console.log('run_scorecard:', tracker_data.run_scorecard.length);
-                                        console.log('run_scorecard[0]:', tracker_data.run_scorecard[0]);
-                                        console.log('run_scorecard[0].a:', tracker_data.run_scorecard[0].a);
-
-
-
-                                        //MakeTable(training_data);
-                                        // createTracker(tracker_data);
                                         appendColumn(tracker_data);
                                         makeRunReport(tracker_data);
-                                        //loadTrainingImage(training_data);
              },
              error: function (tracker_data) {console.log(tracker_data);
             }
@@ -807,6 +824,7 @@ function SubmitData () {
     </script>
 
     <script>
+    corr_matrix = {};
     function StartTrackerData () {
         console.log('in StartTrackerData function');
         $.ajax({
@@ -819,6 +837,7 @@ function SubmitData () {
              success: function (first_tracker_data) {console.log(first_tracker_data);
                                 console.log('in StartTrackerData function');
                                         //MakeTable(training_data);
+                                        corr_matrix = first_tracker_data.corr_matrix;
                                         startTracker(first_tracker_data);
                                         fillExplorer(first_tracker_data);
                                         //loadTrainingImage(training_data);
@@ -836,42 +855,27 @@ function SubmitData () {
         mytable = $('<table></table>').attr({ id: "trackerTable" }).attr({class: 'tg center table-goes-here'});
         var rows = tracker_data.tracker.length;
         console.log (rows);
-        //var rows = new Number($("#rowcount").val());
-        //var cols = new Number($("#columncount").val());
         var cols =  Object.keys(tracker_data.tracker[0]).length;
         var cols_names = Object.keys(tracker_data.tracker[0]);
-        //console.log (cols);
-        //console.log (cols_names);
-        //console.log(cols_names[0]);
         var header_row = $('<tr></tr>').appendTo(mytable);
         header_row.append("<th>" + "</th>");
-        for (var h = 0; h < cols; h++) {//var cols = 15;
-        // var tr = [];
-            // var header_row = $('<tr></tr>').appendTo(mytable);
+        for (var h = 0; h < cols; h++) {
             var header_name = cols_names[h];
             if (h < 11) {header_name = cols_names[h].slice(4)};
             console.log(header_name);
             $('<th></th>').text(header_name).appendTo(header_row);}
-        // header_row.append("<th>Q#</th>");
         for (var i = 0; i < rows; i++) {
-            //var row = $('<tr></tr>').attr({ class: ["class1", "class2", "class3"].join(' ') }).appendTo(mytable);
             var row = $('<tr></tr>').appendTo(mytable);
             var cols_names = Object.keys(tracker_data.tracker[i]);
             row.append("<td><input type='checkbox'>" + "</td>").attr({id:'ttable-' + (i+1) + '-0'});
-            // row.append("<td>" + tracker_data.tracker[i].b + "</td>").attr({id:'ttable-' + (i+1) + '-1'});
   
             for (var j = 0; j < cols; j++) {
-                //console.log (cols_names);
-                //console.log(tracker_data.tracker[i])
-                //console.log(tracker_data.tracker[i][cols_names[j]])
                 if (j == 0) {$('<td></td>').text(tracker_data.tracker[i][cols_names[j]]).attr({id:'ttable-'+ (i+1) + "-" + (j+1)}).appendTo(row);}
-                else {$('<td></td>').text(tracker_data.tracker[i][cols_names[j]]).attr({id:'ttable-'+ (i+1) + "-" + (j+1)}).appendTo(row);}
-                // $('<td></td>').text(tracker_data.tracker[i][cols_names[j]]).attr({id:'ttable-'+ (i+1) + "-" + (j+1)}).appendTo(row); 
+                else {$('<td></td>').text(tracker_data.tracker[i][cols_names[j]]).attr({id:'ttable-'+ (i+1) + "-" + (j+1)}).appendTo(row);} 
             }
                      
         }
         
-        //console.log("TTTTT:"+mytable.html());
         mytable.appendTo("#tracker-goes-here");
         mytable.style.display = 'inline-block';          
       
@@ -887,47 +891,29 @@ function SubmitData () {
         mytable = $('<table></table>').attr({ id: "trackerTable" }).attr({class: 'tg center table-goes-here fancyTable'});
         var rows = first_tracker_data.tracker.length;
         console.log (rows);
-        //var rows = new Number($("#rowcount").val());
-        //var cols = new Number($("#columncount").val());
         var cols =  Object.keys(first_tracker_data.tracker[0]).length;
         var cols_names = Object.keys(first_tracker_data.tracker[0]);
-        // var orig_question_order = [];
-        //console.log (cols);
-        //console.log (cols_names);
-        //console.log(cols_names[0]);
         var header_row = $('<tr></tr>').appendTo(mytable);
         header_row.append("<th>" + "</th>");
-        for (var h = 0; h < cols; h++) {//var cols = 15;
-        // var tr = [];
-            // var header_row = $('<tr></tr>').appendTo(mytable);
+        for (var h = 0; h < cols; h++) {
             var header_name = cols_names[h];
             if (h < 11) {header_name = cols_names[h].slice(4)};
             console.log(header_name);
             $('<th></th>').text(header_name).appendTo(header_row);}
-        // header_row.append("<th>Q#</th>");
+
         for (var i = 0; i < rows; i++) {
-            //var row = $('<tr></tr>').attr({ class: ["class1", "class2", "class3"].join(' ') }).appendTo(mytable);
             var row = $('<tr></tr>').appendTo(mytable);
             var cols_names = Object.keys(first_tracker_data.tracker[i]);
             var check_label = first_tracker_data.tracker[i][cols_names[0]];
-            // var cell = $('<td></td>').appendTo(row);
-            // cell.append('<input type="checkbox" value="xyz">');
-            // console.log(cell);
-            // row.append('<td></td>');
-            // row.append('<input name="animal" type="checkbox">')
+
             row.append('<td><input type="checkbox" name = "tcheck" value="' + check_label + '" id="'+check_label+'"></td>').attr({id:'rtable-' + check_label});//attr({id:'ztable-' + (i+1) + '-0'});
             original_question_order[i] = check_label;
-            // row.append("<td>" + tracker_data.tracker[i].b + "</td>").attr({id:'ttable-' + (i+1) + '-1'});
             for (var j = 0; j < cols; j++) {
-                //console.log (cols_names);
-                //console.log(tracker_data.tracker[i])
-                //console.log(tracker_data.tracker[i][cols_names[j]])
                 $('<td></td>').text(first_tracker_data.tracker[i][cols_names[j]]).attr({id:'ttable-'+ (i+1) + "-" + (j+1)}).appendTo(row); 
             }
                      
         }
         
-        //console.log("TTTTT:"+mytable.html());
         mytable.appendTo("#tracker-goes-here");
         document.getElementById('tabs-1').style.display = 'inline-block';          
       
@@ -998,13 +984,17 @@ function SubmitData () {
         // https://api.jquery.com/gt-selector/
         $(function() {
         var headerskipper = $("#run-report-" + num_tabs).find("tr:first td").length *  7;
-        $("#run-report-" + num_tabs + " td:gt(" + headerskipper + ")").each(function(index) { // td:gt(96) excudes first 96 <td> (=top header)  
+        var table_cells = $("#run-report-" + num_tabs + " td:gt(" + headerskipper + ")");
+        table_cells.each(function(index) { // td:gt(96) excudes first 96 <td> (=top header)  
             //var scale = [['vPoor', 10], ['poor', 50], ['avg', 250], ['good', 1250], ['vGood', 6250]];
             var scale = [['good', 140]];
             var score = $(this).text();
             for (var i = 0; i < scale.length; i++) {
                 if (score >= scale[i][1]) {
                     $(this).addClass(scale[i][0]);
+                    var prior_sib_location =  2 + ((num_cols - 4)/2);
+                    var prior_sib = table_cells[index-prior_sib_location];
+                    prior_sib.className += scale[i][0]; 
                     }
                 }
             });
@@ -1012,20 +1002,24 @@ function SubmitData () {
         $("#spinner-" + num_tabs).spinner();
         $("#spinner-" + num_tabs).spinner("value", 140);
         $('#spinner-' + num_tabs).on("spinstop", function(){
-            console.log($(this).spinner('value'));
             var spinvalue = $(this).spinner('value');
                
                 $(function() {
                 var headerskipper = $("#run-report-" + num_tabs).find("tr:first td").length *  7;
-                $("#run-report-" + num_tabs + " td:gt(" + headerskipper + ")").each(function(index) { // td:gt(96) excudes first 96 <td> (=top header)  
+                var table_cells = $("#run-report-" + num_tabs + " td:gt(" + headerskipper + ")");
+                table_cells.each(function(index) { // td:gt(96) excudes first 96 <td> (=top header)  
                     //var scale = [['vPoor', 10], ['poor', 50], ['avg', 250], ['good', 1250], ['vGood', 6250]];
                     var scale = [['good', spinvalue]];
                     var score = $(this).text();
 
                     for (var i = 0; i < scale.length; i++) {
-                        $(this).removeClass(scale[i][0])
+                        $(this).removeClass(scale[i][0]);
+
                         if (score >= scale[i][1]) {
                             $(this).addClass(scale[i][0]);
+                            var prior_sib_location = 2 + ((num_cols - 4)/2);
+                            var prior_sib = table_cells[index - prior_sib_location];
+                            prior_sib.className += scale[i][0];
                             }
                         }
                     });
@@ -1059,21 +1053,20 @@ function SubmitData () {
 
     </script>    
     <!--     check box event handler -->
-    <script>
-    // Get the element, add a click listener...
-    // var sophie = document.getElementById('q39_8');
-    // console.log('sophie', sophie);
-    // document.getElementById('q39_8').addEventListener("change", function(e) {
-    //     console.log('item clicked', e.target.nodeName, e.target.nodeValue);
-    // });
-    </script>
     <!-- append explorer data to div = "explorer-left" -->
     // <script>
     // http://stackoverflow.com/questions/14004117/create-div-and-append-div-dynamically
     function fillExplorer(first_tracker_data){
         // var num_questions = first_tracker_data.tracker.length;
         var num_questions = 10;
+        
+        // remove any prior questions in box, reset objective_function dict and and dropdown menu
         var right_div = document.getElementById('explorer-left');
+        var objective_function_dropdown = document.getElementById('objective-function-dropdown');
+        window.objective_functions = {};
+        while (right_div.childElementCount > 1) { right_div.removeChild(right_div.lastChild);};
+        while (objective_function_dropdown.childElementCount > 0) { objective_function_dropdown.removeChild(objective_function_dropdown.lastChild);};
+
         for (i = 0; i < num_questions; i++) {
             var cols_names = Object.keys(first_tracker_data.tracker[i]);
             var question_name = first_tracker_data.tracker[i][cols_names[0]];
@@ -1083,39 +1076,10 @@ function SubmitData () {
             innerDiv.id = question_name;
             right_div.appendChild(innerDiv);
         }
-        var innerDiv = document.createElement('div');
-        innerDiv.className = 'block-2';
-        innerDiv.textContent = "New text"; 
-        right_div.appendChild(innerDiv);
-    };
-    // </script>
 
-    <!-- Load data -->
-    <script>
-    // http://www.abeautifulsite.net/whipping-file-inputs-into-shape-with-bootstrap-3/
-    // also consider http://markusslima.github.io/bootstrap-filestyle/
-    // $(document).on('change', '.btn-file :file', function() {
-    //   var input = $(this),
-    //       numFiles = input.get(0).files ? input.get(0).files.length : 1,
-    //       label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
-    //   input.trigger('fileselect', [numFiles, label]);
-    // });
-    // $(document).ready( function() {
-    //     $('.btn-file :file').on('fileselect', function(event, numFiles, label) {
-            
-    //         var input = $(this).parents('.input-group').find(':text'),
-    //             log = numFiles > 1 ? numFiles + ' files selected' : label;
-    //             console.log (log);
-            
-    //         if( input.length ) {
-    //             input.val(log);
-    //         } else {
-    //             if( log ) alert(log);
-    //         }
-            
-    //     });
-    // });
-</script>
+    };
+    </script>
+
 <script src='static/js/dragula.min.js'></script>
 <!-- <script src='static/js/example.min.js'></script> -->
 
@@ -1155,6 +1119,7 @@ $(function() {
     $('#upload-file-btn').click(function() {
         var form_data = new FormData($('#upload-file')[0]);
         if( document.getElementById('upload-field-2').value.length > 0 ) { // empty field test
+        $("#myModal").modal("toggle");
         myApp.showPleaseWait();
         console.log('form data: ', form_data.files); 
         $.ajax({
@@ -1204,17 +1169,6 @@ function clearTabs() {
         }
 };
 </script>
-<!-- //tab labels
-a = document.getElementById('tester id')
-b = a.children
-b[2].parentNode.removeChild(b[2])
-remove all except b[0]
-
-//tab fields
-z = document.getElementById('tabs')
-y = z.children
-y[2].parentNode.removeChild(y[2])
-remove all except y[0], y[1] -->
 
 <script>
 // http://www.redips.net/javascript/adding-table-rows-and-columns/
@@ -1250,93 +1204,49 @@ function createCell(cell, text, i, style) {
 function appendColumn(tracker_data) {
     console.log('in appendColumn function');
     var tbl = document.getElementById('trackerTable'), // table reference
-        // row_list = document.getElementsByTagName('tr'),//.attr('id'),
         row_list = tbl.getElementsByTagName('tr'), // new method?
         one_row = row_list[1],
         current_question_order = [],
         i;
 
     console.log('document.getElementByTagName:', row_list.length);
-    // console.log('tbl.getElementByTagName:', row_list_2.length);
-        // one_row_id = getAttributeByIndex(one_row, 0),
-    // console.log (one_row, one_row.length)
+
     for (var z = 1; z < row_list.length; z++) {//old: row_list.length-1
     console.log('id',row_list[z].id.slice(7));
     current_question_order[z] = row_list[z].id.slice(7);
     };
-        // row_list_row = row_list.getElementsByTagName('tr'),
-        // row_ids = row_list.getAttribute('id'),
-        // http://www.w3schools.com/jsref/jsref_indexof_array.asp
-        // i;
+
     console.log('row_list_id: ', current_question_order.length, current_question_order);
-    // var header2 = tbl.rows[0].cells.length;
-    // var header = document.getElementById('trackerTable').rows[0].cells.length;
-    // console.log (header2);
-    // var tr = document.getElementById('trackerTable').tHead.children[0];
-    // th = document.createElement('th');
-    // th.innerHTML = "New";
-    // console.log(th);
-    // console.log(tr);
-    // tr.appendChild(th);
+
     
     // open loop for each row and append cell
     var num_new_cols =  Object.keys(tracker_data.tracker[0]).length;
     var keys = Object.keys(tracker_data.tracker[0]);
     var col_num = tbl.rows[0].cells.length;
-    // var num_new_cols =  10
+
     for (j = 0; j < num_new_cols; j++) {
-        // var tr = tbl.tHead.children[0];
-        // th = document.createElement('th');
-        // th.innerHTML = "New";
-        // tr.appendChild(th);
+
         for (i = 0; i < tbl.rows.length - 1; i++) {
             console.log(tbl.rows.length);   
             if (i == 0) {console.log('header_row');
-            // select via 'document.getElementsByClassName('fht-thead')[1].firstChild.firstChild.firstChild'
-            // should equal: 
-            // var tr = document.getElementById('trackerTable').tHead.children[0];
-            // var tr = tbl.tHead.children[0];
-            // var keys = Object.keys(tracker_data.tracker[0]);
-            // console.log(keys);
-            // th = document.createElement('th');
-            // th.innerHTML = keys[j];
-            // th.innerHTML = "New";
-            // tr.appendChild(th);
-            //var keys = Object.keys(tracker_data.tracker[0]);
+
             var txt = tracker_data.tracker[i][keys[j]]; 
             console.log(i,j,keys,txt)
             var x = tbl.rows[i].insertCell(-1);
             // var col_num = tbl.rows[0].cells.length;
             x.outerHTML = ('<th id="ttable-'+ i + '-' + col_num + '">' + keys[j] + '</th>');
-            // x.setAttribute('id', 'ttable-'+ (i) + "-" + (col_num-1));
-            // createCell(tbl.rows[i+1].insertCell(tbl.rows[i+1].cells.length), txt, i, 'col');
-            // below is if fixed header table is used:
-            // var y = document.getElementsByClassName('fht-thead')[1].firstChild.firstChild.firstChild; // fht table header
-            // var yy = y.lastElementChild.firstElementChild; // div in last cell in table header
-            // yy.style.width='20px'; // = ('width=20px') // reduce width to offset scroll bar
-            // var yyy = y.insertCell(-1); // insert cell at end of table header
-            // yyy.outerHTML = ('<th id="ttable-'+ i + '-' + col_num + '">' + keys[j] + '</th>');
-            // now adjust width of former last element in header row?
+            
             }
-            // $('<th></th>').text('xx').appendTo(tbl);}
-            // if (i = 0) {$('<th></th>').text('xx').appendTo(tbl);}
-            // else {
-            // var keys = Object.keys(tracker_data.tracker[0]);
-            // original_question_order (=inbound data) match to row_id_list (current table state) as key?
+
             var old_to_new_mapping = current_question_order.indexOf(original_question_order[i]);
-            // console.log('original_question_order:', original_question_order[i], "row_list_id: ", current_question_order[i+1]);
-            // console.log('equality check:', original_question_order[i]==current_question_order[i+1]);
-            // console.log('old-to-current mapping: ', current_question_order.indexOf(original_question_order[i]));
-            // console.log('confirm mapping:', current_question_order[old_to_new_mapping]);
+
             var txt = tracker_data.tracker[i][keys[j]];
-            // var x = tbl.rows[i+1].insertCell(-1); // use when sortTable = false
+
             var x = tbl.rows[old_to_new_mapping].insertCell(-1); // use when sortTable = true
-            // var col_num = tbl.rows[0].cells.length;
+
             x.innerHTML = txt;
             x.setAttribute('id', 'ttable-'+ (i+1) + "-" + (col_num-1));
-            // console.log(i,j,keys,txt);
-            // createCell(tbl.rows[i+1].insertCell(tbl.rows[i+1].cells.length), txt, i, 'col');
-            // } // else
+
         } // inner loop (= i)
     } // outer loop (= j)
 
@@ -1392,8 +1302,6 @@ function getExplorerIds () {
         var link = document.createElement("a");
         link.innerHTML = opt;
         link.href ='#!'
-        //el.style.color = 'black';
-        //el.id = 'test-123'
         el.appendChild(link)
         select.appendChild(el);
     };
@@ -1404,18 +1312,74 @@ function getExplorerIds () {
     // clear right box
     var right_box = document.getElementById('explorer-right');
     while (right_box.childElementCount > 2) { right_box.removeChild(right_box.lastChild);}
-
-    SubmitObjectiveFunction (objective_functions);
+    // update server db
+    SubmitObjectiveFunction (objective_functions); 
+    
+    // update tracker_table with new objective_function_name
+    var tr = document.getElementById('trackerTable').getElementsByTagName('tr');
+    for (var i = 0; i < tr.length; i++) {
+    var row_name = tr[i].id.slice(7);
+    if (objective_functions[objective_function_name].includes(row_name))
+        {console.log('row matched', row_name);
+        tr[i].children[3].innerHTML = objective_function_name; 
+    }
+};
 };
 
-// var a = document.createElement('a');
-// var linkText = document.createTextNode("my title text");
-// a.appendChild(linkText);
-// a.title = "my title text";
-// a.href = "http://example.com";
-// document.body.appendChild(a);
-
 </script>
+<script>
+// http://stackoverflow.com/questions/30181219/jquery-ui-rename-sortable-tabs-on-double-click
+// http://jsfiddle.net/gabs6hdq/
+$(function() {
+    var tabs = $('#tabs').tabs();
+    tabs.find( ".ui-tabs-nav" ).sortable({
+           axis: "x",
+           stop: function() {
+              tabs.tabs( "refresh" );
+          },
+          select: function(event, ui) {
+              alert("PRESSED TAB!");
+          }
+     });
+     $('#tab-list').on('dblclick','li', function(){
+        console.log('tab double clicked!'); 
+         $(this).find('input').toggle().val($(this).find('a').html()).focus();
+         $(this).find('a').toggle();
+     });
+    
+    $('#tab-list').on('keydown blur dblclick','li input',function(e){
+        if(e.type=="keydown")
+        {
+           if(e.which==13) // 13=enter
+           {
+               $(this).toggle();
+               $(this).siblings('a').toggle().html($(this).val());
+           }
+           if(e.which==38 || e.which==40 || e.which==37 || e.which==39 || e.keyCode == 32) // 32=space;37,38,39,40 = arrows 
+           {
+               e.stopPropagation();
+           }
+  
+        }
+        else if(e.type=="focusout")
+        {
+            if($(this).css('display')=="inline-block")
+            {
+                $(this).toggle();
+                $(this).siblings('a').toggle().html($(this).val());
+            }
+        }
+        else
+        {
+            e.stopPropagation();
+        }
+    });
+});
+$(document).ready(function() {
+    
+});
+</script>
+
 <script>
 var num_segments = [],
     rewind = [];
@@ -1423,10 +1387,14 @@ var num_segments = [],
     grid_search = []
 // Dropdown: number of segments
 // http://stackoverflow.com/questions/24620741/get-selected-item-value-from-bootstrap-dropdown-with-specific-id    
-$('#dropdown-menu-1 button').on('click', function(){
+$('#dropdown-menu-1a li a').on('click', function(){
     num_segments = $(this).text();
     console.log(num_segments);
-    $('#dropdownMenu1-label-2').text('Seg: ' + num_segments);
+    $('#dropdownMenu1-label-2a').text('Seg: ' + num_segments + ' ');
+    // $('#dropdownMenu1-label-2a').text('<span class="caret"><span>');
+    var newSpan = document.createElement('span');
+    newSpan.className = 'caret';
+    $('#dropdownMenu1-label-2a').append(newSpan);
     // var x = document.getElementById('number-of-segments');
     // x.innerHTML('this is a test');
 });
@@ -1468,8 +1436,10 @@ $('#objective-function-dropdown').on('click', 'li a', function(){
 var grid_search = $('#grid-on-off').text();
 $('#grid-button').on('click', function(){    
     // $('#grid-on-off').text('on');
-    if (grid_search == 'off') {$('#grid-on-off').text('on'), grid_search = 'on';}
-    else {$('#grid-on-off').text('off'), grid_search = 'off';}
+    // if (grid_search == 'off') {$('#grid-on-off').text('on'), grid_search = 'on', $('#grid-button')[0].style.backgroundColor = 'green'}
+    // else {$('#grid-on-off').text('off'), grid_search = 'off', $('#grid-button')[0].style.backgroundColor = 'red';}
+    if (grid_search == 'off') {grid_search = 'on', $('#grid-button')[0].style.backgroundColor = 'green'}
+    else {grid_search = 'off', $('#grid-button')[0].style.backgroundColor = 'red';}
     console.log('grid_search:', grid_search);
 });
 
@@ -1489,11 +1459,67 @@ $('#file-search-2').on('change', function(){
     upload_field.value = upfile_name;
     console.log(upfile_name, upload_field.value);
 });
+// objective function dropdown
+// remove already chosen vars from dropdown
+// 
+$('#objective-function-toggle').on('click', function (){
+    console.log('in objecive-toggle function');
+    console.log('corr_matrix_length:', Object.keys(corr_matrix).length);
+    
+    var dropdown = document.getElementById("dropdown-menu-3"); 
+    for(var i = 0; i < Object.keys(corr_matrix).length; i++) {
+        var opt = Object.keys(corr_matrix)[i];
+        var el = document.createElement("li");
+        var link = document.createElement("a");
+        link.innerHTML = opt;
+        link.href ='#!'
+        //el.style.color = 'black';
+        //el.id = 'test-123'
+        el.appendChild(link)
+        dropdown.appendChild(el);
+    };
+});
+
+// which variable chosen for objective function anchor? 
+$('#dropdown-menu-3').on('click', 'li a', function(){
+    chosen_question = $(this).text();
+    console.log(chosen_question);
+    // $('#create-objective-btn').text('Create Objective Function: ' + chosen_question);
+    z = document.getElementById('create-objective-btn');
+    z.innerHTML = 'Create Objective Function: ' + chosen_question;
+});
+
+$('#create-objective-btn').on('click', function()  {
+    var tbl = document.getElementById('trackerTable');
+    z = tbl.firstChild.firstChild.childNodes[4]; // select column to insert beore
+    
+    // update table <th>
+    a = document.createElement('th');
+    a.innerHTML = 'OF: ' + chosen_question; // TODO: add counter
+    z.insertAdjacentElement('beforeBegin',a);
+    
+    // now update table <tds>
+    for(var i = 0; i < Object.keys(corr_matrix).length; i++) {
+        row = tbl.childNodes[1].children[i]
+        row_name = row.id.slice(7); // find row name
+        b = document.createElement('td');
+        corr = corr_matrix[chosen_question][row_name] //look up values
+        corr = parseFloat(corr).toFixed(3); // round to 3 places
+        b.innerHTML = corr; 
+        row.childNodes[4].insertAdjacentElement('beforeBegin',b);
+    }
+    $("#myModal2").modal("toggle"); // close modal
+    z = document.getElementById('create-objective-btn');
+    z.innerHTML = 'Create Objective Function Anchor' // reset button
+
+    var newTableObject3 = document.getElementById('trackerTable');
+    sorttable.makeSortable(newTableObject3);
+});
 </script>
-<script src="static/js/jquery.js"></script>
-<script src="static/js/jquery-ui.js"></script>
+<!-- <script src="static/js/jquery.js"></script>
+<script src="static/js/jquery-ui.js"></script> -->
 <script>
-$( "#tabs" ).tabs();
+$( "#tabs" ).tabs({closable: true});
 </script>
 <script>
 // $(document).ready(function() {
@@ -1516,7 +1542,7 @@ function addNewTab(tracker_data, h) {
     var tab_index = $("div#tabs ul li").length;
     var num_tabs = $("div#tabs ul li").length + 1;
     $("div#tabs ul").append(
-    "<li><a href='#tab" + num_tabs + "'>R" + tab_index + "</a></li>"
+    "<li class = 'tab'><input style='color:black' class='txt tab-name' type='text'/><a href='#tab" + num_tabs + "'>R" + tab_index + "</a></li>"
     );
     $("div#tabs").append(
     "<div id='tab" + num_tabs + "'></div>"
@@ -1529,11 +1555,10 @@ function addNewTab(tracker_data, h) {
     ); 
     $("div#tab" + num_tabs).append(
     "<div id='run-report-goes-here-" + num_tabs +"' class = 'center run-report'></div>"
-    ); 
+    );  
     $("div#tabs").tabs("refresh");
 };
-
-             
+            
 </script>
 <!-- Sortable tabs -->
 <script>
@@ -1570,16 +1595,7 @@ tabs.find( ".ui-tabs-nav" ).sortable({
 //     $('#spinner').spinner({ min: -100, max: 100 });
 // });
 </script>
-<script>
-// $("#spinner").spinner();
-// $("#spinner2").spinner();
-// $('#spinner').on("spinstop", function(){
-//    alert($(this).spinner('value'));
-// });
-// $('#spinner2').on("spinstop", function(){
-//    alert($(this).spinner('value'));
-// });
-</script>
+
 <script> window.onload = StartTrackerData ();</script>
 </body>
 </html>

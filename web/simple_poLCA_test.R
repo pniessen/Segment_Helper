@@ -8,6 +8,7 @@
 #ds = read.csv(infile)
 
 library(poLCA)
+#library(weights)
 
 myArgs <- commandArgs(trailingOnly = TRUE)
 myArgs2 <- unlist(myArgs)
