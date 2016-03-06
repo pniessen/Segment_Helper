@@ -30,6 +30,11 @@ from matplotlib import cm
 from mpl_toolkits.mplot3d import axes3d
 import uuid
 import shutil
+import matplotlib
+matplotlib.use('Agg')
+from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
 
 #def init():
 # default options
@@ -809,7 +814,7 @@ def submit_data():
 	
 	update_question_dict(timestamps)
 	run_report(timestamps)
-	make_visual(X_rebucketed_df, timestamps)
+	Parallel(n_jobs=num_cores,verbose=5)(delayed(make_visual)(i,X_rebucketed_df, timestamps[i]) for i in range(len(timestamps)))
 	clean_up(timestamps)
 
 	if xls:
@@ -1288,7 +1293,7 @@ def run_poLCA (grid_search,cluster_seed,num_seg,num_rep,rebucketed_filename):
 		# shortened_cluster_seeds = [x for x in itertools.combinations(cluster_seed, 28)]
 		# print "total cluster seeds: ", len(shortened_cluster_seeds)
 
-		num_seg = [5,6,7,8]#,9,10,11,12,13,14]
+		num_seg = [5,6]#,7,8]#,9,10,11,12,13,14]
 		
 		num_cores = multiprocessing.cpu_count()
 		#results = Parallel(n_jobs=num_cores,verbose=5)(delayed(poLCA)(i,cluster_seed, num_seg[i], num_rep, rebucketed_filename) for i in range(10))
@@ -1375,7 +1380,7 @@ def run_report(timestamps):
 				row_spacer = [''] * (len(row))
 				run_report.append(row_spacer)
 				run_report.append(row_spacer)
-				run_report.append(row_spacer)
+				run_report.append(row_spacer)	
 
 			'''
 
@@ -1459,7 +1464,7 @@ def get_segments(X_rebucketed_df, names, cluster_seed, method):
 
 	return clusters 
 
-def make_visual(X_rebucketed_df, timestamps):
+def make_visual(i, X_rebucketed_df, timestamp):
 	'''
 	makes 3-d visual using PCA 
 	'''
@@ -1467,58 +1472,63 @@ def make_visual(X_rebucketed_df, timestamps):
 
 	# visualize in 3D
 	# 	https://zulko.wordpress.com/2012/09/29/animate-your-3d-plots-with-pythons-matplotlib/
-	from matplotlib import pyplot as plt
-	from mpl_toolkits.mplot3d import Axes3D
 	
 	question_names = X_rebucketed_df.columns.values.tolist()
 	# print "X_rebucketed_df.columns.values:", question_names
 
-	for timestamp in timestamps:	
+	#new_results_dict = dict(Parallel(n_jobs=num_cores,verbose=5)(delayed(make_one_results_dict_entry_mp)(i,timestamps[i],results_dict[timestamps[i]], X_rebucketed, names) for i in range(len(timestamps))))
 
-		cluster_seed_names = results_dict[timestamp]['quest_list']
-		print "cluster_seed_names: ", cluster_seed_names
+	# for timestamp in timestamps:
 
-		number_clusters = results_dict[timestamp]['cluster_number']
-		print "number of clusters: ", number_clusters
-		
-		number_components = 3
-		pca = PCA(n_components=number_components)
-		c = pca.fit(X_rebucketed_df[cluster_seed_names].T).components_
+	cluster_seed_names = results_dict[timestamp]['quest_list']
+	print "cluster_seed_names: ", cluster_seed_names
 
-		clusters = results_dict[timestamp]['predicted_clusters']
-		print "clusters:", len(clusters)
+	number_clusters = results_dict[timestamp]['cluster_number']
+	print "number of clusters: ", number_clusters
+	
+	number_components = 3
+	pca = PCA(n_components=number_components)
+	c = pca.fit(X_rebucketed_df[cluster_seed_names].T).components_
 
-		clusters_array = np.array(clusters)
-		clusters_array_2 = clusters_array.reshape(len(clusters),1)
-		print c.shape
-		print clusters_array_2.shape
-		d = np.concatenate((c.T, clusters_array_2), axis=1)
-		print d.shape
-		
-		# generate list of random colors for graph		
-		# color_dict = {0:'red',1:'blue',2:'green',3:'black',4:'yellow', 5:'pink', 6:'orange',7:'grey', 8:'brown', 9:'purple', 10:'indigo', 11:'light blue', 12:'light green'}
-		colors = [np.random.rand(3,) for x in range(number_clusters + 1)]
+	clusters = results_dict[timestamp]['predicted_clusters']
+	print "clusters:", len(clusters)
 
-		#3D plot
-		for num in range(number_clusters + 1):
-			fig = plt.figure(figsize=(3.5,3.5), tight_layout=True)
-			ax = fig.add_subplot(111, projection='3d') # row-col-num
-			plt.plot(d[:,0],d[:,1],d[:,2],'o', markersize=7, color='grey', alpha=0.05)
-			plt.plot(d[d[:,3]==num][:,0],d[d[:,3]==num][:,1],d[d[:,3]==num][:,2],'o', markersize=7, color=colors[num], alpha=0.3)
-			ax.xaxis.set_ticklabels([])
-			ax.yaxis.set_ticklabels([])
-			ax.set_zticks([])
-			filename = 'static/plots/seg_graph_' + str(timestamp) + '_' + str(num) + '.png'
-			fig.savefig(filename)
-			print 'file saved: ', filename
-			plt.close(fig)
-			# plt.show()
+	clusters_array = np.array(clusters)
+	clusters_array_2 = clusters_array.reshape(len(clusters),1)
+	print c.shape
+	print clusters_array_2.shape
+	d = np.concatenate((c.T, clusters_array_2), axis=1)
+	print d.shape
+	
+	# generate list of random colors for graph		
+	# color_dict = {0:'red',1:'blue',2:'green',3:'black',4:'yellow', 5:'pink', 6:'orange',7:'grey', 8:'brown', 9:'purple', 10:'indigo', 11:'light blue', 12:'light green'}
+	colors = [np.random.rand(3,) for x in range(number_clusters + 1)]
+
+	#3D plot
+	fig = plt.figure(figsize=(3.5,3.5), tight_layout=True)
+	ax = fig.add_subplot(111, projection='3d')
+	lines = ax.plot(d[:,0],d[:,1],d[:,2],'o', markersize=7, color='grey', alpha=0.05)
+	ax.xaxis.set_ticklabels([])
+	ax.yaxis.set_ticklabels([])
+	ax.set_zticks([])
+
+	for num in range(number_clusters + 1):
+		lines2 = ax.plot(d[d[:,3]==num][:,0],d[d[:,3]==num][:,1],d[d[:,3]==num][:,2],'o', markersize=7, color=colors[num], alpha=0.3)
+		filename = 'static/plots/seg_graph_' + str(timestamp) + '_' + str(num) + '.png'
+		fig.savefig(filename)
+		print 'file saved: ', filename
+		#print ax.lines
+		ax.lines.pop(1)
+		#print ax.lines		
+	
+	plt.close(fig)
+		# plt.show()
 
 		#2D plot
 		#for num in range(cluster):
-	    #    plt.plot(d[d[:,3]==num][:,0],d[d[:,3]==num][:,1],'o', markersize=7, color=colors[num], alpha=0.5)#, label = labels)
-
-		 #print len(clusters), clusters
+	    #   lines2 = ax.plot(d[d[:,3]==num][:,0],d[d[:,3]==num][:,1],'o', markersize=7, color=colors[num], alpha=0.5)#, label = labels)
+		#	ax.lines.pop(1)
+		 
 
 	return
 

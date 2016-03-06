@@ -1,0 +1,142 @@
+------------------------------------------------------------
+/usr/bin/pip run on Tue Feb  9 07:06:18 2016
+Downloading/unpacking xlsxwriter
+  Getting page https://pypi.python.org/simple/xlsxwriter/
+  URLs to search for versions for xlsxwriter:
+  * https://pypi.python.org/simple/xlsxwriter/
+  Analyzing links from page https://pypi.python.org/simple/xlsxwriter/
+    Found link https://pypi.python.org/packages/2.7/X/XlsxWriter/XlsxWriter-0.5.8-py2.py3-none-any.whl#md5=1acd58463166ea1f889c36351e69ec6f (from https://pypi.python.org/simple/xlsxwriter/), version: 0.5.8
+    Found link https://pypi.python.org/packages/2.7/X/XlsxWriter/XlsxWriter-0.5.9-py2.py3-none-any.whl#md5=460e0a86b53d9089b11790ec13aa16bd (from https://pypi.python.org/simple/xlsxwriter/), version: 0.5.9
+    Found link https://pypi.python.org/packages/2.7/X/XlsxWriter/XlsxWriter-0.6.0-py2.py3-none-any.whl#md5=d54dff67c8777cdb583e870a181fdfc9 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.6.0
+    Found link https://pypi.python.org/packages/2.7/X/XlsxWriter/XlsxWriter-0.6.1-py2.py3-none-any.whl#md5=aba6ab108baae62a008bfaab039fa81f (from https://pypi.python.org/simple/xlsxwriter/), version: 0.6.1
+    Found link https://pypi.python.org/packages/2.7/X/XlsxWriter/XlsxWriter-0.6.2-py2.py3-none-any.whl#md5=f73d6cb31d9cab3c030f66aefde8405c (from https://pypi.python.org/simple/xlsxwriter/), version: 0.6.2
+    Found link https://pypi.python.org/packages/2.7/X/XlsxWriter/XlsxWriter-0.6.3-py2.py3-none-any.whl#md5=486c388dd04d6a1440e6b323a1ea854e (from https://pypi.python.org/simple/xlsxwriter/), version: 0.6.3
+    Found link https://pypi.python.org/packages/2.7/X/XlsxWriter/XlsxWriter-0.6.4-py2.py3-none-any.whl#md5=4c1076faa01bc486f2e76be2980996bc (from https://pypi.python.org/simple/xlsxwriter/), version: 0.6.4
+    Found link https://pypi.python.org/packages/2.7/X/XlsxWriter/XlsxWriter-0.6.5-py2.py3-none-any.whl#md5=c8073046b7bbec9aa8649fd9c6689b30 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.6.5
+    Found link https://pypi.python.org/packages/2.7/X/XlsxWriter/XlsxWriter-0.6.6-py2.py3-none-any.whl#md5=c84c28473d0e6db89e3948f233831d9d (from https://pypi.python.org/simple/xlsxwriter/), version: 0.6.6
+    Found link https://pypi.python.org/packages/2.7/X/XlsxWriter/XlsxWriter-0.6.7-py2.py3-none-any.whl#md5=3b73a960d3c61db3e7b6c33da3aa37b9 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.6.7
+    Found link https://pypi.python.org/packages/2.7/X/XlsxWriter/XlsxWriter-0.6.8-py2.py3-none-any.whl#md5=4f74e4da218d6f736d311be95b7e0750 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.6.8
+    Found link https://pypi.python.org/packages/2.7/X/XlsxWriter/XlsxWriter-0.6.9-py2.py3-none-any.whl#md5=3c981142997af88dd95f0bc47318d468 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.6.9
+    Found link https://pypi.python.org/packages/2.7/X/XlsxWriter/XlsxWriter-0.7.0-py2.py3-none-any.whl#md5=a719a5269984c358da3b68a3c08c0863 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.7.0
+    Found link https://pypi.python.org/packages/2.7/X/XlsxWriter/XlsxWriter-0.7.1-py2.py3-none-any.whl#md5=6630662cc8f319dc1d652611d09f1050 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.7.1
+    Found link https://pypi.python.org/packages/2.7/X/XlsxWriter/XlsxWriter-0.7.2-py2.py3-none-any.whl#md5=8dca87f0bd21708a0587017c14e5f453 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.7.2
+    Found link https://pypi.python.org/packages/2.7/X/XlsxWriter/XlsxWriter-0.7.3-py2.py3-none-any.whl#md5=cb0f6f2483bf4dff3db19b32b8ecf3f3 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.7.3
+    Found link https://pypi.python.org/packages/2.7/X/XlsxWriter/XlsxWriter-0.7.4-py2.py3-none-any.whl#md5=cf78ff0697804945b9a48ffd92cf949f (from https://pypi.python.org/simple/xlsxwriter/), version: 0.7.4
+    Found link https://pypi.python.org/packages/2.7/X/XlsxWriter/XlsxWriter-0.7.5-py2.py3-none-any.whl#md5=79b5a3c3c5b9436a7b6c97e5d47ca5a1 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.7.5
+    Found link https://pypi.python.org/packages/2.7/X/XlsxWriter/XlsxWriter-0.7.6-py2.py3-none-any.whl#md5=9a4174a387e623746eda88ef725e1928 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.7.6
+    Found link https://pypi.python.org/packages/2.7/X/XlsxWriter/XlsxWriter-0.7.7-py2.py3-none-any.whl#md5=941ece38f628f3f87d2a9e41f8818804 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.7.7
+    Found link https://pypi.python.org/packages/2.7/X/XlsxWriter/XlsxWriter-0.7.8-py2.py3-none-any.whl#md5=7d22c67820fb65473c680b4af85e6941 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.7.8
+    Found link https://pypi.python.org/packages/2.7/X/XlsxWriter/XlsxWriter-0.7.9-py2.py3-none-any.whl#md5=7c7af8e0d1f96512b08c6100d00721a0 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.7.9
+    Found link https://pypi.python.org/packages/2.7/X/XlsxWriter/XlsxWriter-0.8.0-py2.py3-none-any.whl#md5=31375a9fa534178f6ac6560b67b023c8 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.8.0
+    Found link https://pypi.python.org/packages/2.7/X/XlsxWriter/XlsxWriter-0.8.1-py2.py3-none-any.whl#md5=43205fa376860331fdff4c5bfbf8cd09 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.8.1
+    Found link https://pypi.python.org/packages/2.7/X/XlsxWriter/XlsxWriter-0.8.2-py2.py3-none-any.whl#md5=fd09bb9276e60d9d8d742d0a4b062199 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.8.2
+    Found link https://pypi.python.org/packages/2.7/X/XlsxWriter/XlsxWriter-0.8.3-py2.py3-none-any.whl#md5=e229c281a71f67508226d11a458e8480 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.8.3
+    Found link https://pypi.python.org/packages/2.7/X/XlsxWriter/XlsxWriter-0.8.4-py2.py3-none-any.whl#md5=f10a8b4af209a310a87f4f891c5e901c (from https://pypi.python.org/simple/xlsxwriter/), version: 0.8.4
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.0.1.tar.gz#md5=963b4fa5fd28a2471e511a70e3c9ee19 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.0.1
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.0.2.tar.gz#md5=04d0f0baa51a3163896841268665b570 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.0.2
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.0.3.tar.gz#md5=f4aafd056154ceac019394b78f258b17 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.0.3
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.0.4.tar.gz#md5=3a19ee926b19aa804966260791f3b08e (from https://pypi.python.org/simple/xlsxwriter/), version: 0.0.4
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.0.5.tar.gz#md5=c3ccd55a6c4fc1b71f4ec34942f34c2e (from https://pypi.python.org/simple/xlsxwriter/), version: 0.0.5
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.0.6.tar.gz#md5=c10dd20280dadeddbc65214589af27ac (from https://pypi.python.org/simple/xlsxwriter/), version: 0.0.6
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.0.7.tar.gz#md5=d23adfd4c58c6b781483bd88f640fc61 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.0.7
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.0.8.tar.gz#md5=8624515093e6970470713d00ea024e05 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.0.8
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.0.9.tar.gz#md5=f987ed91733eb0b8bfe917da222ddcec (from https://pypi.python.org/simple/xlsxwriter/), version: 0.0.9
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.1.0.tar.gz#md5=2b18081a9b1ad74ef8ab2f718aee82b5 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.1.0
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.1.1.tar.gz#md5=0d5907da9bfe7c622daaea90e1c53ebf (from https://pypi.python.org/simple/xlsxwriter/), version: 0.1.1
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.1.2.tar.gz#md5=6cfeb9cffbfc67368298d7ad850c1f2f (from https://pypi.python.org/simple/xlsxwriter/), version: 0.1.2
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.1.3.tar.gz#md5=a3d85483c5fe9f916c1d2ee84309e04a (from https://pypi.python.org/simple/xlsxwriter/), version: 0.1.3
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.1.4.tar.gz#md5=9fd57a002ebd30b5232d17f9e845d8ab (from https://pypi.python.org/simple/xlsxwriter/), version: 0.1.4
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.1.5.tar.gz#md5=3b7ec934215e94acbf18c0503af638bb (from https://pypi.python.org/simple/xlsxwriter/), version: 0.1.5
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.1.6.tar.gz#md5=3263f62c748e449273cce050f0c41177 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.1.6
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.1.7.tar.gz#md5=592a8cfc86c4d8dd9342d7d6e83bd169 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.1.7
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.1.8.tar.gz#md5=7795a953e7f02025f9a75a380262aa80 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.1.8
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.1.9.tar.gz#md5=609b7df721247879dfa20036a494cfc8 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.1.9
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.2.0.tar.gz#md5=7aa9c15ae58187063a8379b13f034720 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.2.0
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.2.1.tar.gz#md5=25cd937a6fdaf2e274ad8032483f68b8 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.2.1
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.2.2.tar.gz#md5=3ec7070e53690217370f8702e1d40c0a (from https://pypi.python.org/simple/xlsxwriter/), version: 0.2.2
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.2.3.tar.gz#md5=f690f61f6b7e32a9016f60c49f9e7741 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.2.3
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.2.4.tar.gz#md5=e850f3e2a2da4c4622df61b52340bae1 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.2.4
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.2.5.tar.gz#md5=4e62b8c902f93433e56e3389e84a1013 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.2.5
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.2.6.tar.gz#md5=4bb9b3847feb96e2fe42331d5f1a319a (from https://pypi.python.org/simple/xlsxwriter/), version: 0.2.6
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.2.7.tar.gz#md5=4c731e447d81892e315230c919773d33 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.2.7
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.2.8.tar.gz#md5=fb5dc78271057b292d03a414db259d3a (from https://pypi.python.org/simple/xlsxwriter/), version: 0.2.8
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.2.9.tar.gz#md5=63c464aa063a773ba79d0c83771d2654 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.2.9
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.3.0.tar.gz#md5=82c88433f9786028f4064d5ebe4032f5 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.3.0
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.3.1.tar.gz#md5=c7524031d4a0347ce5ef50f2d0e4cc50 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.3.1
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.3.2.tar.gz#md5=49e75d3e459a43b3d4874213c66b1b3c (from https://pypi.python.org/simple/xlsxwriter/), version: 0.3.2
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.3.3.tar.gz#md5=ce881988850a8978a2a8c516ece6fd77 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.3.3
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.3.4.tar.gz#md5=1fa21b44322d95e6a3459e4c1738e39b (from https://pypi.python.org/simple/xlsxwriter/), version: 0.3.4
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.3.5.tar.gz#md5=bcc355db61f4b0e528ad0a70bf756489 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.3.5
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.3.6.tar.gz#md5=a5530459023a0d003a3ba58c713185a0 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.3.6
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.3.7.tar.gz#md5=9157799a5f0cf6122be9076b0e2dd0c1 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.3.7
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.3.8.tar.gz#md5=135cd38175d00cfd065cc19b7a3a7959 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.3.8
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.3.9.tar.gz#md5=e9fd418f2797c20f572529522c1f4875 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.3.9
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.4.0.tar.gz#md5=ca5c43dba39eec477c1478a373ca5d1c (from https://pypi.python.org/simple/xlsxwriter/), version: 0.4.0
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.4.1.tar.gz#md5=68a6b845353e9a0b9b2452b0ff515878 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.4.1
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.4.2.tar.gz#md5=bf8b448a016af99af790c17a066e240c (from https://pypi.python.org/simple/xlsxwriter/), version: 0.4.2
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.4.3.tar.gz#md5=3109523edb883adcc7b2890ffa976048 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.4.3
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.4.4.tar.gz#md5=d9f0c72595f4b898ab7c07c4f2cf69a8 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.4.4
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.4.5.tar.gz#md5=f8bb5d3467a240199271ecae6bc433b9 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.4.5
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.4.6.tar.gz#md5=bfaa8c89c9b60e197cb3038c0e533c76 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.4.6
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.4.7.tar.gz#md5=b2d36da470b5ff28aebaddd0bc569654 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.4.7
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.4.8.tar.gz#md5=de4f9e15d000991bac7fdac128028d18 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.4.8
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.4.9.tar.gz#md5=5f3843148354e8cd24e3ef194b17737c (from https://pypi.python.org/simple/xlsxwriter/), version: 0.4.9
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.5.0.tar.gz#md5=0cd34a00b7985f2655ab0d69bd68280a (from https://pypi.python.org/simple/xlsxwriter/), version: 0.5.0
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.5.1.tar.gz#md5=e370e2d6a35a5ca01314bef86d2a8897 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.5.1
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.5.2.tar.gz#md5=092dcadd949edb272fe5a259d82576a8 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.5.2
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.5.3.tar.gz#md5=490074368f784c4a06295a5dca2c0d7d (from https://pypi.python.org/simple/xlsxwriter/), version: 0.5.3
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.5.4.tar.gz#md5=1acc0080c98dd4dc5f4ed375f1bbe8e6 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.5.4
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.5.5.tar.gz#md5=9ba874d43e039ae286c438a101d67539 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.5.5
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.5.6.tar.gz#md5=49321d26183341fead14440cb18777c3 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.5.6
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.5.7.tar.gz#md5=9472d63716ad01065a1ab56fa5d7be05 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.5.7
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.5.8.tar.gz#md5=7de52dd0570f97f6d86f764b6debd121 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.5.8
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.5.9.tar.gz#md5=3c87d380b93e761943a7220fdcc5f5b5 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.5.9
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.6.0.tar.gz#md5=f57023e261768a2114bd96cb36f9f50f (from https://pypi.python.org/simple/xlsxwriter/), version: 0.6.0
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.6.1.tar.gz#md5=95c0038995307d2f7a532c89754fc776 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.6.1
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.6.2.tar.gz#md5=677b5fdbd0c7d9febddc36bbe6859d4f (from https://pypi.python.org/simple/xlsxwriter/), version: 0.6.2
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.6.3.tar.gz#md5=574a83550e632e0cd4b6dfa27e9a7639 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.6.3
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.6.4.tar.gz#md5=b3702816516257a03f432b8c978406f0 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.6.4
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.6.5.tar.gz#md5=7d58c3a4684ea79b9e5cbeee7f9240b0 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.6.5
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.6.6.tar.gz#md5=5dc51eda210ddea487e33e5c9fc5e640 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.6.6
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.6.7.tar.gz#md5=4f8ac473e338477352b16e1de0c4906d (from https://pypi.python.org/simple/xlsxwriter/), version: 0.6.7
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.6.8.tar.gz#md5=7448a483c459de690c64243bc360d5e3 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.6.8
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.6.9.tar.gz#md5=73bf2018568c601ed92eb99c03016d36 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.6.9
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.7.0.tar.gz#md5=99e9eb83927838c50a886880f18f9588 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.7.0
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.7.1.tar.gz#md5=dfbf651490e84484375913d3be7ce58e (from https://pypi.python.org/simple/xlsxwriter/), version: 0.7.1
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.7.2.tar.gz#md5=e50536869bb2261a620c4d5500d0a8bd (from https://pypi.python.org/simple/xlsxwriter/), version: 0.7.2
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.7.3.tar.gz#md5=090a2d2b0c3c654ba44954be29306371 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.7.3
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.7.4.tar.gz#md5=c62eb04c5be74150bed9f3fa58ca6bdd (from https://pypi.python.org/simple/xlsxwriter/), version: 0.7.4
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.7.5.tar.gz#md5=5e23f07221796a439072f3f38a21d6c2 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.7.5
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.7.6.tar.gz#md5=251ecfe3e80c7f04cb750efbab808514 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.7.6
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.7.7.tar.gz#md5=c68dca16927e2a919837c68ff63b1e5b (from https://pypi.python.org/simple/xlsxwriter/), version: 0.7.7
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.7.8.tar.gz#md5=8f44e73e8906b32b1d19ac8fb8014b56 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.7.8
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.7.9.tar.gz#md5=7cd1ecb27c5ffc51c8f1ad884ad4be03 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.7.9
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.8.0.tar.gz#md5=7765c5dc7f4c346f23f0fbbafaad7667 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.8.0
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.8.1.tar.gz#md5=3fe4c3a0510f66815ba1966bcc733bb5 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.8.1
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.8.2.tar.gz#md5=dd0f9651dd392ab65898e43560adc695 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.8.2
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.8.3.tar.gz#md5=aa17ba7f510ec4e468548152d960e666 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.8.3
+    Found link https://pypi.python.org/packages/source/X/XlsxWriter/XlsxWriter-0.8.4.tar.gz#md5=df43f261e541485904d7c91c1a2d6751 (from https://pypi.python.org/simple/xlsxwriter/), version: 0.8.4
+  Using version 0.8.4 (newest of versions: 0.8.4, 0.8.4, 0.8.3, 0.8.3, 0.8.2, 0.8.2, 0.8.1, 0.8.1, 0.8.0, 0.8.0, 0.7.9, 0.7.9, 0.7.8, 0.7.8, 0.7.7, 0.7.7, 0.7.6, 0.7.6, 0.7.5, 0.7.5, 0.7.4, 0.7.4, 0.7.3, 0.7.3, 0.7.2, 0.7.2, 0.7.1, 0.7.1, 0.7.0, 0.7.0, 0.6.9, 0.6.9, 0.6.8, 0.6.8, 0.6.7, 0.6.7, 0.6.6, 0.6.6, 0.6.5, 0.6.5, 0.6.4, 0.6.4, 0.6.3, 0.6.3, 0.6.2, 0.6.2, 0.6.1, 0.6.1, 0.6.0, 0.6.0, 0.5.9, 0.5.9, 0.5.8, 0.5.8, 0.5.7, 0.5.6, 0.5.5, 0.5.4, 0.5.3, 0.5.2, 0.5.1, 0.5.0, 0.4.9, 0.4.8, 0.4.7, 0.4.6, 0.4.5, 0.4.4, 0.4.3, 0.4.2, 0.4.1, 0.4.0, 0.3.9, 0.3.8, 0.3.7, 0.3.6, 0.3.5, 0.3.4, 0.3.3, 0.3.2, 0.3.1, 0.3.0, 0.2.9, 0.2.8, 0.2.7, 0.2.6, 0.2.5, 0.2.4, 0.2.3, 0.2.2, 0.2.1, 0.2.0, 0.1.9, 0.1.8, 0.1.7, 0.1.6, 0.1.5, 0.1.4, 0.1.3, 0.1.2, 0.1.1, 0.1.0, 0.0.9, 0.0.8, 0.0.7, 0.0.6, 0.0.5, 0.0.4, 0.0.3, 0.0.2, 0.0.1)
+  Downloading from URL https://pypi.python.org/packages/2.7/X/XlsxWriter/XlsxWriter-0.8.4-py2.py3-none-any.whl#md5=f10a8b4af209a310a87f4f891c5e901c (from https://pypi.python.org/simple/xlsxwriter/)
+Installing collected packages: xlsxwriter
+Cleaning up...
+  Removing temporary dir /tmp/pip_build_pniessen...
+Exception:
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/dist-packages/pip/basecommand.py", line 122, in main
+    status = self.run(options, args)
+  File "/usr/lib/python2.7/dist-packages/pip/commands/install.py", line 283, in run
+    requirement_set.install(install_options, global_options, root=options.root_path)
+  File "/usr/lib/python2.7/dist-packages/pip/req.py", line 1436, in install
+    requirement.install(install_options, global_options, *args, **kwargs)
+  File "/usr/lib/python2.7/dist-packages/pip/req.py", line 672, in install
+    self.move_wheel_files(self.source_dir, root=root)
+  File "/usr/lib/python2.7/dist-packages/pip/req.py", line 902, in move_wheel_files
+    pycompile=self.pycompile,
+  File "/usr/lib/python2.7/dist-packages/pip/wheel.py", line 206, in move_wheel_files
+    clobber(source, lib_dir, True)
+  File "/usr/lib/python2.7/dist-packages/pip/wheel.py", line 193, in clobber
+    os.makedirs(destsubdir)
+  File "/usr/lib/python2.7/os.py", line 157, in makedirs
+    mkdir(name, mode)
+OSError: [Errno 13] Permission denied: '/usr/local/lib/python2.7/dist-packages/xlsxwriter'

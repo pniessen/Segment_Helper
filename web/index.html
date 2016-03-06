@@ -675,7 +675,7 @@
     <script src="/static/js/jquery.fixedheadertable.js"></script>
 
     <!--  Closeable  https://github.com/andrewwatts/ui.tabs.closable -->
-    <script src="/static/js/ui.tabs.closable.js"></script>
+    // <!-- <script src="/static/js/ui.tabs.closable.js"></script> -->
 
     <script>
     // turns on / off waiting screen
@@ -1003,10 +1003,12 @@ function SubmitData () {
         $("#spinner-" + num_tabs).spinner("value", 140);
         $('#spinner-' + num_tabs).on("spinstop", function(){
             var spinvalue = $(this).spinner('value');
+            var new_t_num2 = this.id.slice(8);
+            console.log(new_t_num2);
                
                 $(function() {
-                var headerskipper = $("#run-report-" + num_tabs).find("tr:first td").length *  7;
-                var table_cells = $("#run-report-" + num_tabs + " td:gt(" + headerskipper + ")");
+                var headerskipper = $("#run-report-" + new_t_num2).find("tr:first td").length *  7;
+                var table_cells = $("#run-report-" + new_t_num2 + " td:gt(" + headerskipper + ")");
                 table_cells.each(function(index) { // td:gt(96) excudes first 96 <td> (=top header)  
                     //var scale = [['vPoor', 10], ['poor', 50], ['avg', 250], ['good', 1250], ['vGood', 6250]];
                     var scale = [['good', spinvalue]];
@@ -1028,6 +1030,7 @@ function SubmitData () {
         $("#seg-spinner-" + num_tabs).spinner({min: 0, max:tracker_data.run_scorecard[h].b});
         $("#seg-spinner-" + num_tabs).spinner("value", 0);
         var timestamp = tracker_data.run_scorecard[h].a;
+        console.log('timestamp for tab ', num_tabs, 'is', timestamp, 'h=', h);
 
         // https://perishablepress.com/3-ways-preload-images-css-javascript-ajax/
         // http://stackoverflow.com/questions/24822631/object-htmlimageelement-showing-instead-of-image
@@ -1040,10 +1043,16 @@ function SubmitData () {
 
         $('#seg-spinner-' + num_tabs).on("spinstop", function(tracker_data,h,images){
             console.log($(this).spinner('value'));
-            console.log(timestamp);
+            console.log('spinner id: ',this.id);
+            var new_t_num = this.id.slice(12);
+            //console.log('new_t_num:', new_t_num);
+            //console.log(timestamp);
             var seg_clicked = $(this).spinner('value');
-            var seg_plot = document.getElementById('seg-plot-' + num_tabs);
-            seg_plot.innerHTML = window.images[num_tabs][seg_clicked].outerHTML;
+            var seg_plot = document.getElementById('seg-plot-' + new_t_num);
+            //var seg_plot = document.getElementById('seg-plot-' + num_tabs);
+            console.log('seg_plot:', seg_plot);
+            // seg_plot.innerHTML = window.images[num_tabs][seg_clicked].outerHTML;
+            seg_plot.innerHTML = window.images[new_t_num][seg_clicked].outerHTML;
             //console.log(seg_plot);
 
 
@@ -1070,7 +1079,7 @@ function SubmitData () {
         for (i = 0; i < num_questions; i++) {
             var cols_names = Object.keys(first_tracker_data.tracker[i]);
             var question_name = first_tracker_data.tracker[i][cols_names[0]];
-            console.log(question_name);
+            //console.log(question_name);
             var innerDiv = document.createElement('div');
             innerDiv.textContent = question_name; 
             innerDiv.id = question_name;
