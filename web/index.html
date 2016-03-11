@@ -68,7 +68,7 @@
     margin-left:auto; 
     margin-right:auto;
     td { background:#C7DDEE none repeat-x scroll center left; color:#000; padding:7px 15px; }
-    tr td { background:#fff url(static/row_bkg.png) repeat-x scroll center left; cursor:pointer; }
+    tr td { background:#fff url(static/row_bkg.png) repeat-x scroll center left; /*cursor:pointer;*/ }
     }
     
     /*body { font-family:Arial, Helvetica, Sans-Serif; font-size:0.8em;}*/
@@ -78,7 +78,7 @@
     #table-goes-here ul { margin:10px 0 10px 40px; padding:0px;}
     #table-goes-here th { background:#7CB8E2 url(static/header_bkg.png) repeat-x scroll center left; color:#fff; padding:7px 15px; text-align:left;}
     #table-goes-here td { background:#C7DDEE none repeat-x scroll center left; color:#000; padding:7px 15px; }
-    #table-goes-here tr td { background:#fff url(static/row_bkg.png) repeat-x scroll center left; cursor:pointer; }
+    #table-goes-here tr td { background:#fff url(static/row_bkg.png) repeat-x scroll center left; /*cursor:pointer;*/ }
     #table-goes-here div.arrow { background:transparent url(arrows.png) no-repeat scroll 0px -16px; width:16px; height:16px; display:block;}
     #table-goes-here div.up { background-position:0px 0px;}
     #table-goes-here  { margin-left:auto; margin-right:auto;}
@@ -90,7 +90,7 @@
     #tracker-goes-here ul { margin:10px 0 10px 40px; padding:0px;}
     #tracker-goes-here th { background:#7CB8E2 url(static/header_bkg.png) repeat-x scroll center left; color:#fff; padding:1px 4px; text-align:left;}
     #tracker-goes-here td { background:#C7DDEE none repeat-x scroll center left; color:#000; padding:1px 4px; }
-    #tracker-goes-here tr td { background:#fff url(static/row_bkg.png) repeat-x scroll center left; cursor:pointer; }
+    #tracker-goes-here tr td { background:#fff url(static/row_bkg.png) repeat-x scroll center left; /*cursor:pointer; */}
     #tracker-goes-here div.arrow { background:transparent url(arrows.png) no-repeat scroll 0px -16px; width:16px; height:16px; display:block;}
     #tracker-goes-here div.up { background-position:0px 0px;}
     #tracker-goes-here  { margin-left:auto; margin-right:auto;}
@@ -122,7 +122,10 @@
     .run-report div.up { background-position:0px 0px;}
     .run-report  { margin-left:auto; margin-right:auto;}
 
-    .good {background-color: #cf0 !important;}
+    .ok {background-color: #fee8c8!important;}
+    .good {background-color: #fdbb84 !important;}
+    .great {background-color: #e34a33 !important;}
+
     .ui-spinner input {font-family:Arial, Helvetica, Sans-Serif; font-size:0.8em; width:50px; text-align: center;}
    
     #control-table {left: 50%; margin-left: 300px;}
@@ -201,20 +204,29 @@
                     <li>
                         <a class="page-scroll" href="#about">About</a>
                     </li>
-                    <li>
+<!--                     <li>
                         <a class="page-scroll" href="#objective-function">Dimension</a>
-                    </li>
+                    </li> -->
 <!--                     <li>
                         <a class="page-scroll" href="#explorer">Explorer</a>
                     </li> -->
                     <li>
-                        <a class="page-scroll" href="#tabz">Run Manager</a>
+                        <a class="page-scroll" onclick = "$('#myModal4').modal('toggle')">Load Data</a>
+                    </li>
+                    <li>
+                        <a class="page-scroll" href="#tabz">Segment</a>
                     </li>
 <!--                     <li>
                         <a class="page-scroll" href="#scorecard">Scorecard</a>
                     </li> -->
-                    <li>
+<!--                     <li>
                         <a class="page-scroll" href="#contact">Contact</a>
+                    </li> -->
+                    <li>
+                        <a class="page-scroll ui-icon-lock" onclick = "$('#myModal3').modal('toggle')"><span class="glyphicon glyphicon-lock"></span>Login</a>
+                    </li>
+                    <li>
+                        <a class="page-scroll"><span class="glyphicon glyphicon-floppy-disk"></span>Save</a>
                     </li>
                 </ul>
             </div>
@@ -229,8 +241,8 @@
             <div class="container">
                 <div class="row">
                     <div class="col-md-8 col-md-offset-2">
-                        <h1> Rosetta Segment Helper (Beta)</h1>
-                        <p class="intro-text">A simple tool to explore segmenting using survey data<br></p>
+                        <h1> Rosetta Segment Helper (Beta v2)</h1>
+                        <p class="intro-text">'Segment 1.0 in the cloud - let machine learning automate the boring stuff, so you can focus on the fun part'<br></p>
                         <a href="#about" class="btn btn-circle page-scroll">
                             <i class="fa fa-angle-double-down animated"></i>
                         </a>
@@ -243,32 +255,25 @@
     <!-- About Section -->
     <section id="about" class="container content-section text-center">
         <div class="row">
-            <div class="col-md-3">
+            <div class="col-md-5">
                 <h2>Classic Mode:</h2>
                 <li><p>Load data file</p></li>
                 <li><p>Choose variables to segment by</p></li>
                 <li><p>Review results</p></li>
                 <li><p>Repeat</p></li>
+                <li><p>Download or Save your work</p></li>
                 <a href="#tabz" class="btn btn-circle page-scroll">
                     <i class="fa fa-angle-double-down animated"></i>
                 </a>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-5">
                     <h2>"Plus" mode:</h2>
                     <li><p>Load data file</p></li>
+                    <li><p>Segment Helper cleans, weights (vs US pop)</p></li>
                     <li><p>Segment Helper suggests cluster seed</p></li>
                     <li><p>Review results</p></li>
                     <li><p>Repeat</p></li>
-                <a href="#tabz" class="btn btn-circle page-scroll">
-                    <i class="fa fa-angle-double-down animated"></i>
-                </a>
-            </div>
-            <div class="col-md-4">
-                    <h2>"Grid" mode:</h2>
-                    <li><p>Load data file</p></li>
-                    <li><p>Segment Helper suggests cluster seed, runs grid search</p></li>
-                    <li><p>Review results</p></li>
-                    <li><p>Repeat</p></li>
+                    <li><p>Download or Save your work</p></li>
                 <a href="#tabz" class="btn btn-circle page-scroll">
                     <i class="fa fa-angle-double-down animated"></i>
                 </a>
@@ -366,7 +371,7 @@
         </div> -->
 
            <!-- http://www.erummunir.com/240/clear-text-on-input-field-on-click -->
-        <div class="row">
+<!--         <div class="row">
                     <div class="btn-group" role="group" aria-label="...">
                     <button type="button" id = 'objective-function-button' onclick=getExplorerIds() class="btn btn-primary ">Create</button>
                     <div class="btn-group" role="group" aria-label="...">
@@ -381,10 +386,9 @@
             <p>
         </div>  
         <div class="row">
-            <!-- <div class="col-lg-12 col-lg-offset-1"> -->
             <div class="container2" id = 'explorer-left'> <h5>Potential Variables</h5></div>
             <div class="container2" id="explorer-right"><h5>Dimension</h5><input id='objective-function-field' style="color:black" type = text onclick="this.value='';" onfocus="this.select()" onblur="this.value=!this.value?'<enter name>':this.value;" value="<enter name>"></div>
-        </div> 
+        </div>  -->
 <!--             <div class="dropdown">
               <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                 Dropdown
@@ -427,7 +431,7 @@
 
         <!-- Tabs -->
         <section id='tabz' class="content-section text-center">
-            <h2>Run Manager</h2>
+            <h2>Segment</h2>
         <div class = 'row'>
             <div class="btn-toolbar center" role="toolbar" aria-label="...">
                 <div class="btn-group" role="group" aria-label="...">
@@ -452,26 +456,52 @@
                 </div>
                 <div class="btn-group" role="group" aria-label="...">
                   <!-- <button type="button" class="btn btn-primary">Method</button> -->
-                  <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-primary dropdown-toggle" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+<!--                   <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-primary dropdown-toggle" id="dropdownMenuX" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                       Method 
                       <span class="caret"></span>
                     </button>
-                    <ul class="dropdown-menu" id = 'dropdown-menu-2'>
+                    <ul class="dropdown-menu" id = 'dropdown-menu-X'>
                       <li><a href="#!">poLCA</a></li>
                       <li class="disabled"><a href="#!">Kmeans</a></li>
                       <li class="disabled"><a href="#!">DBScan</a></li>
                       <li class="disabled"><a href="#!">AffinityProp</a></li>
                       <li class="disabled"><a href="#!">Ensemble</a></li>
                     </ul>
-                  </div> <!-- btn-group dropdown wrapper -->
+                  </div> --> <!-- btn-group dropdown wrapper -->
        <!--            <button type="button" class="btn btn-primary">Grid?</button> -->
-                  <button type="button" id = 'grid-button' class="btn btn-primary" data-toggle="button" aria-pressed="true" autocomplete="off">
-                    Grid<!-- <div id='grid-on-off'>off</div> --></button>
+<!--                   <button type="button" id = 'grid-button-X' class="btn btn-primary" data-toggle="button" aria-pressed="true" autocomplete="off" bgcolor = 'red'> 
+                    Grid<!-- <div id='grid-on-off'>off</div> --></button> 
                   <button id = 'objective-function-toggle' type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal2">Obj Func</button>
-                  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal"><span class="glyphicon glyphicon-upload"></span> Upload</button>
+                  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal"><span class="glyphicon glyphicon-cloud-upload"></span> Upload</button>
 
-                  <a href = '/download' class="btn btn-primary"><span class="glyphicon glyphicon-download"></span> Download</a> 
+                  <a href = '/download' class="btn btn-primary"><span class="glyphicon glyphicon-cloud-download"></span> Download</a>
+                  <button type="button" id = 'advanced-button' onclick="$('#advanced-toolbar').toggle()" class="btn btn-primary"><span class="glyphicon glyphicon-wrench"></span> Advanced</button>
+                </div>
+            </div>
+        </div>
+        <p>
+        <div class = 'row' id = 'advanced-toolbar'>
+            <div class="btn-toolbar center" role="toolbar" aria-label="..." id = 'advanced-toolbar'>
+                <div class="btn-group" role="group" aria-label="...">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-primary dropdown-toggle" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Method <span class="caret"></span></button>
+                        <ul class="dropdown-menu" id = 'dropdown-menu-2'>
+                            <li><a href="#!">poLCA</a></li>
+                            <li><a href="#!">Kmeans</a></li>
+                            <li><a href="#!">Spectral</a></li>
+                            <li><a href="#!">Birch</a></li>
+                            <li class="divider"></li>
+                            <li><a href="#!">AffinityProp</a></li>
+                            <li><a href="#!">DBScan</a></li>
+                            <li><a href="#!">AgClust</a></li>
+                            <li><a href="#!">MeanShift</a></li>
+                            <li class="disabled"><a href="#!">Ensemble</a></li>
+                        </ul>
+                      </div> <!-- btn-group dropdown wrapper -->
+                        <button type="button" id = 'grid-button' class="btn btn-primary" data-toggle="button" aria-pressed="true" autocomplete="off" bgcolor = 'red'> Grid<!-- <div id='grid-on-off'>off</div> --></button>
+                    <button type="button" id = 'hide-col-button-2' class="btn btn-primary">Cluster Seed</button>
+                    <button type="button" id = 'hide-col-button' class="btn btn-primary">Hide Col</button>   
                 </div>
             </div>
         </div>
@@ -559,7 +589,7 @@
             <!-- <h2 class="demoHeaders">Run Tracker 2</h2> -->
             <div id="tabs">
                 <ul id='tab-list'>
-                    <li class = 'tab'><input id = 'tab-name-1' style="color:black" class="tab-name" type="text"/><a href="#tabs-1">Tracker</a></li>
+                    <li class = 'tab'><input id = 'tab-name-1' style="color:black" class="tab-name" type="text"/><a href="#tabs-1">Run Manager</a></li>
                 </ul>
                 <div id="tabs-1"><div id="tracker-goes-here" class = "center"></div>some text</div>
             </div>
@@ -592,17 +622,27 @@
           </div>
           <div class="modal-body">
             <form id="upload-file" method="post" enctype="multipart/form-data">
+<!--                         <fieldset>
+                            <div class='input-group'>
+                                <span class="input-group-btn">
+                                    <span class="btn btn-primary btn-file">
+                                        Responders&hellip;<input id = 'file-search-3' name="file" type="file">
+                                    </span>
+                                </span><input id = 'upload-field-3' type="text" class="form-control" readonly>
+                            </div>
+                        </fieldset> -->
                         <fieldset>
                             <div class='input-group'>
                                 <span class="input-group-btn">
                                     <span class="btn btn-primary btn-file">
-                                        Browse&hellip;<input id = 'file-search-2' name="file" type="file">
+                                        Responses&hellip;<input id = 'file-search-2' name="file" type="file">
                                     </span>
                                 </span><input id = 'upload-field-2' type="text" class="form-control" readonly>
                             </div>
 
                             <button id="upload-file-btn" class="btn btn-primary btn-file" type="button">Upload</button>
                         </fieldset>
+
                     </form> 
            <!--  <p>Some text in the modal.</p> -->
           </div>
@@ -638,7 +678,72 @@
         </div>
       </div>
     </div> <!-- end Mymodial2 -->
+ <!-- yet another modial -->
+     <div id="myModal3" class="modal" role="dialog">
+          <div class="modal-dialog">
 
+            <!-- Modal content-->
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title" style="color:black">Please log in:</h4>
+              </div> <!-- modal-header -->
+              <div class="modal-body">
+                <form class="form" method="post" style="color:black" action="#">
+                    <label>Email :</label>
+                    <input type="text" name="demail" id="email">
+                    <label>Password :</label>
+                    <input type="password" name="password" id="password">
+                    <input type="button" class = 'btn btn-primary' name="login" id="login" value="Login">
+                    <br>
+                </form>
+              </div> <!-- modal-body -->
+            </div> <!-- modal-content -->
+          </div> <!-- modal-dialog -->
+        </div> <!-- end Mymodial3 -->
+<!-- Yet another another modal -->
+    <div id="myModal4" class="modal fade" role="dialog">
+      <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title" style="color:black">Choose files to upload</h4>
+          </div>
+          <div class="modal-body">
+            <form id="upload-file-2" method="post" enctype="multipart/form-data">
+                        <fieldset>
+                            <div class='input-group'>
+                                <span class="input-group-btn">
+                                    <span class="btn btn-primary btn-file">
+                                        Responders&hellip;<input id = 'file-search-4' name="file" type="file">
+                                    </span>
+                                </span><input id = 'upload-field-4' type="text" class="form-control" readonly>
+                            </div>
+                        </fieldset>
+                        <fieldset>
+                            <div class='input-group'>
+                                <span class="input-group-btn">
+                                    <span class="btn btn-primary btn-file">
+                                        Responses&hellip;<input id = 'file-search-3' name="file" type="file">
+                                    </span>
+                                </span><input id = 'upload-field-3' type="text" class="form-control" readonly>
+                            </div>
+
+                            <button id="upload-file-btn-2" class="btn btn-primary btn-file" type="button">Upload</button>
+                        </fieldset>
+
+                    </form> 
+           <!--  <p>Some text in the modal.</p> -->
+          </div>
+<!--           <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div> -->
+        </div>
+
+      </div>
+    </div>
     <!-- Footer -->
     <footer>
         <div class="container text-center">
@@ -767,7 +872,7 @@ function SubmitData () {
     var checkbox_ids = getCheckedBoxes('tcheck');
         // xls_out = true,
         // grid_search = true;
-    if (grid_search == 'off') {grid_search_flag = false} else {grid_search_flag = true};
+    if (grid_search == 'on') {grid_search_flag = true} else {grid_search_flag = false};
     if (xls_out == 'off') {xls_out_flag = false} else {xls_out_flag = true};
     if (num_segments <= 0){num_segments = 5};   
 
@@ -776,6 +881,7 @@ function SubmitData () {
     data_to_send['segments'] = num_segments;
     data_to_send['xls'] = xls_out_flag;
     data_to_send['grid_search'] = grid_search_flag;
+    data_to_send['method'] = method;
     var data_to_send = JSON.stringify(data_to_send);
    
     console.log(data_to_send, checkbox_ids);      
@@ -897,7 +1003,7 @@ function SubmitData () {
         header_row.append("<th>" + "</th>");
         for (var h = 0; h < cols; h++) {
             var header_name = cols_names[h];
-            if (h < 11) {header_name = cols_names[h].slice(4)};
+            if (h < 12) {header_name = cols_names[h].slice(4)};
             console.log(header_name);
             $('<th></th>').text(header_name).appendTo(header_row);}
 
@@ -930,7 +1036,7 @@ function SubmitData () {
       //   });
     }
     </script>
-
+    
     <script>
     window.images = [];
     console.log('images', images) //Array()
@@ -952,6 +1058,8 @@ function SubmitData () {
             var run_mle = document.getElementById('run-scoreboard-mle-' + num_tabs);
             var run_chisq = document.getElementById('run-scoreboard-chisq-' + num_tabs);
             var run_bic = document.getElementById('run-scoreboard-bic-' + num_tabs);
+            var run_method = document.getElementById('run-scoreboard-method-' + num_tabs);
+            var run_datetime = document.getElementById('run-datetime-' + num_tabs);
 
             num_segments.innerHTML = tracker_data.run_scorecard[h].b;
             num_variables.innerHTML = tracker_data.run_scorecard[h].c;
@@ -960,6 +1068,8 @@ function SubmitData () {
             run_mle.innerHTML = tracker_data.run_scorecard[h].d;
             run_chisq.innerHTML = tracker_data.run_scorecard[h].e;
             run_bic.innerHTML = tracker_data.run_scorecard[h].f;
+            run_method.innerHTML = tracker_data.run_scorecard[h].i;
+            run_datetime.innerHTML = tracker_data.run_scorecard[h].j;
 
             mytable = $('<table></table>').attr({ id: 'run-report-' + num_tabs }).attr({class: 'tg center table-goes-here fancyTable'});
             // var num_runs = tracker_data.run_reports.length; // number of reports
@@ -987,15 +1097,16 @@ function SubmitData () {
         var table_cells = $("#run-report-" + num_tabs + " td:gt(" + headerskipper + ")");
         table_cells.each(function(index) { // td:gt(96) excudes first 96 <td> (=top header)  
             //var scale = [['vPoor', 10], ['poor', 50], ['avg', 250], ['good', 1250], ['vGood', 6250]];
-            var scale = [['good', 140]];
+            var scale = [['ok',100],['good', 140],['great',200]];
+            //console.log('scale length:', scale.length)
             var score = $(this).text();
             for (var i = 0; i < scale.length; i++) {
                 if (score >= scale[i][1]) {
                     $(this).addClass(scale[i][0]);
                     var prior_sib_location =  2 + ((num_cols - 4)/2);
                     var prior_sib = table_cells[index-prior_sib_location];
-                    prior_sib.className += scale[i][0]; 
-                    }
+                    prior_sib.className = scale[i][0]; 
+                    }   
                 }
             });
         }); // end of conditional formatting function
@@ -1011,7 +1122,7 @@ function SubmitData () {
                 var table_cells = $("#run-report-" + new_t_num2 + " td:gt(" + headerskipper + ")");
                 table_cells.each(function(index) { // td:gt(96) excudes first 96 <td> (=top header)  
                     //var scale = [['vPoor', 10], ['poor', 50], ['avg', 250], ['good', 1250], ['vGood', 6250]];
-                    var scale = [['good', spinvalue]];
+                    var scale = [['ok',100],['good', spinvalue],['great',200]];
                     var score = $(this).text();
 
                     for (var i = 0; i < scale.length; i++) {
@@ -1021,7 +1132,7 @@ function SubmitData () {
                             $(this).addClass(scale[i][0]);
                             var prior_sib_location = 2 + ((num_cols - 4)/2);
                             var prior_sib = table_cells[index - prior_sib_location];
-                            prior_sib.className += scale[i][0];
+                            prior_sib.className = scale[i][0];
                             }
                         }
                     });
@@ -1221,7 +1332,7 @@ function appendColumn(tracker_data) {
     console.log('document.getElementByTagName:', row_list.length);
 
     for (var z = 1; z < row_list.length; z++) {//old: row_list.length-1
-    console.log('id',row_list[z].id.slice(7));
+    // console.log('id',row_list[z].id.slice(7));
     current_question_order[z] = row_list[z].id.slice(7);
     };
 
@@ -1391,9 +1502,9 @@ $(document).ready(function() {
 
 <script>
 var num_segments = [],
-    rewind = [];
-    xls_out =[]
-    grid_search = []
+    xls_out =[],
+    grid_search = [],
+    method = [];
 // Dropdown: number of segments
 // http://stackoverflow.com/questions/24620741/get-selected-item-value-from-bootstrap-dropdown-with-specific-id    
 $('#dropdown-menu-1a li a').on('click', function(){
@@ -1407,10 +1518,11 @@ $('#dropdown-menu-1a li a').on('click', function(){
     // var x = document.getElementById('number-of-segments');
     // x.innerHTML('this is a test');
 });
-// Dropdown: rewind explorer to prior run (RX)    
-$('#dropdown-menu-2 button').on('click', function(){
-    var rewind = $(this).text();
-    console.log(rewind);
+// Dropdown: method    
+$('#dropdown-menu-2 li a').on('click', function(){
+    console.log('dropdown clicked');
+    method = $(this).text();
+    console.log(method);
 
 });
 // Dropdown: objective function chooser  
@@ -1557,7 +1669,7 @@ function addNewTab(tracker_data, h) {
     "<div id='tab" + num_tabs + "'></div>"
     );
     $("div#tab" + num_tabs).append(
-    "<div class = 'run-report run-scoreboard' id = 'run-scoreboard-" + num_tabs + "'><table id = 'run-scoreboard-"+ num_tabs + "'><tr><td>Method</td><td>poLCA</td></tr><tr><td>Date:</td><td></td></tr><tr><td># segments:</td><td id = 'run-scoreboard-segments-" + num_tabs + "'></td></tr><tr><td># variables</td><td id='run-scoreboard-variables-" + num_tabs + "'></td></tr><tr><td>Seg Coh:</td><td id='run-scoreboard-cohesiveness-" + num_tabs + "'></td></tr><tr><td>Seg Diff:</td><td id='run-scoreboard-diff-" + num_tabs + "'></td></tr><tr><td>MLE:</td><td id='run-scoreboard-mle-" + num_tabs + "'></td></tr><tr><td>Chi-Sq:</td><td id='run-scoreboard-chisq-" + num_tabs + "'></td></tr><tr><td>BIC:</td><td id='run-scoreboard-bic-" + num_tabs + "'></td></tr><tr><td>Highlight</td><td><input id='spinner-" + num_tabs +"'></td></tr><tr><td>View Segment </td><td><input id='seg-spinner-" + num_tabs +"'></td></tr><tr><td rowspan = '2' id = 'seg-plot-" + num_tabs +"'><img src = 'static/plots/seg_graph_" + tracker_data.run_scorecard[h].a + "_0.png'></td></tr></table></div>"
+    "<div class = 'run-report run-scoreboard' id = 'run-scoreboard-" + num_tabs + "'><table id = 'run-scoreboard-"+ num_tabs + "'><tr><td>Method</td><td id='run-scoreboard-method-" + num_tabs + "'></td></tr><tr><td>Datetime:</td><td id='run-datetime-" + num_tabs + "'></td></tr><tr><td># segments:</td><td id = 'run-scoreboard-segments-" + num_tabs + "'></td></tr><tr><td># variables</td><td id='run-scoreboard-variables-" + num_tabs + "'></td></tr><tr><td>Seg Coh:</td><td id='run-scoreboard-cohesiveness-" + num_tabs + "'></td></tr><tr><td>Seg Diff:</td><td id='run-scoreboard-diff-" + num_tabs + "'></td></tr><tr><td>MLE:</td><td id='run-scoreboard-mle-" + num_tabs + "'></td></tr><tr><td>Chi-Sq:</td><td id='run-scoreboard-chisq-" + num_tabs + "'></td></tr><tr><td>BIC:</td><td id='run-scoreboard-bic-" + num_tabs + "'></td></tr><tr><td>Heatmap Midpoint</td><td><input id='spinner-" + num_tabs +"'></td></tr><tr><td>View Segment </td><td><input id='seg-spinner-" + num_tabs +"'></td></tr><tr><td rowspan = '2' id = 'seg-plot-" + num_tabs +"'><img src = 'static/plots/seg_graph_" + tracker_data.run_scorecard[h].a + "_0.png'></td></tr></table></div>"
     );
     $("div#tab" + num_tabs).append(
     "<div class = 'hidden'></div>"
@@ -1600,11 +1712,64 @@ tabs.find( ".ui-tabs-nav" ).sortable({
 </script>
 
 <script>
+// http://ssiddique.info/jquery-and-editable-html-table.html
+// http://mrbool.com/how-to-create-an-editable-html-table-with-jquery/27425
+$(function () {
+    $("#tracker-goes-here").on('dblclick', 'td', function() {
+        var OriginalContent = $(this).text();
+         
+        $(this).addClass("cellEditing");
+        $(this).html("<input type='text' value='" + OriginalContent + "' />");
+        $(this).children().first().focus();
+ 
+        $(this).children().first().keypress(function (e) {
+            if (e.which == 13) {
+                var newContent = $(this).val();
+                $(this).parent().text(newContent);
+                $(this).parent().removeClass("cellEditing");
+            }
+        });
+         
+    $(this).children().first().blur(function(){
+        $(this).parent().text(OriginalContent);
+        $(this).parent().removeClass("cellEditing");
+    });
+    });
+});
+</script>
+<script>
 // jQuery().ready(function($) {
 //     $('#spinner').spinner({ min: -100, max: 100 });
 // });
 </script>
+<script>$("#advanced-toolbar").hide()</script>
+<script>
+// hide cols of less frequently used info in run_tracker
+var hide = $('#hide-col-button').text();
+$('#hide-col-button').on('click', function (){
+    var hide = $('#hide-col-button').text();
+    if (hide == 'Hide Col') {
+    console.log('hiding columns');
+    for ( var i = 5; i < 14; i++) {
+    $("#trackerTable td:nth-child(" + i + "),th:nth-child(" + i + ")").hide();
+    };
+    // $('#trackerTable td:nth-child(1),th:nth-child(1)').hide()
+    // $('#trackerTable td:nth-child(2),th:nth-child(2)').hide(),
+    // $('#trackerTable td:nth-child(3),th:nth-child(3)').hide(),
+    $('#hide-col-button').text('Show Col');}
+    else {
+    console.log('showing columns');
+    for ( var i = 5; i < 14; i++) {
+    $("#trackerTable td:nth-child(" + i + "),th:nth-child(" + i + ")").show();
+    };
+    // $('#trackerTable td:nth-child(1),th:nth-child(1)').show(),
+    // $('#trackerTable td:nth-child(2),th:nth-child(2)').show(),
+    // $('#trackerTable td:nth-child(3),th:nth-child(3)').show(),
+    $('#hide-col-button').text('Hide Col');}
+});
 
+</script>
 <script> window.onload = StartTrackerData ();</script>
+<script> //window.onload = startTracker3 ();</script>
 </body>
 </html>

@@ -34,6 +34,7 @@ import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+import csv
 
 
 #def init():
@@ -41,7 +42,7 @@ from mpl_toolkits.mplot3d import Axes3D
 interactive_mode = False
 xls = False
 web_mode = False
-filename = 'test_raw_data_v1.csv' # (user x question) .csv with question labels in first row
+filename = 'test_raw_data_q_v1.csv' # (user x question) .csv with question labels in first row
 grid_search = False
 
 # now check for command line arguments + options
@@ -69,7 +70,7 @@ for opt, arg in opts:
 	elif opt == '-f':
 		# http://stackoverflow.com/questions/5899497/checking-file-extension
 		if arg.lower().endswith(('.csv')):
-			filename = arg[1:]
+			filename = arg#[1:]
 			print "infile name:", filename
 		else:
 			print "wrong file type"
@@ -105,7 +106,6 @@ def get_PCA(filename):
 	'''
 	z = func_name(); print "--------in function: ", z, " -------------"
 	
-	
 	# reboot question and results containers
 	global question_dict
 	question_dict = {}
@@ -113,23 +113,28 @@ def get_PCA(filename):
 	global results_dict
 	results_dict = {}
 
+	global X_rebucketed
+	X_rebucketed = np.random.random((10,10))
+
 	# clean up /plots directory
 	d = 'static/plots/'
 	if os.path.exists(d):
 		shutil.rmtree(d); os.makedirs(d)
 
 	names = list(np.genfromtxt(basedir+filename, delimiter=',', names=True).dtype.names)
+	question_text = list(np.genfromtxt(basedir+filename, delimiter=',', skip_header=1, names=True).dtype.names)
 	
-	for question_name in names:
+	for index, question_name in enumerate(names):
 		question_dict[question_name] = {}
-		question_dict[question_name]['question_text'] = "n/a"
+		print index, question_text[index]
+		question_dict[question_name]['question_text'] = question_text[index][:50].strip("'").encode('utf-8').decode('utf-8','ignore').encode("utf-8")
 		question_dict[question_name]['dimension'] = "n/a"
 		question_dict[question_name]['run_tracker'] = []
 	print "question_dict initialized with ", len(question_dict.keys()), " questions"
 
 	print names
 
-	X = np.genfromtxt(basedir+filename, delimiter=',', skip_header=1)
+	X = np.genfromtxt(basedir+filename, delimiter=',', skip_header=2)
 
 	# generate weights_filename from filename - 'test_file.csv --> 'test_file_weights.csv'
 	weights_filename = filename[:len(filename)-4] + '_weights' + filename[len(filename)-4:] 
@@ -358,6 +363,7 @@ def rebucket(factor_matrix, names, X, rh, question_dict):
 	Rosetta_heuristic = np.absolute((top_bucket - .26)) + np.absolute((bottom_bucket - .26)) + np.absolute((middle_bucket - .48)) + np.absolute((top_bucket - bottom_bucket)) * 100
 	'''
 	z = func_name(); print "--------in function: ", z, " -------------"
+	print 'X.shape', X.shape
 	
 	print "length of question_dict: ", len(question_dict)
 	#print "question_dict keys: ", question_dict.keys()
@@ -378,56 +384,100 @@ def rebucket(factor_matrix, names, X, rh, question_dict):
 
 		from collections import Counter
 		responses = [1,2,3,4,5,6,7]
-		# how to handle alternative response ranges (binary, 1-5, etc)
-		response_counts = [(Counter(one_column))[r] for r in responses]
-		#print response_counts
-		response_shares = [float(response_counts[x]) / sum(response_counts) for x in range(len(response_counts))]
-		#print response_shares
-
-		# Mapping heuristic: XYZ: (% top X boxes - .26) + (% bottom Z boxes - .26) + (% middle Y boxes - .48) + (% top X boxes - + % bottom Z boxes)
-		bucket_schemes = [(2,3,2),(3,2,2), (2,2,3), (3,1,3), (1,3,3), (1,2,4)]
-		rosetta_heuristics = []
-
-		# next step: for col in colums, or wrap as function then use map() to apply to each column?
-		for bucket_scheme in bucket_schemes:
-		    top_bucket = sum(response_shares[0:bucket_scheme[0]])
-		    #print top_bucket
-		    middle_bucket = sum(response_shares[bucket_scheme[0]:bucket_scheme[0]+ bucket_scheme[1]])
-		    #print middle_bucket
-		    bottom_bucket = sum(response_shares[bucket_scheme[0]+ bucket_scheme[1]:bucket_scheme[0]+ bucket_scheme[1] + bucket_scheme[2]])
-		    #bottom_bucket = 1 - top_bucket - middle_bucket
-		    #print bottom_bucket
-		    #if not top_bucket + middle_bucket + bottom_bucket == 1:
-		    #	print "bucket weights wrong!"
-		    #	print float(top_bucket + middle_bucket + bottom_bucket)
-		    rosetta_heuristic = np.absolute((top_bucket - .26)) + np.absolute((bottom_bucket - .26)) + np.absolute((middle_bucket - .48)) + np.absolute((top_bucket - bottom_bucket)) * 100
-		    #print "RH:", rosetta_heuristic
-		    rosetta_heuristics.append(rosetta_heuristic)
 		
-		best_rh = min(rosetta_heuristics)
-		best_scheme = rosetta_heuristics.index(best_rh)
-		question_dict[names[column]]['best_rh'] = best_rh
-		question_dict[names[column]]['bucket_scheme'] = bucket_schemes[best_scheme]
-		best_schemes.append(bucket_schemes[best_scheme])
-		factor_matrix[column][rh] = best_rh
-		#print "after after: ", factor_matrix[column]
-		#print column, " :", bucket_schemes[best_scheme], "Best RH:", min(rosetta_heuristics)
-	#print best_schemes[:10]
+		# check for alternative response ranges (binary, 1-5, etc)
+		responses_2 = list(set(one_column.tolist()))
+		# print 'responses_2:', responses_2
+		
+		if len(responses_2) == 2:
+			print 'Alert: question {0} has {1} buckets'.format(names[column],len(responses_2))
+			print responses_2
+			
+			question_dict[names[column]]['best_rh'] = 0
+			question_dict[names[column]]['bucket_scheme'] = (8,8,8) # dichotomous
+			best_schemes.append((8,8,8))
+			factor_matrix[column][rh] = 0
+
+
+		elif len(responses_2) > len(responses) + 1:
+			print 'Alert: question {0} has {1} buckets'.format(names[column],len(responses_2))
+			print responses_2
+
+			question_dict[names[column]]['best_rh'] = 0
+			question_dict[names[column]]['bucket_scheme'] = (9,9,9) # continuous
+			best_schemes.append((9,9,9))
+			factor_matrix[column][rh] = 0
+
+			# test for >7, then insert 'pass' into best_scheme list, set X_rebucketed[:,col] = X[:,col]
+		
+		else:
+			response_counts = [(Counter(one_column))[r] for r in responses]
+			#print response_counts
+			response_shares = [float(response_counts[x]) / sum(response_counts) for x in range(len(response_counts))]
+			#print response_shares
+
+			# Mapping heuristic: XYZ: (% top X boxes - .26) + (% bottom Z boxes - .26) + (% middle Y boxes - .48) + (% top X boxes - + % bottom Z boxes)
+			bucket_schemes = [(2,3,2),(3,2,2), (2,2,3), (3,1,3), (1,3,3), (1,2,4)]
+			rosetta_heuristics = []
+
+			# next step: for col in colums, or wrap as function then use map() to apply to each column?
+			for bucket_scheme in bucket_schemes:
+			    top_bucket = sum(response_shares[0:bucket_scheme[0]])
+			    #print top_bucket
+			    middle_bucket = sum(response_shares[bucket_scheme[0]:bucket_scheme[0]+ bucket_scheme[1]])
+			    #print middle_bucket
+			    bottom_bucket = sum(response_shares[bucket_scheme[0]+ bucket_scheme[1]:bucket_scheme[0]+ bucket_scheme[1] + bucket_scheme[2]])
+			    #bottom_bucket = 1 - top_bucket - middle_bucket
+			    #print bottom_bucket
+			    #if not top_bucket + middle_bucket + bottom_bucket == 1:
+			    #	print "bucket weights wrong!"
+			    #	print float(top_bucket + middle_bucket + bottom_bucket)
+			    rosetta_heuristic = np.absolute((top_bucket - .26)) + np.absolute((bottom_bucket - .26)) + np.absolute((middle_bucket - .48)) + np.absolute((top_bucket - bottom_bucket)) * 100
+			    #print "RH:", rosetta_heuristic
+			    rosetta_heuristics.append(rosetta_heuristic)
+			
+			best_rh = min(rosetta_heuristics)
+			best_scheme = rosetta_heuristics.index(best_rh)
+			question_dict[names[column]]['best_rh'] = best_rh
+			question_dict[names[column]]['bucket_scheme'] = bucket_schemes[best_scheme]
+			best_schemes.append(bucket_schemes[best_scheme])
+			factor_matrix[column][rh] = best_rh
+			#print "after after: ", factor_matrix[column]
+			#print column, " :", bucket_schemes[best_scheme], "Best RH:", min(rosetta_heuristics)
+			#print best_schemes[:10]
 
 	# now rebucket response matrix
 	# could this all be redone using map()?
 
 	X_rebucketed = np.zeros((X.shape), dtype=np.int64)
+	print 'X_rebucketed.shape: ', X_rebucketed.shape
 	for col in range(X_rebucketed.shape[1]):
-		mapping_scheme = reduce(lambda x,y: x+y,[a*[b] for a,b in zip(best_schemes[int(col)],[1,2,3])])
-		#mapping_scheme = [x+y for x,y in a*[b] for a,b in [zip(best_schemes[int(col)],[1,2,3])]]
-		#X_rebucketed[:,col] = map(lambda x: mapping_scheme[int(x)-1], X[:,col])
-		X_rebucketed[:,col] = [mapping_scheme[int(x)-1] for x in X[:,col]]
-		# http://stackoverflow.com/questions/3459098/create-list-of-single-item-repeated-n-times-in-python
-		# http://stackoverflow.com/questions/952914/making-a-flat-list-out-of-list-of-lists-in-python
+		
+		if best_schemes[int(col)] == (9,9,9): # skip continuous
+			X_rebucketed[:,col] = X[:,col]
+
+		elif best_schemes[int(col)] == (8,8,8): # dichotomous
+			vars = list(set(X[:,col]))
+			X_rebucketed[:,col] = [1 if x == min(vars) else 2 for x in X[:,col]]
+
+		else:
+			mapping_scheme = reduce(lambda x,y: x+y,[a*[b] for a,b in zip(best_schemes[int(col)],[1,2,3])])
+			#mapping_scheme = [x+y for x,y in a*[b] for a,b in [zip(best_schemes[int(col)],[1,2,3])]]
+			#X_rebucketed[:,col] = map(lambda x: mapping_scheme[int(x)-1], X[:,col])
+			X_rebucketed[:,col] = [mapping_scheme[int(x)-1] for x in X[:,col]]
+			# http://stackoverflow.com/questions/3459098/create-list-of-single-item-repeated-n-times-in-python
+			# http://stackoverflow.com/questions/952914/making-a-flat-list-out-of-list-of-lists-in-python
+
 		rebucket_counts = Counter(X_rebucketed[:,col]).values()
-		question_dict[names[col]]['rebucket_counts_1'], question_dict[names[col]]['rebucket_counts_2'], question_dict[names[col]]['rebucket_counts_3'] = rebucket_counts
-		question_dict[names[col]]['rebucket_shares_1'], question_dict[names[col]]['rebucket_shares_2'], question_dict[names[col]]['rebucket_shares_3'] = [float(value) / sum(rebucket_counts) for value in rebucket_counts]
+		
+		# if len(rebucket_counts)<3:
+		# 	rebucket_counts.append(0) # binary data
+
+		#question_dict[names[col]]['rebucket_counts_1'], question_dict[names[col]]['rebucket_counts_2'], question_dict[names[col]]['rebucket_counts_3'] = rebucket_counts
+		#question_dict[names[col]]['rebucket_shares_1'], question_dict[names[col]]['rebucket_shares_2'], question_dict[names[col]]['rebucket_shares_3'] = [float(value) / sum(rebucket_counts) for value in rebucket_counts]
+
+		question_dict[names[col]]['rebucket_counts'] = rebucket_counts
+		question_dict[names[col]]['rebucket_shares'] = [float(value) / sum(rebucket_counts) for value in rebucket_counts]
 
 	X_rebucketed_df = pd.DataFrame(X_rebucketed, columns=names)
 	#print "X_rebucketed_df.columns:", X_rebucketed_df.columns.tolist()
@@ -465,6 +515,7 @@ def make_cluster_seed(factor_matrix, best_factor, question_number, num_cols, num
 
 	'''
 	z = func_name(); print "--------in function: ", z, " -------------"
+	print 'X_rebucketed.shape: ', X_rebucketed.shape
 	
 	global cluster_seed
 	cluster_seed=[]
@@ -588,7 +639,7 @@ def scorecard_2():
 
 	for key in results_dict:
 		#train_dict = {'a':key,'b':results_dict[key]['cluster_number'],'c':results_dict[key]['num_vars'],'d':esults_dict[key]['model_stats'],'e':16,'f':17}
-		train_dict = {'a':key[:10],'b':results_dict[key]['cluster_number'],'c':results_dict[key]['num_vars'],'d':round(results_dict[key]['model_stats'][0]),'e':round(results_dict[key]['model_stats'][1]),'f':round(results_dict[key]['model_stats'][2]), 'g':round(results_dict[key]['weighted_average_cluster_polarity'],4) ,'h':round(results_dict[key]['average_cross_question_polarity'],4)}
+		train_dict = {'a':key[:10],'b':results_dict[key]['cluster_number'],'c':results_dict[key]['num_vars'],'d':round(results_dict[key]['model_stats'][0]),'e':round(results_dict[key]['model_stats'][1]),'f':round(results_dict[key]['model_stats'][2]), 'g':round(results_dict[key]['weighted_average_cluster_polarity'],4) ,'h':round(results_dict[key]['average_cross_question_polarity'],4),'i':results_dict[key]['method']}
 		
 		#print "one train dict entry:", train_dict
 		#sorted(d, key=d.get)
@@ -618,7 +669,11 @@ def scorecard_3(keys_to_upload):
 
 	for key in keys_to_upload:
 		#train_dict = {'a':key,'b':results_dict[key]['cluster_number'],'c':results_dict[key]['num_vars'],'d':esults_dict[key]['model_stats'],'e':16,'f':17}
-		run_scorecard = {'a':key,'b':results_dict[key]['cluster_number'],'c':results_dict[key]['num_vars'],'d':round(results_dict[key]['model_stats'][0]),'e':round(results_dict[key]['model_stats'][1]),'f':round(results_dict[key]['model_stats'][2]), 'g':round(results_dict[key]['weighted_average_cluster_polarity'],4) ,'h':round(results_dict[key]['average_cross_question_polarity'],4)}
+		run_scorecard = {'a':key,'b':results_dict[key]['cluster_number'],'c':results_dict[key]['num_vars'],
+		'd':round(results_dict[key]['model_stats'][0]),'e':round(results_dict[key]['model_stats'][1]),
+		'f':round(results_dict[key]['model_stats'][2]), 'g':round(results_dict[key]['weighted_average_cluster_polarity'],4) ,
+		'h':round(results_dict[key]['average_cross_question_polarity'],4),'i':results_dict[key]['method'],
+		'j':results_dict[key]['date']}
 		
 		#print "one train dict entry:", train_dict
 		#sorted(d, key=d.get)
@@ -638,15 +693,27 @@ def scorecard_3(keys_to_upload):
 @app.route("/create_tracker", methods=["GET"])
 def create_tracker():
 
+	global question_dict
+	global X
+	global X_rebucketed
+	global names
+
 	tracker_list = []
 	z = func_name(); print "--------in function: ", z, " -------------"
+	print "X_rebucketed.shape:", X_rebucketed.shape
+	print "X.shape", X.shape
+
 	print question_dict.keys()
 	print question_dict[question_dict.keys()[0]]
 	print question_dict[question_dict.keys()[0]].keys()
 
 	# if len(results_dict) == 0 and 'run_tracker' not in question_dict[question_dict.keys()[0]].keys():
+	# can this be written with a try: [add data] except [data=0] for each var to add crashproofness?
 	for key in question_dict:
-		tracker_dict = OrderedDict([('001_Q#',key),('002_Q_name','n/a'),('003_Dim','n/a'), ('004_LF', round(question_dict[key]['first_factor_value'],3)),('005_#1 Factor', question_dict[key]['first_factor']),('006_#2 Factor', question_dict[key]['second_factor']),('007_Bucket', question_dict[key]['bucket_scheme']),('008_%T(=1)', round(question_dict[key]['rebucket_shares_1']*100)),('009_%M(=2)', round(question_dict[key]['rebucket_shares_2']*100)),('010_%L(=3)', round(question_dict[key]['rebucket_shares_3']*100)), ('011_RH',round(question_dict[key]['best_rh'],2))])
+		try:
+			tracker_dict = OrderedDict([('001_Q#',key),('002_Q_name',question_dict[key]['question_text']),('003_Dim','n/a'),('0031Dimension','n/a'),('004_LF', round(question_dict[key]['first_factor_value'],3)),('005_#1 Factor', question_dict[key]['first_factor']),('006_#2 Factor', question_dict[key]['second_factor']),('007_Bucket', question_dict[key]['bucket_scheme']),('008_%T(=1)', round(question_dict[key]['rebucket_shares'][0]*100)),('009_%M(=2)', round(question_dict[key]['rebucket_shares'][1]*100)),('010_%L(=3)', round(question_dict[key]['rebucket_shares'][2]*100)), ('011_RH',round(question_dict[key]['best_rh'],2))])
+		except:
+			tracker_dict = OrderedDict([('001_Q#',key),('002_Q_name',question_dict[key]['question_text']),('003_Dim','n/a'),('0031Dimension','n/a'), ('004_LF', round(question_dict[key]['first_factor_value'],3)),('005_#1 Factor', question_dict[key]['first_factor']),('006_#2 Factor', question_dict[key]['second_factor']),('007_Bucket', question_dict[key]['bucket_scheme']),('008_%T(=1)', round(question_dict[key]['rebucket_shares'][0]*100)),('009_%M(=2)', round(question_dict[key]['rebucket_shares'][1]*100)),('010_%L(=3)', 0), ('011_RH',round(question_dict[key]['best_rh'],2))])	
 		tracker_list.append(tracker_dict)
 	
 	corr_matrix = np.corrcoef(X.T)
@@ -727,6 +794,7 @@ def update_run_tracker():
 @app.route("/submit_data", methods=["POST"])
 def submit_data():
 	z = func_name(); print "--------in function: ", z, " -------------"
+	print 'X_rebucketed.shape:', X_rebucketed.shape
 
     # read the data that came with the POST request as a dict
     # inbound request example: http://127.0.0.1:5000/predict -X POST -H 'Content-Type: application/json' -d '{"example": [154]}'
@@ -738,6 +806,7 @@ def submit_data():
 	global cluster_seed
 	global names
 	global X_rebucketed_df
+	global X_rebucketed
 
 	counter = 0
 	inbound_data = flask.request.json
@@ -791,7 +860,16 @@ def submit_data():
 		if gs_flag == True:
 			grid_search = True
 
-		print "grid_search:", grid_search	
+		print "grid_search:", grid_search
+
+	if 'method' in keys:
+		print "----method---"
+		method = inbound_data['method']
+		
+		if method != None:
+			method = method.encode('ascii', 'ignore')
+
+		print "method:", method	
 
 	#cluster_seed_inbound = [names.index(question) for question in questions]
 	print "cluster_seed_inbound:", cluster_seed_inbound
@@ -803,11 +881,17 @@ def submit_data():
 	num_rep = 1
 	#rebucketed_filename = 'X_rebucketed.csv'
 
-	#print "----run number:", len(results_dict.keys()), "-----------"
- 
-	print "---------now running poLCA from submit_data function--------------"
-	results = run_poLCA (grid_search,cluster_seed_inbound,num_seg,num_rep,rebucketed_filename)	
-	timestamps = update_results_dict(results, X_rebucketed, names)
+	#print "----run number:", len(result_dict.keys()), "-----------"
+ 	if method.lower() in ['agclust', 'meanshift', 'dbscan', 'kmeans', 'affinityprop', 'birch', 'spectral']:
+ 		results = get_segments(X_rebucketed_df, names, cluster_seed_inbound, method.lower(), num_seg)
+ 		print method, ' results:', results
+	
+	else:
+		print "---------now running poLCA from submit_data function--------------"
+		print 'X_rebucketed.shape: ', X_rebucketed.shape
+		results = run_poLCA (grid_search,cluster_seed_inbound,num_seg,num_rep,rebucketed_filename)	
+	
+	timestamps = update_results_dict(results, X_rebucketed, names, method)
 
 	print "---question_dict:-----", len(question_dict)
 	print "---results_dict:------", len(results_dict)
@@ -863,6 +947,14 @@ def objective_function():
 def upldfile():
 	z = func_name(); print "--------in function: ", z, " -------------"
 
+	global X_rebucketed
+	global X
+	global names
+	global results_dict
+	global question_dict
+
+	print 'X_rebucketed.shape:', X_rebucketed.shape
+
 	if request.method == 'POST':
 		files = request.files['file']
         print files
@@ -883,10 +975,40 @@ def upldfile():
             factor_matrix, names, X, question_dict, results_dict = get_PCA(filename)
             factor_matrix, num_rows, num_cols, question_number, rh, best_factor, second_best_factor, question_dict = top_n_factors(factor_matrix, top_n, question_dict, names)
             rebucketed_filename, X_rebucketed, question_dict, X_rebucketed_df = rebucket(factor_matrix, names, X, rh, question_dict)
+            
+            print 'X_rebucketed.shape:', X_rebucketed.shape
+
             cluster_seed = make_cluster_seed(factor_matrix, best_factor, question_number, num_cols, num_rows)
             
             return jsonify(name=filename, size=file_size)#, question_dict
 
+
+# Route that will process the file upload
+@app.route('/upload_weights', methods=['POST'])
+def upload_weights():
+	z = func_name(); print "--------in function: ", z, " -------------"
+
+	global X_rebucketed
+	global X
+	global names
+	global results_dict
+	global question_dict
+
+	print 'X_rebucketed.shape:', X_rebucketed.shape
+
+	if request.method == 'POST':
+		files = request.files['file']
+        print files
+        if files and allowed_file(files.filename):
+            filename = secure_filename(files.filename)
+            print filename
+            app.logger.info('FileName: ' + filename)
+            files.save(os.path.join(basedir, filename))
+            file_size = os.path.getsize(os.path.join(basedir, filename))
+
+	    calculate_weights(filename)
+
+	    return jsonify(name=filename, size=file_size)
 
 # download excel file
 # http://stackoverflow.com/questions/30024948/flask-download-a-csv-file-on-clicking-a-button
@@ -943,11 +1065,12 @@ def scorecard(timestamp, cluster_seeds, cluster_seed_names, num_seg):
 
 	return
 
-def update_results_dict(results, X_rebucketed, names):
+def update_results_dict(results, X_rebucketed, names, method):
 	''''
 	Updates results_dict after poLCA run
 	'''
 	z = func_name(); print "--------in function: ", z, " -------------"
+	print 'X_rebucketed.shape: ', X_rebucketed.shape
 
 	global results_dict
 	global question_dict
@@ -984,6 +1107,8 @@ def update_results_dict(results, X_rebucketed, names):
 	num = 0
 	for key in timestamps:#results_dict.keys():
 		results_dict[key]['run_number'] = starting_results_dict_length + num + 1
+		results_dict[key]['date'] = time.asctime(time.localtime(time.time()) ) #time.time()
+		results_dict[key]['method'] = method
 		results_dict[key]['cluster_number'] = cluster_numbers[num]
 		results_dict[key]['cluster_counts'] = Counter(predicted_clusters[num]).values()
 		results_dict[key]['cluster_shares'] = [ float(cluster) / sum(results_dict[key]['cluster_counts']) for cluster in results_dict[key]['cluster_counts']]
@@ -1020,12 +1145,23 @@ def make_one_results_dict_entry_mp(i, key, results_dict_entry, X_rebucketed, nam
 	Breaks apart results_dict update into threads if multiprocessing possible
 	'''
 	z = func_name(); print "--------in function: ", z, " -------------"
+	print 'X_rebucketed.shape: ', X_rebucketed.shape
 	
 	results_dict = dict(results_dict_entry) #not same as global var; should change name!
 	
 	pred_clusters = np.array(results_dict['predicted_clusters'])
 	pred_clusters = np.reshape(pred_clusters, (pred_clusters.shape[0],1))
 	clustered_responders = np.append(X_rebucketed, pred_clusters, axis=1)
+	
+	df_names = names + ['segments']
+	print 'clustered_responders.shape', clustered_responders.shape
+	print 'df_names length:', len(df_names)
+	print 'df_names', df_names
+	print 'set(X_rebucketed[:,-1])', set(X_rebucketed[:,-1])
+	print 'set(X_rebucketed[:,-2])', set(X_rebucketed[:,-2])
+
+	df = pd.DataFrame(clustered_responders, columns=df_names)
+	df.to_csv('clustered_responders', header=True, sep=',')
 	
 	results_dict['response_shares'] = {}; results_dict['response_counts'] = {}; results_dict['response_polarity'] = {}; results_dict['cross_question_polarity'] = {}
 	questions = results_dict['quest_list']
@@ -1036,7 +1172,16 @@ def make_one_results_dict_entry_mp(i, key, results_dict_entry, X_rebucketed, nam
 		response_shares = []; response_counts = []
 		
 		for cluster in set(results_dict['predicted_clusters']):
-			response_count = [sum(clustered_responders[clustered_responders[:,clustered_responders.shape[1]-1] == cluster][:,names.index(question)] == bucket) for bucket in set(clustered_responders[:,names.index(question)])]
+			response_count = [sum(clustered_responders[clustered_responders[:,-1] == cluster][:,names.index(question)] == bucket) for bucket in set(clustered_responders[:,names.index(question)])]
+			
+			if names.index(question) > 145: #bugcheck
+				print 'question:', question
+				print 'cluster', cluster
+				print 'names.index(question):', names.index(question)
+				print 'response_count:', response_count
+				print 'set(clustered_responders[:,names.index(question)])', set(clustered_responders[:,names.index(question)])
+				print 'set(X_rebucketed[:,names.index(question)])', set(X_rebucketed[:,names.index(question)])
+			
 			response_counts.append(response_count)
 			response_share = [float(response_count[i])/sum(response_count) for i in range(len(response_count))]
 			response_shares.append(response_share)
@@ -1046,7 +1191,17 @@ def make_one_results_dict_entry_mp(i, key, results_dict_entry, X_rebucketed, nam
 		results_dict['response_counts'][question] = response_counts
 		results_dict['response_shares'][question] = response_shares
 		results_dict['response_polarity'][question] = [max(item) - np.mean(item) for item in response_shares]
-		cross_question_polarity = np.reshape(results_dict['response_shares'][question],(results_dict['cluster_number'],3))
+
+		if names.index(question) > 145: #bugcheck
+			print 'results_dict[response_shares]', question, ': ', results_dict['response_shares'][question]
+			print 'results_dict[cluster_number]: ', results_dict['cluster_number']
+			print 'len(question_dict[question][rebucket_counts]: ', len(question_dict[question]['rebucket_counts'])
+			print 'question_dict[question][rebucket_counts]: ', question_dict[question]['rebucket_counts']
+
+		#### below line creates error with <>3 buckets
+		#cross_question_polarity = np.reshape(results_dict['response_shares'][question],(results_dict['cluster_number'],3))
+		cross_question_polarity = np.reshape(results_dict['response_shares'][question],(results_dict['cluster_number'],len(question_dict[question]['rebucket_counts'])))
+		#### above line creates error with <>3 buckets
 		results_dict['cross_question_polarity'][question] = [max(cross_question_polarity[:,col]) - np.mean(cross_question_polarity[:,col]) for col in range(cross_question_polarity.shape[1])]
 
 	print "results_dict[response_shares] length:", len(results_dict['response_shares'])
@@ -1293,7 +1448,7 @@ def run_poLCA (grid_search,cluster_seed,num_seg,num_rep,rebucketed_filename):
 		# shortened_cluster_seeds = [x for x in itertools.combinations(cluster_seed, 28)]
 		# print "total cluster seeds: ", len(shortened_cluster_seeds)
 
-		num_seg = [5,6]#,7,8]#,9,10,11,12,13,14]
+		num_seg = [5,6,7]#,8,9,10,11,12,13,14]
 		
 		num_cores = multiprocessing.cpu_count()
 		#results = Parallel(n_jobs=num_cores,verbose=5)(delayed(poLCA)(i,cluster_seed, num_seg[i], num_rep, rebucketed_filename) for i in range(10))
@@ -1376,7 +1531,7 @@ def run_report(timestamps):
 					row_spacer = [''] * (len(row))
 					run_report.append(row_spacer)
 
-			if survey_question not in clustering_variables and non_clustering_variables.index(survey_question) == 0:
+			if survey_question == clustering_variables[-1]: # and len(clustering_variables) == clustering_variables.index(survey_question):
 				row_spacer = [''] * (len(row))
 				run_report.append(row_spacer)
 				run_report.append(row_spacer)
@@ -1437,13 +1592,16 @@ def run_report(timestamps):
  				
 	return run_reports
 
-def get_segments(X_rebucketed_df, names, cluster_seed, method):
+def get_segments(X_rebucketed_df, names, cluster_seed, method, num_seg):
 	'''
 	Performs range of clustering methods 
 	'''
 	z = func_name(); print "------in function:", z, "---------------"
 
-	number_clusters = 10
+	cluster_seed_names = [names[int(value)] for value in cluster_seed]
+	timestamp = str(uuid.uuid4())
+
+	#number_clusters = 10
 
 	print "X_rebucketed_df_columns(): ", list(X_rebucketed_df)
  	# http://stackoverflow.com/questions/19482970/get-list-from-pandas-dataframe-column-headers
@@ -1451,7 +1609,7 @@ def get_segments(X_rebucketed_df, names, cluster_seed, method):
 	cluster_seed_names = [names[int(seed)] for seed in cluster_seed]
 	# print "cluster_seed_names: ", cluster_seed_names
 
-	methods = [AgglomerativeClustering(linkage='ward'), MeanShift(), DBSCAN(eps = 0.5, min_samples = 2, metric ='euclidean'), KMeans(n_clusters=number_clusters, init='random'), AffinityPropagation(), Birch(n_clusters=number_clusters), SpectralClustering(n_clusters=number_clusters, n_init=10)]
+	methods = [AgglomerativeClustering(linkage='ward'), MeanShift(), DBSCAN(eps = 0.5, min_samples = 2, metric ='euclidean'), KMeans(n_clusters=num_seg, init='random'), AffinityPropagation(), Birch(n_clusters=num_seg), SpectralClustering(n_clusters=num_seg, n_init=10)]
 	keys = ['agclust', 'meanshift', 'dbscan', 'kmeans', 'affinityprop', 'birch', 'spectral']
 	methods_dict = dict(zip(keys,methods))
 
@@ -1461,8 +1619,45 @@ def get_segments(X_rebucketed_df, names, cluster_seed, method):
 	m.fit(X_rebucketed_df[cluster_seed_names])
 	
 	clusters = m.labels_.tolist()
+	clusters = [cluster + 1 for cluster in clusters]
 
-	return clusters 
+	# DBSCAN labels outliers -1; MeanShift, AC, AP all automatically pick num_seg
+	print "clusters: ", set(clusters)
+	num_seg = len(set(clusters)) - (1 if -1 in clusters else 0)
+	
+	if num_seg == 0: # error trap
+		num_seg +=1
+
+	# now write resuts out for sharing (backwards compatability)
+	# predicted segments
+	filename = 'predicted_segment_' + timestamp + '.txt'
+	basedir_for_segs = os.path.join(basedir, 'static/model/')
+	
+	with open(basedir_for_segs + filename,'w') as f:
+		f.writelines( "%s\n" % item for item in clusters)
+		f.close()
+	print 'clusters file written to:', basedir_for_segs + filename
+
+	# posterior probabilities
+	probability_list = [[float(1) / num_seg] * num_seg] * X_rebucketed_df.shape[0]
+	print probability_list[:10]
+	filename = 'posterior_probabilities_' + timestamp + '.txt'
+	
+	with open(basedir_for_segs + filename,'wb') as g:
+		writer = csv.writer(g)
+		writer.writerows(probability_list)
+	print 'fake posterior_probabilities file written to:', basedir_for_segs + filename	
+
+	# model stats [for poLCA = (MLE, Chi-sq, BIC); could be updated for other methods]
+	model_stats_list = [1,1,1]
+	filename = 'model_stats_' + timestamp + '.txt'
+	
+	with open(basedir_for_segs + filename, 'w') as f:
+		f.writelines( "%s\n" % item for item in model_stats_list)
+	print 'fake model_stats file written to:', basedir_for_segs + filename	
+
+	results = [(timestamp,cluster_seed,cluster_seed_names,num_seg)]
+	return results
 
 def make_visual(i, X_rebucketed_df, timestamp):
 	'''
@@ -1501,7 +1696,7 @@ def make_visual(i, X_rebucketed_df, timestamp):
 	print d.shape
 	
 	# generate list of random colors for graph		
-	# color_dict = {0:'red',1:'blue',2:'green',3:'black',4:'yellow', 5:'pink', 6:'orange',7:'grey', 8:'brown', 9:'purple', 10:'indigo', 11:'light blue', 12:'light green'}
+	#color_dict = {0:'red',1:'blue',2:'green',3:'black',4:'yellow', 5:'pink', 6:'orange',7:'grey', 8:'brown', 9:'purple', 10:'indigo', 11:'light blue', 12:'light green'}
 	colors = [np.random.rand(3,) for x in range(number_clusters + 1)]
 
 	#3D plot
@@ -1529,9 +1724,56 @@ def make_visual(i, X_rebucketed_df, timestamp):
 	    #   lines2 = ax.plot(d[d[:,3]==num][:,0],d[d[:,3]==num][:,1],'o', markersize=7, color=colors[num], alpha=0.5)#, label = labels)
 		#	ax.lines.pop(1)
 		 
-
 	return
 
+def calculate_weights(responder_infilename):
+	#filename = '/Users/pniessen/Rosetta_Desktop/Segmentation_2-point-0/segmentr/web/test_weights_v1.csv'
+
+	responder_df = pd.DataFrame.from_csv(responder_infilename)
+	responder_data = np.asarray(responder_df)
+	#responder_data = np.genfromtxt(filename, delimiter=',', skip_header=1)
+	print 'responder data loaded: ', responder_data.shape
+
+def calculate_weights(responder_data):
+
+    weights = []
+
+    # target populations (source: US Census)
+    target_age_categories = ['18-24','25-34','35-44','45-54','55-65']
+    target_age_distribution = [.15,.22,.20,.21,.22]
+    target_age_dict = dict(zip(target_age_categories, target_age_distribution))
+    print target_age_dict
+
+    target_gender_categories = ['Male','Female']
+    target_gender_distribution = [.4979, .5021]
+    target_gender_dict = dict(zip(target_gender_categories, target_gender_distribution))
+    print target_gender_dict
+
+    # calculate age_share, gender_share
+    responder_age_shares = [float(sum(responder_data[:,0]==c1))/len(responder_data) for c1 in target_age_categories]
+    responder_age_dict = dict(zip(target_age_categories, responder_age_shares))
+    responder_gender_shares = [float(sum(responder_data[:,1]==c2))/len(responder_data) for c2 in target_gender_categories]
+    responder_gender_dict = dict(zip(target_gender_categories, responder_gender_shares))
+    print responder_age_shares, responder_gender_shares
+    print responder_age_dict, responder_gender_dict
+
+    for responder in range(len(responder_data))[:10]:
+        print responder,
+        responder_age = responder_data[responder, 0]
+        responder_gender = responder_data[responder,1]
+        one_weight = (responder_age_dict[responder_age]/ target_age_dict[responder_age])* (responder_gender_dict[responder_gender] / target_gender_dict[responder_gender]) 
+        print one_weight, 
+        weights.append(one_weight)
+
+    # now save file
+    weights_outfilename = 'test_weights_X_v1.csv'
+    with open(basedir + weights_outfilename,'w') as f:
+    	f.writelines("%s\n" % item for item in weights)
+    	f.close()
+    
+    print 'weights file written to:', weights_outfilename	
+    
+    return 
 
 
 if __name__ == "__main__":
@@ -1545,7 +1787,8 @@ if __name__ == "__main__":
 	results_dict = {}
 	question_dict = {}
 	cluster_seed = []
-	method = 'kmeans'
+	method = 'poLCA'
+	timestamp = 'test123'
 
 	#basedir = '/Users/pniessen/Rosetta_Desktop/Segmentation_2-point-0/sample_case_work/GoPro/'
 	# filename = 'test_raw_data_v1.csv' 
@@ -1571,7 +1814,7 @@ if __name__ == "__main__":
 	factor_matrix, num_rows, num_cols, question_number, rh, best_factor, second_best_factor, question_dict = top_n_factors(factor_matrix, top_n, question_dict, names)
 	rebucketed_filename, X_rebucketed, question_dict, X_rebucketed_df = rebucket(factor_matrix, names, X, rh, question_dict)
 	cluster_seed = make_cluster_seed(factor_matrix, best_factor, question_number, num_cols, num_rows)
-	# get_segments(X_rebucketed_df, names, cluster_seed, method)
+	# get_segments(X_rebucketed_df, names, cluster_seed, method, timestamp, num_seg)
 	# make_visual(X_rebucketed_df, cluster_seed_inbound, timestamps, names)
 	# app.run()
 
@@ -1580,7 +1823,7 @@ if __name__ == "__main__":
 	if grid_search:
 	#analysis and reporting pipeline
 		results = run_poLCA (grid_search,cluster_seed,num_seg,num_rep,rebucketed_filename)	
-		timestamps = update_results_dict(results, X_rebucketed, names)
+		timestamps = update_results_dict(results, X_rebucketed, names, method)
 		update_question_dict(timestamps)
 		clean_up(timestamps)
 		save_results()

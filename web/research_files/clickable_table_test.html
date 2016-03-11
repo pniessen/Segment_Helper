@@ -1,0 +1,102 @@
+<!DOCTYPE html> 
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>How to become an editable HTML table with jQuery - MrBool Tutorial</title>
+   <!--  <link rel="stylesheet" type="text/css" href="style.css" /> -->
+   <script src="../static/js/jquery.js"></script>
+    // <!-- <script type="text/javascript" src="http://code.jquery.com/jquery-1.8.3.min.js"></script> -->
+    <!-- //<script type="text/javascript" src="script.js"></script> -->
+</head>
+<body>
+<!--     <table class="editableTable">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>001</td>
+                <td>Pedro Augusto</td>
+                <td>pedro.augusto@myemail.com</td>
+                <td>(21) 9999-8888</td>
+            </tr>
+            <tr>
+                <td>002</td>
+                <td>Paula Silva</td>
+                <td>paula.silva@mymail.com</td>
+                <td>(81) 8787-8686</td>
+            </tr>
+            <tr>
+                <td>003</td>
+                <td>Lucas Costa</td>
+                <td>lucas.costa@myemail.com</td>
+                <td>(84) 3232-3232</td>
+            </tr>
+        </tbody>
+    </table> -->
+
+<div id="tracker-goes-here" class = "center"></div>some text</div>
+
+<script>
+$(function () {
+    $("td").dblclick(function () {
+        var OriginalContent = $(this).text();
+         
+        $(this).addClass("cellEditing");
+        $(this).html("<input type='text' value='" + OriginalContent + "' />");
+        $(this).children().first().focus();
+ 
+        $(this).children().first().keypress(function (e) {
+            if (e.which == 13) {
+                var newContent = $(this).val();
+                $(this).parent().text(newContent);
+                $(this).parent().removeClass("cellEditing");
+            }
+        });
+         
+    $(this).children().first().blur(function(){
+        $(this).parent().text(OriginalContent);
+        $(this).parent().removeClass("cellEditing");
+    });
+    });
+});
+</script>
+<script>
+function startTracker(){
+        
+        console.log('in startTracker function'); 
+        mytable = $('<table></table>').attr({ id: "trackerTable" }).attr({class: 'zzeditableTable'});
+        var rows = 10;
+        console.log (rows);
+        var cols =  10;
+        var cols_names = ['x','x','x','x','x','x','x','x','x','x','x','x','x','x','x'];
+        var header_row = $('<tr></tr>').appendTo(mytable);
+        header_row.append("<th>" + "</th>");
+        for (var h = 0; h < cols; h++) {
+            var header_name = cols_names[h];
+            console.log(header_name);
+            $('<th></th>').text(header_name).appendTo(header_row);}
+
+        for (var i = 0; i < rows; i++) {
+            var row = $('<tr></tr>').appendTo(mytable);
+            var cols_names = ['x','x','x','x','x','x','x','x','x','x','x','x','x','x','x'];
+            var check_label = cols_names[i];
+
+            row.append('<td><input type="checkbox" name = "tcheck" value="' + check_label + '" id="'+check_label+'"></td>').attr({id:'rtable-' + check_label});//attr({id:'ztable-' + (i+1) + '-0'});
+            for (var j = 0; j < cols; j++) {
+                $('<td></td>').text('z').attr({id:'ttable-'+ (i+1) + "-" + (j+1)}).appendTo(row); 
+            }
+                     
+        }
+	mytable.appendTo("#tracker-goes-here");
+    };
+</script>
+
+<script>window.onload = startTracker ();</script>
+</body>
+</html>
