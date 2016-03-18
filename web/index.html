@@ -107,6 +107,18 @@
     #run-report-goes-here div.up { background-position:0px 0px;}
     #run-report-goes-here  { margin-left:auto; margin-right:auto;}
 
+    #weights-table-goes-here { font-family:Arial, Helvetica, Sans-Serif; font-size:0.8em;}
+    #weights-table-goes-here { border-collapse:collapse;}
+    #weights-table-goes-here h4 { margin:0px; padding:0px;}
+    #weights-table-goes-here img { float:right;}
+    #weights-table-goes-here ul { margin:10px 0 10px 40px; padding:0px;}
+    #weights-table-goes-here th { background:#7CB8E2 url(static/header_bkg.png) repeat-x scroll center left; color:#fff; padding:1px 4px; text-align:left;}
+    #weights-table-goes-here td { background:#C7DDEE none repeat-x scroll center left; color:#000; padding:1px 4px; }
+    #weights-table-goes-here tr td { background:#fff url(static/row_bkg.png) repeat-x scroll center left; cursor:pointer; }
+    #weights-table-goes-here div.arrow { background:transparent url(arrows.png) no-repeat scroll 0px -16px; width:16px; height:16px; display:block;}
+    #weights-table-goes-here div.up { background-position:0px 0px;}
+    #weights-table-goes-here { margin-left:auto; margin-right:auto;}
+
     .run-scoreboard {float: left;}
     .movie {float:left;}
     
@@ -223,7 +235,7 @@
                         <a class="page-scroll" href="#contact">Contact</a>
                     </li> -->
                     <li>
-                        <a class="page-scroll ui-icon-lock" onclick = "$('#myModal3').modal('toggle')"><span class="glyphicon glyphicon-lock"></span>Login</a>
+                        <a class="page-scroll ui-icon-lock" onclick = "$('#myModal3').modal('toggle')"><span class="glyphicon glyphicon-lock" bgcolor = 'red' style="color:#B80000" id = 'login-lock'></span>Login</a>
                     </li>
                     <li>
                         <a class="page-scroll"><span class="glyphicon glyphicon-floppy-disk"></span>Save</a>
@@ -500,8 +512,9 @@
                         </ul>
                       </div> <!-- btn-group dropdown wrapper -->
                         <button type="button" id = 'grid-button' class="btn btn-primary" data-toggle="button" aria-pressed="true" autocomplete="off" bgcolor = 'red'> Grid<!-- <div id='grid-on-off'>off</div> --></button>
-                    <button type="button" id = 'hide-col-button-2' class="btn btn-primary">Cluster Seed</button>
-                    <button type="button" id = 'hide-col-button' class="btn btn-primary">Hide Col</button>   
+                    <button type="button" id = 'cluster-seed-button' class="btn btn-primary">Cluster Seed</button>
+                    <button type="button" id = 'hide-col-button' class="btn btn-primary">Hide Col</button> 
+                    <button type="button" id = 'dont-press-button' class="btn btn-primary">Don't Press</button>   
                 </div>
             </div>
         </div>
@@ -589,9 +602,11 @@
             <!-- <h2 class="demoHeaders">Run Tracker 2</h2> -->
             <div id="tabs">
                 <ul id='tab-list'>
-                    <li class = 'tab'><input id = 'tab-name-1' style="color:black" class="tab-name" type="text"/><a href="#tabs-1">Run Manager</a></li>
+                    <li class = 'tab' id = 'tab-tab-1'><input id = 'tab-name-1' style="color:black" class="tab-name" type="text"/><a href="#tabs-1">Run Manager</a></li>
+<!--                     <li class = 'tab' id = 'tab-tab-0'><input id = 'tab-name-0' style="color:black" class="tab-name" type="text"/><a href="#tabs-0">Data</a></li> -->
                 </ul>
                 <div id="tabs-1"><div id="tracker-goes-here" class = "center"></div>some text</div>
+<!--                 <div id="tabs-0"><div id="weights-table-goes-here" class = "center" ></div>some data</div> -->
             </div>
         </div>  
     </section>
@@ -769,7 +784,7 @@
     <script src="static/js/grayscale.js"></script>
     
     <!-- Sorttable -->
-    // <!-- <script src="http://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script> -->
+    <!-- <script src="http://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script> -->
     <script src="/static/js/sorttable.js"></script>
 
     <!-- Bootstrap-Switch (http://www.bootstrap-switch.org/) -->
@@ -780,7 +795,12 @@
     <script src="/static/js/jquery.fixedheadertable.js"></script>
 
     <!--  Closeable  https://github.com/andrewwatts/ui.tabs.closable -->
-    // <!-- <script src="/static/js/ui.tabs.closable.js"></script> -->
+    <!-- <script src="/static/js/ui.tabs.closable.js"></script> -->
+
+    <!-- socket-io -->
+    <!-- https://github.com/shanealynn/async_flask/blob/master/templates/index.html -->
+    <script src=" http://cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.16/socket.io.min.js"></script>
+    // <!-- <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script> -->
 
     <script>
     // turns on / off waiting screen
@@ -896,10 +916,10 @@ function SubmitData () {
          // data: "{\"keywords\": \"romantic,beer,family\", \"neighborhoods\":\"\", \"cuisines\":\"Sushi\"}",
          data: data_to_send,
          success: function (data) {console.log(data);
-                                myApp.hidePleaseWait();
                                 // GetTrainingData();
                                 UpdateTrackerData ();
-                                GetTrainingData ();  
+                                GetTrainingData (); 
+                                myApp.hidePleaseWait(); 
          },
          error: function (result) {console.log(result);
         }
@@ -910,6 +930,7 @@ function SubmitData () {
     <!-- create scorecard_table -->
 
     <script>
+    window.tracker_data = [];
     function UpdateTrackerData () {
         console.log('in UpdateTrackerData function');
         $.ajax({
@@ -919,9 +940,12 @@ function SubmitData () {
              dataType: "json",
              async: true,
              //data: data_to_send,
-             success: function (tracker_data) {console.log(tracker_data);
-                                        appendColumn(tracker_data);
-                                        makeRunReport(tracker_data);
+             success: function (tracker_data) {
+                console.log('tracker data:', tracker_data);
+                window.tracker_data = tracker_data;
+                appendColumn(tracker_data);
+                makeRunReport(tracker_data);
+                //loadGraphImages(); // async graph load
              },
              error: function (tracker_data) {console.log(tracker_data);
             }
@@ -930,7 +954,10 @@ function SubmitData () {
     </script>
 
     <script>
-    corr_matrix = {};
+    var corr_matrix = {};
+    var cluster_seed = {};
+    var visual_flag = true;
+    
     function StartTrackerData () {
         console.log('in StartTrackerData function');
         $.ajax({
@@ -940,13 +967,17 @@ function SubmitData () {
              dataType: "json",
              async: true,
              //data: data_to_send,
-             success: function (first_tracker_data) {console.log(first_tracker_data);
-                                console.log('in StartTrackerData function');
-                                        //MakeTable(training_data);
-                                        corr_matrix = first_tracker_data.corr_matrix;
-                                        startTracker(first_tracker_data);
-                                        fillExplorer(first_tracker_data);
-                                        //loadTrainingImage(training_data);
+             success: function (first_tracker_data) {
+                console.log('in StartTrackerData function');
+                visual_flag = first_tracker_data.visual_mode[0];
+                console.log('visual_flag:', visual_flag);
+                console.log('first_tracker_data:', first_tracker_data);                
+                corr_matrix = first_tracker_data.corr_matrix;
+                cluster_seed = first_tracker_data.cluster_seed;
+                startTracker(first_tracker_data);
+                fillExplorer(first_tracker_data);
+
+                //loadTrainingImage(training_data);
              },
              error: function (first_tracker_data) {console.log(first_tracker_data);
             }
@@ -1060,6 +1091,7 @@ function SubmitData () {
             var run_bic = document.getElementById('run-scoreboard-bic-' + num_tabs);
             var run_method = document.getElementById('run-scoreboard-method-' + num_tabs);
             var run_datetime = document.getElementById('run-datetime-' + num_tabs);
+            var run_timestamp = document.getElementById('run-scoreboard-timestamp-' + num_tabs);
 
             num_segments.innerHTML = tracker_data.run_scorecard[h].b;
             num_variables.innerHTML = tracker_data.run_scorecard[h].c;
@@ -1070,6 +1102,21 @@ function SubmitData () {
             run_bic.innerHTML = tracker_data.run_scorecard[h].f;
             run_method.innerHTML = tracker_data.run_scorecard[h].i;
             run_datetime.innerHTML = tracker_data.run_scorecard[h].j;
+            run_timestamp.innerHTML = tracker_data.run_scorecard[h].a;
+
+            //var run_rfe = $('#run-scoreboard-'+ num_tabs + ' > tbody:last-child');
+            var run_rfe_length = $('#run-scoreboard-2 tr').length;
+            var num_rfe_vars = tracker_data.feature_importance[h].length;
+            
+            for (var i = 0; i < num_rfe_vars; i++) {
+                var row = $('<tr></tr>');
+                $('<td></td>').text(tracker_data.feature_importance[h][i][0]).appendTo(row);
+                $('<td></td>').text(tracker_data.feature_importance[h][i][1]).appendTo(row); 
+                var run_rfe_length = $('#run-scoreboard-' + num_tabs + ' tr').length;
+                var insert_point = $('#run-scoreboard-' + num_tabs + ' tr').eq(run_rfe_length-2);
+                insert_point.after(row);
+            }; //
+
 
             mytable = $('<table></table>').attr({ id: 'run-report-' + num_tabs }).attr({class: 'tg center table-goes-here fancyTable'});
             // var num_runs = tracker_data.run_reports.length; // number of reports
@@ -1143,13 +1190,16 @@ function SubmitData () {
         var timestamp = tracker_data.run_scorecard[h].a;
         console.log('timestamp for tab ', num_tabs, 'is', timestamp, 'h=', h);
 
-        // https://perishablepress.com/3-ways-preload-images-css-javascript-ajax/
-        // http://stackoverflow.com/questions/24822631/object-htmlimageelement-showing-instead-of-image
-        window.images[num_tabs] = [];
-        for (i = 0; i < tracker_data.run_scorecard[h].b + 1; i++) {
-            window.images[num_tabs][i] = new Image();
-            window.images[num_tabs][i].src = 'static/plots/seg_graph_' + tracker_data.run_scorecard[h].a + '_' + i + '.png'
-        };
+        if (visual_flag == true) {
+            console.log('visual_mode == true, getting graphs');
+            https://perishablepress.com/3-ways-preload-images-css-javascript-ajax/
+            http://stackoverflow.com/questions/24822631/object-htmlimageelement-showing-instead-of-image
+            window.images[num_tabs] = [];
+            for (i = 0; i < tracker_data.run_scorecard[h].b + 1; i++) {
+                window.images[num_tabs][i] = new Image();
+                window.images[num_tabs][i].src = 'static/plots/seg_graph_' + tracker_data.run_scorecard[h].a + '_' + i + '.png'
+            };
+            };
 
 
         $('#seg-spinner-' + num_tabs).on("spinstop", function(tracker_data,h,images){
@@ -1163,7 +1213,7 @@ function SubmitData () {
             //var seg_plot = document.getElementById('seg-plot-' + num_tabs);
             console.log('seg_plot:', seg_plot);
             // seg_plot.innerHTML = window.images[num_tabs][seg_clicked].outerHTML;
-            seg_plot.innerHTML = window.images[new_t_num][seg_clicked].outerHTML;
+            seg_plot.innerHTML = window.images[new_t_num][seg_clicked].outerHTML;//<-3/11/2016
             //console.log(seg_plot);
 
 
@@ -1171,7 +1221,46 @@ function SubmitData () {
         } // outer outer loop (=h) 
     };
 
-    </script>    
+    </script>  
+<script>
+https://perishablepress.com/3-ways-preload-images-css-javascript-ajax/
+http://stackoverflow.com/questions/24822631/object-htmlimageelement-showing-instead-of-image
+function loadGraphImages (){
+    console.log('in loadGraphImages function');
+    console.log('tracker_data:', window.tracker_data);
+    var num_tabs = $("div#tabs ul li").length;
+    var runs = tracker_data.run_reports;
+    var num_runs = runs.length;
+    var num_new_tabs = num_tabs - num_runs;
+    console.log('total num_tabs:', num_tabs);
+    console.log('number of runs in this update:',num_runs);
+    console.log('number of first new tab:', num_new_tabs);
+    
+    loop_counter = -1;
+    for (h = num_new_tabs; h < num_tabs; h++){
+        window.images[h] = [];
+        loop_counter += 1
+        console.log('loop_counter', loop_counter);
+        for (i = 0; i < window.tracker_data.run_scorecard[loop_counter].b + 1; i++) {
+            window.images[h][i] = new Image();
+            window.images[h][i].src = 'static/plots/seg_graph_' + window.tracker_data.run_scorecard[loop_counter].a + '_' + i + '.png'
+        };
+    };
+};
+
+function loadGraphImages2 (timestamp, segments){
+    console.log('in loadGraphImages2 function');
+    console.log('timestamp:', timestamp);
+    console.log('segments:', segments);
+    new_tab = window.images.length; 
+    console.log('adding array ', new_tab, 'to windows.images');
+        window.images[new_tab] = [];
+        for (i = 0; i < segments + 1; i++) {
+            window.images[new_tab][i] = new Image();
+            window.images[new_tab][i].src = 'static/plots/seg_graph_' + timestamp + '_' + i + '.png'
+        };
+    };   
+</script>
     <!--     check box event handler -->
     <!-- append explorer data to div = "explorer-left" -->
     // <script>
@@ -1518,13 +1607,42 @@ $('#dropdown-menu-1a li a').on('click', function(){
     // var x = document.getElementById('number-of-segments');
     // x.innerHTML('this is a test');
 });
-// Dropdown: method    
+// Dropdown: segmentation method    
 $('#dropdown-menu-2 li a').on('click', function(){
     console.log('dropdown clicked');
     method = $(this).text();
     console.log(method);
 
 });
+// cluster_seed_button
+// http://stackoverflow.com/questions/4177159/toggle-checkboxes-on-off   
+$('#cluster-seed-button').on('click', function(){
+    console.log('cluster_seed button clicked', cluster_seed);
+    for(var i = 0; i < cluster_seed.length; i++) {
+        console.log('now checking checkbox:', cluster_seed[i]);
+        var one_checkbox = $('#' + cluster_seed[i]);
+        console.log(one_checkbox);
+        //one_checkbox.prop("checked", true);
+        one_checkbox.trigger('click');
+    };
+});
+// dont_press button :-)
+$('#dont-press-button').on('click', function(){
+    console.log('dont press me!');
+    console.log('training_data:', window.tracker_data);
+});
+// login button :-)
+$('#login').on('click', function(){
+    console.log('login button pressed');
+    password = $('#password').val();
+    console.log('password:', password);
+    if (password == 'r0sett@') {
+        $('#login-lock')[0].style.color = '#00FF66';
+        StartTrackerData ();
+        $("#myModal3").modal("toggle"); // close modal
+    };
+});
+
 // Dropdown: objective function chooser  
 // http://codepedia.info/2015/02/click-event-for-dynamic-button-jquery/  
 $('#objective-function-dropdown').on('click', 'li a', function(){
@@ -1669,7 +1787,7 @@ function addNewTab(tracker_data, h) {
     "<div id='tab" + num_tabs + "'></div>"
     );
     $("div#tab" + num_tabs).append(
-    "<div class = 'run-report run-scoreboard' id = 'run-scoreboard-" + num_tabs + "'><table id = 'run-scoreboard-"+ num_tabs + "'><tr><td>Method</td><td id='run-scoreboard-method-" + num_tabs + "'></td></tr><tr><td>Datetime:</td><td id='run-datetime-" + num_tabs + "'></td></tr><tr><td># segments:</td><td id = 'run-scoreboard-segments-" + num_tabs + "'></td></tr><tr><td># variables</td><td id='run-scoreboard-variables-" + num_tabs + "'></td></tr><tr><td>Seg Coh:</td><td id='run-scoreboard-cohesiveness-" + num_tabs + "'></td></tr><tr><td>Seg Diff:</td><td id='run-scoreboard-diff-" + num_tabs + "'></td></tr><tr><td>MLE:</td><td id='run-scoreboard-mle-" + num_tabs + "'></td></tr><tr><td>Chi-Sq:</td><td id='run-scoreboard-chisq-" + num_tabs + "'></td></tr><tr><td>BIC:</td><td id='run-scoreboard-bic-" + num_tabs + "'></td></tr><tr><td>Heatmap Midpoint</td><td><input id='spinner-" + num_tabs +"'></td></tr><tr><td>View Segment </td><td><input id='seg-spinner-" + num_tabs +"'></td></tr><tr><td rowspan = '2' id = 'seg-plot-" + num_tabs +"'><img src = 'static/plots/seg_graph_" + tracker_data.run_scorecard[h].a + "_0.png'></td></tr></table></div>"
+    "<div class = 'run-report run-scoreboard' id = 'run-scoreboard-" + num_tabs + "'><table id = 'run-scoreboard-"+ num_tabs + "'><tr><td>Run ID</td><td id='run-scoreboard-timestamp-" + num_tabs + "'></td></tr><tr><td>Method</td><td id='run-scoreboard-method-" + num_tabs + "'></td></tr><tr><td>Datetime:</td><td id='run-datetime-" + num_tabs + "'></td></tr><tr><td># segments:</td><td id = 'run-scoreboard-segments-" + num_tabs + "'></td></tr><tr><td># variables</td><td id='run-scoreboard-variables-" + num_tabs + "'></td></tr><tr><td>Seg Coh:</td><td id='run-scoreboard-cohesiveness-" + num_tabs + "'></td></tr><tr><td>Seg Diff:</td><td id='run-scoreboard-diff-" + num_tabs + "'></td></tr><tr><td>MLE:</td><td id='run-scoreboard-mle-" + num_tabs + "'></td></tr><tr><td>Chi-Sq:</td><td id='run-scoreboard-chisq-" + num_tabs + "'></td></tr><tr><td>BIC:</td><td id='run-scoreboard-bic-" + num_tabs + "'></td></tr><tr><td>Heatmap Midpoint</td><td><input id='spinner-" + num_tabs +"'></td></tr><tr><td>View Segment </td><td><input id='seg-spinner-" + num_tabs +"'></td></tr><tr><td rowspan = '2' id = 'seg-plot-" + num_tabs +"'><img src = 'static/base_plot/seg_graph_1c71ff47-960f-4ba7-ba39-f5de0d451145_0.png'></td></tr></table></div>"
     );
     $("div#tab" + num_tabs).append(
     "<div class = 'hidden'></div>"
@@ -1679,7 +1797,8 @@ function addNewTab(tracker_data, h) {
     );  
     $("div#tabs").tabs("refresh");
 };
-            
+// <tr><td rowspan = '2' id = 'seg-plot-" + num_tabs +"'><img src = 'static/base_plot/seg_graph_1c71ff47-960f-4ba7-ba39-f5de0d451145_0.png'></td></tr>
+// " + tracker_data.run_scorecard[h].a + "          
 </script>
 <!-- Sortable tabs -->
 <script>
@@ -1769,7 +1888,98 @@ $('#hide-col-button').on('click', function (){
 });
 
 </script>
-<script> window.onload = StartTrackerData ();</script>
+<script>
+function dataWeights(){
+        
+        console.log('in dataWeights function'); 
+        myweighttable = $('<table></table>').attr({ id: "weights-table" }).attr({class: 'tg center table-goes-here fancyTable'});
+        var rows = 8;
+        console.log (rows);
+        var cols =  10;
+        var cols_names = ['Data Type', 'Category','Number','Percentage','x','x', 'Data Type', 'Category','Number','Percentage'];
+        var row_data  = [['Age','x','x','x','x','x','x','x','x','x'],
+                         ['x','x','x','x','x','x','x','x','x','x'],
+                         ['x','x','x','x','x','x','x','x','x','x'],
+                         ['x','x','x','x','x','x','x','x','x','x'],
+                         ['x','x','x','x','x','x','x','x','x','x'],
+                         ['Gender','x','x','x','x','x','x','x','x','x'],
+                         ['x','x','x','x','x','x','x','x','x','x'],
+                         ['x','x','x','x','x','x','x','x','x','x']]
+        // var cols_names = ['x','x','x','x','x','x','x','x','x','x','x','x','x','x','x'];
+        // var cols_names = ['x','x','x','x','x','x','x','x','x','x','x','x','x','x','x'];
+        // var cols_names = ['x','x','x','x','x','x','x','x','x','x','x','x','x','x','x'];
+        // var cols_names = ['x','x','x','x','x','x','x','x','x','x','x','x','x','x','x'];
+        // var cols_names = ['x','x','x','x','x','x','x','x','x','x','x','x','x','x','x'];
+        var header_row = $('<tr></tr>').appendTo(myweighttable);
+        // header_row.append("<th>" + "</th>");
+        for (var h = 0; h < cols; h++) {
+            var header_name = cols_names[h];
+            console.log(header_name);
+            $('<th></th>').text(header_name).appendTo(header_row);};
+        console.log(row_data);
+        for (var i = 0; i < rows; i++) {
+            var row = $('<tr></tr>').appendTo(myweighttable);
+            for (var j = 0; j < cols; j++) {
+                var cell_data = row_data[i][j];
+                $('<td></td>').text(cell_data).attr({id:'wtable-'+ (i+1) + "-" + (j+1)}).appendTo(row); 
+            }                 
+        }
+    myweighttable.appendTo("#weights-table-goes-here");
+    spinner_rows = [1,2,3,4,5,6,7];
+    for (var h = 0; h < cols; h++) {
+        $('#wtable-' + spinner_rows[h]  + '-5').append("<input id='spinner-weight-" + h +"'>");
+        $("#spinner-weight-" + h).spinner();};
+    //$('#wtable-1-5').append("<input id='spinner-weight-1'>");
+    };
+</script>
+<script>
+// $("#tab-list li:eq(1)").addClass("active").show(); //Activate second tab
+// $("#tabs-1").show();
+// // $("div#tabs").tabs();
+// var first_tab = $('#tabs-0');
+// first_tab.hide();
+// var first_tab_tab = $('#tab-tab-0')
+// var second_tab_tab = $('#tab-tab-1')
+// first_tab_tab.removeClass('ui-state-active', 'ui-tabs-active');
+// second_tab_tab.addClass('ui-state-active', 'ui-tabs-active');
+
+//ui-state-active, ui-tabs-active
+//$('#tabs-1').tabs( "option", "active" );
+// var active = $( ".selector" ).tabs( "option", "active" )
+//     var tabs = $("li[data-carrier-id]");
+//     //tabs.hide();
+//     var firstVisibleTabIndex;
+//     tabs.each(function (index) {
+//       if ($(this).is(":visible")) {
+//          firstVisibleTabIndex = index;
+//          return false;
+//        }
+//      });
+//      var jqTabs = $("#tabs").tabs();
+//      jqTabs.tabs("option", "active", firstVisibleTabIndex);
+ </script>
+ <script>
+ // $(document).ready(function(){
+ //    var split_seg = [];
+ //    var split_timestamp = [];
+ //    // start up the SocketIO connection to the server - the namespace 'test' is also included here if necessary
+ //    var socket = io.connect('http://' + document.domain + ':' + location.port + '/test');
+ //    socket.on('my response', function(msg){console.log(msg.data)});
+ //    console.log('socket:', socket);
+ //    socket.on('newnumber', function(msg) {
+ //        console.log("Received timestamps:", msg.number, typeof(msg.number), msg.number.length);
+ //        timestamp = msg.number[0];
+ //        segments = msg.number[1];
+ //        console.log('timestamp:', timestamp);
+ //        console.log('segments:', segments);
+ //        loadGraphImages2 (timestamp, segments, window.images);
+ //        });
+ //    });
+</script>
+<script>
+
+</script>
+<script> //window.onload = StartTrackerData (); //dataWeights();</script>
 <script> //window.onload = startTracker3 ();</script>
 </body>
 </html>

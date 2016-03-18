@@ -45,3 +45,4 @@
 [2016-03-10 11:44:03] INFO     FileName: test_raw_data_v1_zq_copy.csv
 [2016-03-10 14:06:53] INFO     FileName: test_weights_v1.csv
 [2016-03-10 14:09:31] INFO     FileName: test_raw_data_v1_zq_copy.csv
+[2016-03-10 22:48:00] INFO     FileName: test_raw_data_v1_bad.csv

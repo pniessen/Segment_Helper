@@ -12,7 +12,7 @@ import time
 import flask
 import pandas as pd
 import os
-from flask import Flask, request, jsonify, render_template, send_from_directory, url_for, send_file
+from flask import Flask, request, jsonify, render_template, send_from_directory, url_for, send_file, copy_current_request_context
 from werkzeug import secure_filename
 from collections import Counter, OrderedDict
 import pprint
@@ -35,6 +35,12 @@ matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import csv
+#import threading
+#from flask.ext.socketio import SocketIO, emit
+#from threading import Thread, Event
+import json
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.feature_selection import RFE
 
 
 #def init():
@@ -44,20 +50,21 @@ xls = False
 web_mode = False
 filename = 'test_raw_data_q_v1.csv' # (user x question) .csv with question labels in first row
 grid_search = False
+visual_mode = True
 
 # now check for command line arguments + options
 argv = sys.argv[1:]
 print "Command line arguments:", str(argv)
 
 try:
-	opts, args = getopt.getopt(argv,"hiwxlsf:g",)
+	opts, args = getopt.getopt(argv,"hiwxlsf:gv",)
 except getopt.GetoptError:
-	print 'PCA_tester.py -i (interactive_mode), -w (web_mode), -xls (excel file export), -f: infile_name.csv'
+	print 'PCA_tester.py -i (interactive_mode), -w (web_mode), -xls (excel file export), -f: infile_name.csv -v (no viusals)'
 	sys.exit()
 
 for opt, arg in opts:
 	if opt == '-h':
-		print 'PCA_tester.py -i (interactive_mode), -w (web_mode), -xls (excel file export), -f: infile_name.csv'
+		print 'PCA_tester.py -i (interactive_mode), -w (web_mode), -xls (excel file export), -f: infile_name.csv -v (no visuals)'
 		sys.exit()
 	elif opt in ('-i','-I'):
 		interactive_mode = True
@@ -67,6 +74,8 @@ for opt, arg in opts:
 		xls = True
 	elif opt in ('-g', '-G',):
 		grid_search = True
+	elif opt in ('-v', '-V',):
+		visual_mode = False
 	elif opt == '-f':
 		# http://stackoverflow.com/questions/5899497/checking-file-extension
 		if arg.lower().endswith(('.csv')):
@@ -77,6 +86,9 @@ for opt, arg in opts:
 			sys.exit()
 
 app = Flask(__name__)
+# app.config['SECRET_KEY'] = 'secret!'
+# app.config['DEBUG'] = True
+# socketio = SocketIO(app)
 start_time = time.time()
 
 basedir_for_upload = os.path.abspath(os.path.dirname(__file__))
@@ -550,7 +562,7 @@ def make_cluster_seed(factor_matrix, best_factor, question_number, num_cols, num
 		#print rh_list
 		question_index_rh_list = sorted(zip(question_names, question_index_list, rh_list), key = lambda x: x[2])
 		# print int(factor+1), ":", question_index_rh_list #this prints sorted RH by question
-		cluster_seed.append(question_index_rh_list[0][1])
+		cluster_seed.append(int(question_index_rh_list[0][1]))
 
 	print "cluster seed:", cluster_seed
 	print "number of items in cluster seed", len(cluster_seed)
@@ -697,6 +709,7 @@ def create_tracker():
 	global X
 	global X_rebucketed
 	global names
+	global cluster_seed
 
 	tracker_list = []
 	z = func_name(); print "--------in function: ", z, " -------------"
@@ -720,7 +733,12 @@ def create_tracker():
 	corr_matrix_list = dict(zip(names,[dict(zip(names, corr_matrix[:,row].tolist())) for row in range(corr_matrix.shape[1])]))
 	print 'correlation matrix shape: ', corr_matrix.shape
 
-	tracker = {'tracker': tracker_list, 'corr_matrix': corr_matrix_list}
+	cluster_seed_question_list = [names[seed] for seed in cluster_seed]
+	print 'cluster_seed_question_list being sent to front end: ', cluster_seed_question_list
+
+	visual_flag_list = [visual_mode]
+
+	tracker = {'tracker': tracker_list, 'corr_matrix': corr_matrix_list, 'cluster_seed': cluster_seed_question_list, 'visual_mode': visual_flag_list}
 	#print "create_run_tracker: ", tracker
 
 	tracker_json = flask.jsonify(tracker)
@@ -731,11 +749,14 @@ def create_tracker():
 @app.route("/tracker", methods=["GET"])
 def update_run_tracker():
 	z = func_name(); print "--------in function: ", z, " -------------"
+
 # could we use intersection of two dictionaries (resuts_dict_old, resuts_dict_current) and update difference?
 # http://code.activestate.com/recipes/576644-diff-two-dictionaries/
 # or dict.viewitems() - see http://zetcode.com/lang/python/dictionaries/
 
 	global results_dict #updated when new values uploaded
+	global cluster_seed
+	global X_rebucketed_df
 
 	tracker_list = []
 	r_and_q_list = []
@@ -787,7 +808,11 @@ def update_run_tracker():
 
 		run_reports_list = run_report(keys_to_upload)
 		run_scorecards_list = scorecard_3(keys_to_upload)
-		tracker = {'tracker': tracker_list, 'run_reports': run_reports_list, 'run_scorecard': run_scorecards_list}
+		rfe_list = feature_importances(X_rebucketed_df, keys_to_upload)
+		# cluster_seed_question_list = [names[seed] for seed in cluster_seed]
+		# print 'cluster_seed_list being sent to front end:', cluster_seed_question_list
+		tracker = {'tracker': tracker_list, 'run_reports': run_reports_list, 
+		'run_scorecard': run_scorecards_list, 'feature_importance': rfe_list}
 
 		return flask.jsonify(tracker)
 
@@ -865,6 +890,8 @@ def submit_data():
 	if 'method' in keys:
 		print "----method---"
 		method = inbound_data['method']
+		if len(method) == 0:
+			method = 'poLCA'
 		
 		if method != None:
 			method = method.encode('ascii', 'ignore')
@@ -898,7 +925,11 @@ def submit_data():
 	
 	update_question_dict(timestamps)
 	run_report(timestamps)
-	Parallel(n_jobs=num_cores,verbose=5)(delayed(make_visual)(i,X_rebucketed_df, timestamps[i]) for i in range(len(timestamps)))
+	# threading.Thread(target=make_visual, args=(X_rebucketed_df, timestamps), kwargs={}).start()
+	# print 'this is after threading started'
+	if visual_mode == True:
+		Parallel(n_jobs=num_cores,verbose=5)(delayed(make_visual)(i,X_rebucketed_df, timestamps[i]) for i in range(len(timestamps)))
+	#rfe_list = feature_importances(X_rebucketed_df, timestamps)
 	clean_up(timestamps)
 
 	if xls:
@@ -1064,6 +1095,14 @@ def scorecard(timestamp, cluster_seeds, cluster_seed_names, num_seg):
 	print("------- Runtime: %.2f seconds -------" % (time.time() - start_time))
 
 	return
+
+# @socketio.on('connect', namespace='/test')
+# def test_connect():
+# 	z = func_name(); print "--------in function: ", z, " -------------"
+#     # need visibility of the global thread object
+# 	global thread
+# 	emit('my response', {'data': '------connected---------'})
+# 	print('--------------------Client connected----------------------------')
 
 def update_results_dict(results, X_rebucketed, names, method):
 	''''
@@ -1439,7 +1478,7 @@ def run_poLCA (grid_search,cluster_seed,num_seg,num_rep,rebucketed_filename):
 		print '---------in grid search == True function---------'
 		# run clustering in parallel if possible
 		shortened_cluster_seeds = []
-		num_remove = 0
+		num_remove = 3
 		random.shuffle(cluster_seed)
 		
 		shortened_cluster_seeds = [cluster_seed[0:(len(cluster_seed)-num)] for num in range(num_remove+1) ]
@@ -1448,7 +1487,7 @@ def run_poLCA (grid_search,cluster_seed,num_seg,num_rep,rebucketed_filename):
 		# shortened_cluster_seeds = [x for x in itertools.combinations(cluster_seed, 28)]
 		# print "total cluster seeds: ", len(shortened_cluster_seeds)
 
-		num_seg = [5,6,7]#,8,9,10,11,12,13,14]
+		num_seg = [5,6,7,8,9,10,11,12]#,13,14]
 		
 		num_cores = multiprocessing.cpu_count()
 		#results = Parallel(n_jobs=num_cores,verbose=5)(delayed(poLCA)(i,cluster_seed, num_seg[i], num_rep, rebucketed_filename) for i in range(10))
@@ -1659,21 +1698,75 @@ def get_segments(X_rebucketed_df, names, cluster_seed, method, num_seg):
 	results = [(timestamp,cluster_seed,cluster_seed_names,num_seg)]
 	return results
 
+def feature_importances(X_rebucketed_df, timestamps):
+	'''
+	Calculates relative contribution of features using DecisionTreeClassifier
+	'''
+	z = func_name(); print "------in function:", z, "---------------"
+
+	rfe_list = []
+
+	for timestamp in timestamps:
+		cluster_seed_names = results_dict[timestamp]['quest_list']
+		print "cluster_seed_names: ", cluster_seed_names
+		
+		clusters = results_dict[timestamp]['predicted_clusters']
+		print "clusters:", len(clusters)
+		
+		#clusters_df = pd.DataFrame(clusters, columns = ['cluster'], index = range(len(clusters))
+		
+		X2 = X_rebucketed_df[cluster_seed_names]#.join(clusters_df)
+
+		rfe_scores = []
+		for n in range(len(cluster_seed_names)):
+			top_n = n + 1
+			clf = DecisionTreeClassifier()
+			rfe = RFE(clf, top_n).fit(X2, clusters)
+			rfe_score = rfe.score(X2,clusters)
+			var_names = list(np.array(cluster_seed_names)[np.array(rfe.support_)])
+			rfe_scores.append(rfe_score - sum(rfe_scores))
+
+			print 'RFE Mean accuracy: {0:.2%}'.format(rfe_score)
+
+			if rfe_score > .99:
+				var_names.append('Total (>99%)')
+				var_names.insert(0, '  ')
+				var_names.insert(0, '---- Question ----')
+				
+				rfe_scores.append(sum(rfe_scores))
+				rfe_scores = ['{0:.2%}'.format(item) for item in rfe_scores]
+				rfe_scores.insert(0, '  ')
+				rfe_scores.insert(0, '----  Accuracy (higher = better) ----')
+				
+				print var_names
+				one_rfe_list = zip(var_names, rfe_scores)
+				#one_rfe_list  = one_rfe_list.sort(key=lambda x: x[1])
+				rfe_list.append(one_rfe_list)
+				
+				print one_rfe_list
+				
+				break
+
+	return rfe_list
+
 def make_visual(i, X_rebucketed_df, timestamp):
 	'''
 	makes 3-d visual using PCA 
 	'''
 	z = func_name(); print "------in function:", z, "---------------"
-
+	
 	# visualize in 3D
 	# 	https://zulko.wordpress.com/2012/09/29/animate-your-3d-plots-with-pythons-matplotlib/
 	
 	question_names = X_rebucketed_df.columns.values.tolist()
+	#print timestamps
 	# print "X_rebucketed_df.columns.values:", question_names
+	
+
 
 	#new_results_dict = dict(Parallel(n_jobs=num_cores,verbose=5)(delayed(make_one_results_dict_entry_mp)(i,timestamps[i],results_dict[timestamps[i]], X_rebucketed, names) for i in range(len(timestamps))))
 
-	# for timestamp in timestamps:
+	#for timestamp in timestamps:
 
 	cluster_seed_names = results_dict[timestamp]['quest_list']
 	print "cluster_seed_names: ", cluster_seed_names
@@ -1694,6 +1787,8 @@ def make_visual(i, X_rebucketed_df, timestamp):
 	print clusters_array_2.shape
 	d = np.concatenate((c.T, clusters_array_2), axis=1)
 	print d.shape
+	df = pd.DataFrame(d[:,:3])
+	df.to_csv('graph_dataset_' + str(timestamp) +'.csv')
 	
 	# generate list of random colors for graph		
 	#color_dict = {0:'red',1:'blue',2:'green',3:'black',4:'yellow', 5:'pink', 6:'orange',7:'grey', 8:'brown', 9:'purple', 10:'indigo', 11:'light blue', 12:'light green'}
@@ -1717,13 +1812,59 @@ def make_visual(i, X_rebucketed_df, timestamp):
 		#print ax.lines		
 	
 	plt.close(fig)
+
+		#timestamp_and_seg_number = [timestamp, number_clusters]
+		#socketio.emit('newnumber', {'number': timestamp_and_seg_number}, namespace='/test')
 		# plt.show()
 
 		#2D plot
 		#for num in range(cluster):
 	    #   lines2 = ax.plot(d[d[:,3]==num][:,0],d[d[:,3]==num][:,1],'o', markersize=7, color=colors[num], alpha=0.5)#, label = labels)
 		#	ax.lines.pop(1)
-		 
+	
+	#timestamps_and_seg_nums = []
+	#number_of_segments = [results_dict[timestamp]['cluster_number'] for timestamp in timestamps]
+	#for i in range(len(timestamps)):
+	#	timestamps_and_seg_nums.append(timestamps[i])
+	#	timestamps_and_seg_nums.append(number_of_segments[i])
+	
+	#print timestamps_and_seg_nums
+
+	#number_of_segments = [str(results_dict[timestamp]['cluster_number']) for timestamp in timestamps]
+	#print 'number_of_segments:', number_of_segments
+	
+	#timestamps_and_seg_nums = dict(zip(timestamps, number_of_segments))
+	#print timestamps_and_seg_nums = [[timestamp[i]]+[number_of_segments[i]] for i in len(timestamps)]
+	
+	#print 'timestamps:', timestamps, type(timestamps)
+	#print 'str(timestamps:', str(timestamps)
+	#print 'json.dumps(timestamps):', json.dumps(timestamps)
+	#timestamps = str(timestamps)
+	#timestamps_2 = timestamps.replace("'","")
+	#print timestamps_2
+	#timestamps_3 = "'{0}'".format(timestamps_2)
+	#print timestamps_3, type(timestamps_3)
+	#timestamps = [str(len(timestamps))] + timestamps
+	#number = dict(zip(range(len(timestamps)),timestamps))
+	#timestamps_2 = "'" + timestamps + "'"
+	#number = 999999999 #json.dumps(timestamps)
+	#print 'sleeping'
+	#time.sleep(20)
+	
+	# numbers = []
+	# for i in range(3):
+	# 	number = str(uuid.uuid4())
+	# 	numbers.append(number)
+	# numbers = str(numbers)
+	# print 'numbers:', numbers
+
+	#socketio.emit('newnumber', {'number': '[9c9e7b59-1a6e-4065-9690-46e290bb51a7, c558e84d-ce89-4409-95f6-94e487911cd7, 10b77204-fd8e-45eb-9fba-0822df9a7633]'}, namespace='/test')
+	#socketio.emit('newnumber', {'number': timestamps}, namespace='/test')
+	#socketio.emit('newnumber', {'number': str(timestamps_2)}, namespace='/test')
+	#socketio.emit('newnumber', {'number': number}, namespace='/test')
+	#socketio.emit('newnumber', {'number': timestamps_and_seg_nums}, namespace='/test')
+	#socketio.emit('clusternum', {'cluster': str(number_of_segments)}, namespace='/test')
+
 	return
 
 def calculate_weights(responder_infilename):
@@ -1816,6 +1957,7 @@ if __name__ == "__main__":
 	cluster_seed = make_cluster_seed(factor_matrix, best_factor, question_number, num_cols, num_rows)
 	# get_segments(X_rebucketed_df, names, cluster_seed, method, timestamp, num_seg)
 	# make_visual(X_rebucketed_df, cluster_seed_inbound, timestamps, names)
+	# rfe_list = feature_importances(X_rebucketed_df, timestamps, cluster_seed_names)
 	# app.run()
 
 	print "cluster_seed: ", cluster_seed
@@ -1836,6 +1978,8 @@ if __name__ == "__main__":
 		make_xls()
 
 	if interactive_mode:
+		# app.debug = True
+		# socketio.run(app)
 		app.run(debug = True)
 		
 	if web_mode:
