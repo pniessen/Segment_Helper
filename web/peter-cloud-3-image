@@ -238,7 +238,7 @@
                         <a class="page-scroll ui-icon-lock" onclick = "$('#myModal3').modal('toggle')"><span class="glyphicon glyphicon-lock" bgcolor = 'red' style="color:#B80000" id = 'login-lock'></span>Login</a>
                     </li>
                     <li>
-                        <a class="page-scroll" onclick = SaveSession()><span class="glyphicon glyphicon-floppy-disk"></span>Save</a>
+                        <a class="page-scroll"><span class="glyphicon glyphicon-floppy-disk"></span>Save</a>
                     </li>
                 </ul>
             </div>
@@ -514,7 +514,7 @@
                         <button type="button" id = 'grid-button' class="btn btn-primary" data-toggle="button" aria-pressed="true" autocomplete="off" bgcolor = 'red'> Grid<!-- <div id='grid-on-off'>off</div> --></button>
                     <button type="button" id = 'cluster-seed-button' class="btn btn-primary">Cluster Seed</button>
                     <button type="button" id = 'hide-col-button' class="btn btn-primary">Hide Col</button> 
-                    <button type="button" id = 'dont-press-button' class="btn btn-primary" onclick = "$('#myModal5').modal('toggle')">Compare Runs</button>   
+                    <button type="button" id = 'dont-press-button' class="btn btn-primary">Don't Press</button>   
                 </div>
             </div>
         </div>
@@ -706,7 +706,7 @@
               <div class="modal-body">
                 <form class="form" method="post" style="color:black" action="#">
                     <label>Email :</label>
-                    <input type="text" name="demail" id="user-id">
+                    <input type="text" name="demail" id="email">
                     <label>Password :</label>
                     <input type="password" name="password" id="password">
                     <input type="button" class = 'btn btn-primary' name="login" id="login" value="Login">
@@ -751,38 +751,6 @@
 
                     </form> 
            <!--  <p>Some text in the modal.</p> -->
-          </div>
-<!--           <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-          </div> -->
-        </div>
-
-      </div>
-    </div>
-<!-- Even another another another modal -->
-    <div id="myModal5" class="modal fade" role="dialog">
-      <div class="modal-dialog">
-
-        <!-- Modal content-->
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal">&times;</button>
-            <h4 class="modal-title" style="color:black">Choose runs to compare</h4>
-          </div>
-          <div class="modal-body">
-            
-           <!--  <p>Some text in the modal.</p> -->
-
-            <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-primary dropdown-toggle" id="dropdownMenu1-label-4" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                      Runs
-                      <span class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu" id = 'dropdown-menu-4'>
-
-                  </div> <!-- btn-group dropdown wrapper -->
-                  <button id="run-comparison-btn" class="btn btn-primary btn-file" type="button">Compare Runs</button>
-          </div>
           </div>
 <!--           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -935,27 +903,6 @@ function SubmitDimension (new_dimension) {
 
          },
          error: function (results5) {console.log('error', results5);
-        }
-       });
-    };
-</script>
-<script>
-function SaveSession () {
-    console.log('in SaveSession function');  
-    //console.log(new_dimension);
-    var data_to_send = JSON.stringify([session_id]);
-    console.log(data_to_send);      
-    $.ajax({
-         type: "POST",
-         contentType: "application/json; charset=utf-8",
-         url: "/save",
-         dataType: "json",
-         async: true,
-         data: data_to_send,
-         success: function (data_to_send) {console.log('success', data_to_send);
-
-         },
-         error: function (results6) {console.log('error', results6);
         }
        });
     };
@@ -1242,11 +1189,8 @@ function SubmitData () {
         // http://docs.joomlabamboo.com/getting-started/how-to-use-the-computed-panel-in-the-chrome-inspector
         // https://api.jquery.com/gt-selector/
         $(function() {
-        var headerskipper = $("#run-report-" + num_tabs).find("tr:first td").length;
-        var table_cells = $("#run-report-" + num_tabs + " tr td:nth-child(3) ~ td").slice((headerskipper - 3) * 7);
-        //table_cells = table_cells.slice(headerskipper);
-        console.log(headerskipper, 'table_cells conditional formatting:', table_cells);
-        //var table_cells = $("#run-report-" + num_tabs + " td:gt(" + headerskipper + ")");
+        var headerskipper = $("#run-report-" + num_tabs).find("tr:first td").length *  7;
+        var table_cells = $("#run-report-" + num_tabs + " td:gt(" + headerskipper + ")");
         table_cells.each(function(index) { // td:gt(96) excudes first 96 <td> (=top header)  
             //var scale = [['vPoor', 10], ['poor', 50], ['avg', 250], ['good', 1250], ['vGood', 6250]];
             var scale = [['ok',100],['good', 140],['great',200]];
@@ -1270,11 +1214,8 @@ function SubmitData () {
             console.log(new_t_num2);
                
                 $(function() {
-                var headerskipper = $("#run-report-" + new_t_num2).find("tr:first td").length;
-                var table_cells = $("#run-report-" + new_t_num2 + " tr td:nth-child(3) ~ td").slice((headerskipper - 3) * 7);
-                //table_cells = table_cells.slice(headerskipper);
-                //var table_cells = $("#run-report-" + new_t_num2 + " td:gt(" + headerskipper + ")");
-                // $('#run-report-goes-here-2 tr td:nth-child(3) ~ td')
+                var headerskipper = $("#run-report-" + new_t_num2).find("tr:first td").length *  7;
+                var table_cells = $("#run-report-" + new_t_num2 + " td:gt(" + headerskipper + ")");
                 table_cells.each(function(index) { // td:gt(96) excudes first 96 <td> (=top header)  
                     //var scale = [['vPoor', 10], ['poor', 50], ['avg', 250], ['good', 1250], ['vGood', 6250]];
                     var scale = [['ok',100],['good', spinvalue],['great',200]];
@@ -1709,10 +1650,6 @@ function UUID() {
         Date.now().toString(16).slice(-10) + s(2) // Use timestamp to avoid collisions
     ].join('-');
 }
-// http://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
-hashCode = function(s){
-  return s.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);              
-}
 </script>
 <script>
 var num_segments = [],
@@ -1760,7 +1697,6 @@ $('#dont-press-button').on('click', function(){
 $('#login').on('click', function(){
     console.log('login button pressed');
     password = $('#password').val();
-    user_id = $('#user-id').val();
     console.log('password:', password);
     if (password == 'r0sett@') {
         $('#login-lock')[0].style.color = '#00FF66';

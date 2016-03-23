@@ -607,7 +607,10 @@ def poLCA(i, cluster_seed, num_seg, num_rep, rebucketed_filename):
 	#timestamp = base64.b64encode(str(time.time() + np.random.random_integers(0,1000000000000)))
 	timestamp = str(uuid.uuid4()) # http://stackoverflow.com/questions/534839/how-to-create-a-guid-in-python
 	# Q: how is names() global?
-	cluster_seeds = [num_seg] + [num_rep] + [basedir] + [rebucketed_filename] + [timestamp] + cluster_seed_names
+	#weights_filename = filename[:len(filename)-4] + '_weights' + filename[len(filename)-4:] 
+	weights_filename = 'test_raw_data_q_v1_weights.csv'
+
+	cluster_seeds = [num_seg] + [num_rep] + [basedir] + [rebucketed_filename] + [timestamp] + cluster_seed_names + [weights_filename]
 	cluster_seeds = [str(seed) for seed in cluster_seeds]
 	#print cluster_seeds
 	# #args = ['74','68','75','73','162','182','168','69','78','70','113','181','179','81','201']
@@ -620,7 +623,10 @@ def poLCA(i, cluster_seed, num_seg, num_rep, rebucketed_filename):
 
 	# # check_output will run the command and store to result
 	print "Running poLCA in R, please wait:"
+	print cluster_seeds
 	x = subprocess.check_output(cmd, universal_newlines=True)
+
+	print x
 
 	#return
 	#scorecard(cluster_seeds, cluster_seed_names, num_seg)
@@ -968,6 +974,63 @@ def objective_function():
 	results3 = {"example": [666]}
 	return flask.jsonify(results3)
 
+@app.route('/submit_session_id', methods=['POST'])
+def session_id():
+
+	z = func_name(); print "--------in function: ", z, " -------------"
+
+	global results_dict
+	global question_dict
+
+	inbound_data = flask.request.json
+
+	print "session_id:", inbound_data
+	print type(inbound_data)
+	
+	session_id = inbound_data.encode('ascii', 'ignore')
+	print type(session_id)
+
+	results4 = {"session_id": [session_id]}
+	
+	return flask.jsonify(results4)
+
+@app.route('/submit_dimension', methods=['POST'])
+def submit_dimension():
+
+	z = func_name(); print "--------in function: ", z, " -------------"
+
+	global results_dict
+	global question_dict
+
+	dimension = flask.request.json
+
+	print "dimension", dimension
+	print type(dimension)
+	
+	new_dimension = [value.encode('ascii', 'ignore') for value in dimension]
+	print type(new_dimension)
+	print new_dimension
+	question, dim = new_dimension
+	question_dict[question]['dimension'] = dim
+
+	print 'added to question_dict: ', question, question_dict[question]['dimension']
+
+	results5 = {"new_dimension": new_dimension}
+	
+	return flask.jsonify(results5)
+
+@app.route('/save', methods=['POST'])
+def save_session():
+
+	z = func_name(); print "--------in function: ", z, " -------------"
+
+	filename = save_results()
+	
+	results5 = {"save_results": filename}
+	
+	return flask.jsonify(results5)
+
+
 # file upload section
 # see http://code.runnable.com/UiPcaBXaxGNYAAAL/how-to-upload-a-file-to-the-server-in-flask-for-python
 # https://github.com/moremorefor/flask-fileupload-ajax-example/blob/master/app.py
@@ -1125,6 +1188,8 @@ def update_results_dict(results, X_rebucketed, names, method):
 	model_stats = [list(loadtxt(basedir+"/static/model/model_stats_"+timestamp+".txt", delimiter=",", unpack=False)) for timestamp in timestamps]
 	predicted_clusters = [list(loadtxt(basedir+"/static/model/predicted_segment_"+timestamp+".txt", delimiter=",", unpack=False)) for timestamp in timestamps]
 	posterior_probabilities = [list(loadtxt(basedir+"/static/model/posterior_probabilities_"+timestamp+".txt", delimiter=",", unpack=False)) for timestamp in timestamps]
+	#rov_list = [list(loadtxt(basedir+"/static/model/rov_"+timestamp+".txt", delimiter=",", unpack=False)) for timestamp in timestamps]
+	rov_list = [dict(csv.reader(open(basedir+"/static/model/rov_"+timestamp+".txt", 'r'))) for timestamp in timestamps]
 
 	if len(set(timestamps)) != len(timestamps):
 		print "warning: duplicate timestamps!"
@@ -1143,8 +1208,8 @@ def update_results_dict(results, X_rebucketed, names, method):
 	print new_results_dict_keys, " new results_dict keys added"
 
 	run_num = starting_results_dict_length
-	num = 0
-	for key in timestamps:#results_dict.keys():
+
+	for num, key in enumerate(timestamps):#results_dict.keys():
 		results_dict[key]['run_number'] = starting_results_dict_length + num + 1
 		results_dict[key]['date'] = time.asctime(time.localtime(time.time()) ) #time.time()
 		results_dict[key]['method'] = method
@@ -1157,7 +1222,7 @@ def update_results_dict(results, X_rebucketed, names, method):
 		results_dict[key]['predicted_clusters'] = predicted_clusters[num]
 		results_dict[key]['posterior_probabilities'] = posterior_probabilities[num]
 		results_dict[key]['upload_state'] = False
-		num +=1
+		results_dict[key]['rov'] = rov_list[num]
 
 	print "results_dict size after adding new keys:", len(results_dict.keys())
 
@@ -1351,7 +1416,7 @@ def make_xls():#results_dict):
 			#col = col + 1
 			for x_c in xrange(x_cs):
 				if col == 0:
-					print y_axis_label[row]
+					#print y_axis_label[row]
 					worksheet.write(row+1,col,y_axis_label[row])
 				data = table[row,col]
 				worksheet.write(row+1, col+1, data)
@@ -1360,6 +1425,32 @@ def make_xls():#results_dict):
 
 	run_number = 0
 
+	timestamps = results_dict.keys()
+	run_reports = run_report(timestamps)
+
+	for run in run_reports:
+		run_number += 1
+		worksheet_name = 'R' + str(run_number)
+		worksheet = workbook.add_worksheet(worksheet_name)
+		num_columns = len(run[0])
+		num_rows = len(run)
+
+		#row = 0
+		#col = 0
+
+		for row in range(num_rows):
+			for col in range(num_columns):
+				data = run[row][col]
+				if type(data) is list: # trap lists!
+					data = data[0]
+				#print data
+				#print type(data)
+				#print row
+				#print col
+				worksheet.write(row, col, data)
+
+	workbook.close()
+	'''
 	for run in results_dict:
 		run_number += 1
 		worksheet_name = 'R' + str(run_number)
@@ -1392,6 +1483,7 @@ def make_xls():#results_dict):
 				worksheet.write(row + 1, col + cluster + 2, top, percent)
 				worksheet.write(row + 2, col + cluster + 2, top, percent)
 			row += 4
+	'''
 
 	workbook.close()
 
@@ -1409,7 +1501,8 @@ def clean_up (timestamps):
 		os.remove(basedir+"/static/model/model_stats_"+timestamp+".txt")
 		os.remove(basedir+"/static/model/predicted_segment_"+timestamp+".txt")
 		os.remove(basedir+"/static/model/posterior_probabilities_"+timestamp+".txt")
-	print len(timestamps) * 3, "scoring files cleaned up from ", len(timestamps), "runs"
+		os.remove(basedir+"/static/model/rov_"+timestamp+".txt")
+	print len(timestamps) * 4, "scoring files cleaned up from ", len(timestamps), "runs"
 
 	return
 
@@ -1420,27 +1513,36 @@ def save_results():
 	z = func_name(); print "--------in function: ", z, "--------------"
 
 	global results_dict
-	import ujson
-	import uuid
-	import json
-	import simplejson  
+	global question_dict
+	global X
+	global X_rebucketed
+ 
 	import cPickle as pickle
-	import marshal
 	import time
 	
 	time_dict = {}
 	load_time_dict = {}
 
-	# outfile = 'results_dict_' + str(uuid.uuid4()) + '.json'
+	save_dict = {}
+	save_dict['results_dict'] = results_dict
+	save_dict['question_dict'] = question_dict
+	save_dict['X'] = X
+	save_dict['X_rebucketed'] = X_rebucketed
+
+	print 'results_dict keys:',  save_dict['results_dict'].keys()
+	print 'question_dict keys:', save_dict['question_dict'].keys()
+	print 'X shape:', save_dict['X'].shape
+	print 'X_rebucketed shape:', save_dict['X_rebucketed'].shape
+	print os.path.abspath(os.path.dirname(__file__))
 
 	# cPickle
 	method = 'cPickle'
 	print "trying :", method
 	last_time = time.time()
 	try:
-		outfile = 'results_dict_' + str(uuid.uuid4()) + '.pkl'
+		outfile = 'static/saved_sessions/save_dict_' + str(uuid.uuid4()) + '.pkl' #/static/saved_sesions/
 		with open(outfile, 'wb') as handle:
-		    pickle.dump(results_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)		
+		    pickle.dump(save_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)		
 		this_time = time.time()
 		elapsed_time = this_time - last_time
 		print method,": ", outfile, ' saved with ', len(results_dict), ' entries, in :' , elapsed_time
@@ -1512,6 +1614,7 @@ def run_report(timestamps):
 	z = func_name(); print "------in function:", z, "---------------"
 
 	global results_dict
+	global question_dict
 
 	#  sample results_dict entry keys: ['cluster_shares', 'run_number', 'model_stats', 'response_shares', 'posterior_probabilities', 'cluster_number',
 	# 'cross_question_polarity', 'quest_list', 'predicted_clusters', 'response_counts', 'cluster_counts', 'polarity_scores', 'upload_state', 
@@ -1528,11 +1631,12 @@ def run_report(timestamps):
 
 		# header: question...bucket...segment_1,...segment_2...etc
 		segment_list = 	 ['S' + str((num + 1)) for num in range(number_of_clusters)]
-		
-		segment_counts = ['# in seg',   '']     + results_dict[run]['cluster_counts']  + [sum(results_dict[run]['cluster_counts'])] + [''] + ([''] * len(segment_list))
-		segment_shares = ['Pct in seg', '']     + ['{0:.1%}'.format(results_dict[run]['cluster_shares'][cluster]) for cluster in range(number_of_clusters)] + ['100.0%'] + [''] + ([''] * len(segment_list)) 
-		header_1 = 		 ['', '', 		  ]     + segment_list + ['Total']        + [''] + ([''] * len(segment_list)) 
-		header_2 = 		 ['Question', 'Bucket'] + segment_list + ['Average'] + [''] + segment_list
+
+		segment_counts = ['# in seg',   '',''			   ]     + results_dict[run]['cluster_counts']  + [sum(results_dict[run]['cluster_counts'])] + [''] + ([''] * len(segment_list))
+		segment_shares = ['Pct in seg', '',''			   ]     + ['{0:.1%}'.format(results_dict[run]['cluster_shares'][cluster]) for cluster in range(number_of_clusters)] + ['100.0%'] + [''] + ([''] * len(segment_list)) 
+		header_1 = 		 ['', '', ''			 		   ]     + segment_list + ['Total']        + [''] + ([''] * len(segment_list)) 
+		header_2 = 		 ['Question', 'Dimension', 'Bucket'] + segment_list + ['Average'] + [''] + segment_list
+
 		row_spacer = [''] * (len(header_2))
 		
 		header = [header_1] + [segment_counts] + [segment_shares] + [row_spacer] + [header_2] + [row_spacer] + [row_spacer]
@@ -1542,14 +1646,19 @@ def run_report(timestamps):
 		# order responses: segmenting variables, objective functions, other
 		clustering_variables = results_dict[run]['quest_list']
 		all_questions = results_dict[run]['response_shares'].keys()
-		non_clustering_variables = [q for q in all_questions if q not in clustering_variables]
-		ordered_variables = clustering_variables + non_clustering_variables
+		d = ['n/a']
+		dimension_vars = [q for q in all_questions if question_dict[q]['dimension'] not in d and q not in clustering_variables]
+		dimension_vars_text = [question_dict[q]['dimension'] for q in dimension_vars]
+		dimension_variables = [a for a,b in sorted(zip(dimension_vars, dimension_vars_text), key = lambda z: z[1])]
+		non_clustering_variables = [q for q in all_questions if q not in clustering_variables and q not in dimension_variables]
+		ordered_variables = clustering_variables + dimension_variables + non_clustering_variables
 
 		#for survey_question in results_dict[run]['response_shares'].keys():
 		for survey_question in ordered_variables:
 			
 			# new method starts here
 			number_of_buckets = len(results_dict[run]['response_shares'][survey_question][0])
+			dimension = question_dict[survey_question]['dimension']
 
 			for bucket in range(number_of_buckets):
 				bucket_data = [results_dict[run]['response_shares'][survey_question][cluster][bucket] for cluster in range(number_of_clusters)]
@@ -1557,17 +1666,20 @@ def run_report(timestamps):
 				bucket_average = sum([float(x)*float(y) for x,y in zip(bucket_data,results_dict[run]['cluster_shares'])])
 				bucket_avg = ['{0:.1%}'.format(bucket_average)]
 				bucket_index_scores = [int((float(share) / bucket_average) * 100) for share in bucket_data]
+				rov = results_dict[run]['rov'][survey_question].split('.')[0]
+				#print 'rov_ty[e:', type(rov)
 
 				if bucket == 0:
-					row =    [survey_question, bucket] + bucket_shares + bucket_avg + [''] + bucket_index_scores
-
+					row =    [survey_question, dimension, bucket] + bucket_shares + bucket_avg + [''] + bucket_index_scores
 				else:
-					row = 	 ['',              bucket] + bucket_shares + bucket_avg + [''] + bucket_index_scores
-
+					row = 	 ['', '', 		              bucket] + bucket_shares + bucket_avg + [''] + bucket_index_scores
+				
 				run_report.append(row)
 
 				if bucket + 1 == number_of_buckets: # last bucket
+					rov_row = ['', 'ROV: ', [rov]] + [''] * (len(row)-3)
 					row_spacer = [''] * (len(row))
+					run_report.append(rov_row)
 					run_report.append(row_spacer)
 
 			if survey_question == clustering_variables[-1]: # and len(clustering_variables) == clustering_variables.index(survey_question):
@@ -1729,17 +1841,29 @@ def feature_importances(X_rebucketed_df, timestamps):
 			print 'RFE Mean accuracy: {0:.2%}'.format(rfe_score)
 
 			if rfe_score > .99:
-				var_names.append('Total (>99%)')
-				var_names.insert(0, '  ')
-				var_names.insert(0, '---- Question ----')
-				
-				rfe_scores.append(sum(rfe_scores))
-				rfe_scores = ['{0:.2%}'.format(item) for item in rfe_scores]
-				rfe_scores.insert(0, '  ')
-				rfe_scores.insert(0, '----  Accuracy (higher = better) ----')
-				
-				print var_names
+				#rfe_scores = ['{0:.2%}'.format(item) for item in rfe_scores]
+				print type(var_names)
+				print type(rfe_scores)
 				one_rfe_list = zip(var_names, rfe_scores)
+				print type(one_rfe_list)
+
+				one_rfe_list.sort(key=lambda x: x[1], reverse=True)
+				print type(one_rfe_list)
+
+				one_rfe_list = [(a,'{0:.2%}'.format(b)) for a,b in one_rfe_list] 
+				one_rfe_list.append(('Total (>99%)', '{0:.2%}'.format(sum(rfe_scores))))
+
+				one_rfe_list.insert(0, ('---- Question ----', '----  Accuracy (higher = better) ----'))
+				one_rfe_list.insert(0, ('------------------', '-------------------------------------'))
+				one_rfe_list.insert(0, ('  ','  '))
+
+				# rfe_scores.append(sum(rfe_scores))
+				# rfe_scores = ['{0:.2%}'.format(item) for item in rfe_scores]
+				# rfe_scores.insert(0, '  ')
+				# rfe_scores.insert(0, '----  Accuracy (higher = better) ----')
+				
+				# print var_names
+				# one_rfe_list = zip(var_names, rfe_scores)
 				#one_rfe_list  = one_rfe_list.sort(key=lambda x: x[1])
 				rfe_list.append(one_rfe_list)
 				
@@ -1964,7 +2088,7 @@ if __name__ == "__main__":
 
 	if grid_search:
 	#analysis and reporting pipeline
-		results = run_poLCA (grid_search,cluster_seed,num_seg,num_rep,rebucketed_filename)	
+		results = run_poLCA (grid_search,cluster_seed,num_seg,num_rep,rebucketed_filename)#,filename)	
 		timestamps = update_results_dict(results, X_rebucketed, names, method)
 		update_question_dict(timestamps)
 		clean_up(timestamps)
@@ -1980,7 +2104,8 @@ if __name__ == "__main__":
 	if interactive_mode:
 		# app.debug = True
 		# socketio.run(app)
-		app.run(debug = True)
+		app.run(debug = True, threaded=True)
+		# http://stackoverflow.com/questions/14814201/can-i-serve-multiple-clients-using-just-flask-app-run-as-standalone
 		
 	if web_mode:
 		app.run(host='0.0.0.0', port=80)

@@ -8,18 +8,20 @@
 #ds = read.csv(infile)
 
 library(poLCA)
-#library(weights)
+library(weights)
 
 myArgs <- commandArgs(trailingOnly = TRUE)
 myArgs2 <- unlist(myArgs)
+print (myArgs2)
 basedir <-  toString(myArgs2[3])
 infile <- toString(myArgs2[4])
 timestamp <-toString(myArgs2[5])
-vars <- toString(myArgs2[6:length(myArgs2)])
+vars <- toString(myArgs2[7:length(myArgs2)-1])
+weights_filename <- toString(myArgs2[length(myArgs2)])
 #vars <- c("A","B","C","D")
 #vars <- c('q06_1', 'q06_2', 'q06_3','q06_4','q06_5','q06_6','q06_7')
 print (vars)
-
+print (weights_filename)
 #f1 <- paste0(basedir,"predicted_segment.txt")
 #if (file.exists(f1)) file.remove(f1)
 #f2 <- paste0(basedir,"posterior_probabilities.txt")
@@ -58,7 +60,7 @@ model_mle <- res2$llik
 model_chisq <- res2$Chisq
 model_aic <- res2$aic
 model_bic <- res2$bic
-seg_and_proba <- cbind(posterior_probabilities,predicted_segment)
+seg_and_proba <- cbind(posterior_probabilities, predicted_segment)
 model_stats <- c(model_mle, model_chisq, model_bic)
 
 # write to disk to handoff to python
@@ -69,3 +71,29 @@ write.table(model_stats, file = paste0(basedir,paste0(paste0("/static/model/mode
 #write.table(predicted_segment, file = paste0(basedir,"predicted_segment.txt"), sep=",", col.names = F,row.names = F, append = TRUE)
 #write.table(posterior_probabilities, file = paste0(basedir,"posterior_probabilities.txt"), sep=",", col.names = F,row.names = F, append = TRUE)
 #write.table(model_stats, file = paste0(basedir, "model_stats.txt"), sep=",", col.names = F,row.names = F, append = TRUE)
+
+# now calculate ROV (= weighted chi-sq)
+predicted_segment <- lapply(predicted_segment, as.character)
+predicted_segment <- unlist(predicted_segment)
+xtab_var_rows <- c(1:ncol(ds))
+
+# ds_and_predicted_segment <- cbind(predicted_segment, ds)
+weights <- read.csv(paste0(basedir,weights_filename))
+weights <- lapply(weights, as.character)
+weights <- unlist(weights)
+# xtab_var_col <- c(1) # row where segment assignments are found
+# xtab_var_rows <- c(2:ncol(ds)) # of var columns
+rov_stats <- list()
+
+for (var in xtab_var_rows){  
+  chisq_stat <- wtd.chi.sq(as.character(unlist(ds[,var])),predicted_segment,weight=as.numeric(weights),na.rm=TRUE)
+  chisq_df <- ( length(unique(ds[,var])) - 1)  * ( length(unique(predicted_segment)) - 1) 
+  chisq_stat <- chisq_stat[[1]] / 1
+  rov_stat <- (chisq_stat - chisq_df) / sqrt(2*chisq_df)
+  rov_stats[var] <- rov_stat
+    }
+# ncol(ds) == length(rov_stats)
+rov_and_q <- cbind(colnames(ds),rov_stats)
+write.table(rov_and_q, file = paste0(basedir,paste0(paste0("/static/model/rov_",timestamp),".txt")), sep=",", col.names = F,row.names = F)
+
+
