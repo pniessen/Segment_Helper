@@ -188,7 +188,11 @@
     margin: 10px 0;
     background-color: rgba(255, 0, 0, 0.2);
     }
-    }
+
+  .modal-xl {
+    width: 1200px;
+  }
+
 </style>
 </head>
 
@@ -514,7 +518,8 @@
                         <button type="button" id = 'grid-button' class="btn btn-primary" data-toggle="button" aria-pressed="true" autocomplete="off" bgcolor = 'red'> Grid<!-- <div id='grid-on-off'>off</div> --></button>
                     <button type="button" id = 'cluster-seed-button' class="btn btn-primary">Cluster Seed</button>
                     <button type="button" id = 'hide-col-button' class="btn btn-primary">Hide Col</button> 
-                    <button type="button" id = 'dont-press-button' class="btn btn-primary" onclick = "$('#myModal5').modal('toggle')">Compare Runs</button>   
+                    <button type="button" id = 'compare-run-button' class="btn btn-primary">Compare Runs</button>
+                    <!-- onclick = "$('#myModal5').modal('toggle')"  -->  
                 </div>
             </div>
         </div>
@@ -732,7 +737,7 @@
                             <div class='input-group'>
                                 <span class="input-group-btn">
                                     <span class="btn btn-primary btn-file">
-                                        Responders&hellip;<input id = 'file-search-4' name="file" type="file">
+                                        Weights&hellip;<input id = 'file-search-4' name="file" type="file">
                                     </span>
                                 </span><input id = 'upload-field-4' type="text" class="form-control" readonly>
                             </div>
@@ -760,30 +765,42 @@
       </div>
     </div>
 <!-- Even another another another modal -->
-    <div id="myModal5" class="modal fade" role="dialog">
-      <div class="modal-dialog">
+    <div id="myModal5" class="modal fade modal-xl" role="dialog">
+      <div class="modal-dialog modal-xl">
 
         <!-- Modal content-->
-        <div class="modal-content">
+        <div class="modal-content modal-xl">
           <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <button type="button" class="close" data-dismiss="modal" onclick = cleanUpComparison() >&times;</button>
             <h4 class="modal-title" style="color:black">Choose runs to compare</h4>
           </div>
-          <div class="modal-body">
+          <div class="modal-body modal-xl" style="color:black">
             
            <!--  <p>Some text in the modal.</p> -->
-
+        <div class="row">
             <div class="btn-group" role="group">
                     <button type="button" class="btn btn-primary dropdown-toggle" id="dropdownMenu1-label-4" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                      Runs
+                      Run 'A'
                       <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu" id = 'dropdown-menu-4'>
 
                   </div> <!-- btn-group dropdown wrapper -->
-                  <button id="run-comparison-btn" class="btn btn-primary btn-file" type="button">Compare Runs</button>
+                  vs.
+            <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-primary dropdown-toggle" id="dropdownMenu1-label-4a" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      Run 'B'
+                      <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" id = 'dropdown-menu-4a'>
+
+                  </div> <!-- btn-group dropdown wrapper -->
+                  <button id="compare-run-button-2" class="btn btn-primary btn-file" type="button">Compare Runs</button>
+          </div><!-- btn-group dropdown wrapper -->
+          <div class = 'tg table-goes-here fancyTable' id='run-a-goes-here' style="color:black"></div>
+          <div class = 'tg table-goes-here fancyTable' id='run-b-goes-here' style="color:black"></div>
           </div>
-          </div>
+       </div> <!-- row -->  
 <!--           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
           </div> -->
@@ -952,8 +969,14 @@ function SaveSession () {
          dataType: "json",
          async: true,
          data: data_to_send,
-         success: function (data_to_send) {console.log('success', data_to_send);
-
+         success: function (data_to_send) {
+            console.log('success', data_to_send);
+            //z = document.getElementById('tracker-goes-here');
+            //z.removeChild(z.lastChild);
+            clearTabs();
+            StartTrackerData ();
+            //addColumn();
+            UpdateTrackerData ();
          },
          error: function (results6) {console.log('error', results6);
         }
@@ -1245,7 +1268,7 @@ function SubmitData () {
         var headerskipper = $("#run-report-" + num_tabs).find("tr:first td").length;
         var table_cells = $("#run-report-" + num_tabs + " tr td:nth-child(3) ~ td").slice((headerskipper - 3) * 7);
         //table_cells = table_cells.slice(headerskipper);
-        console.log(headerskipper, 'table_cells conditional formatting:', table_cells);
+        //console.log(headerskipper, 'table_cells conditional formatting:', table_cells);
         //var table_cells = $("#run-report-" + num_tabs + " td:gt(" + headerskipper + ")");
         table_cells.each(function(index) { // td:gt(96) excudes first 96 <td> (=top header)  
             //var scale = [['vPoor', 10], ['poor', 50], ['avg', 250], ['good', 1250], ['vGood', 6250]];
@@ -1609,7 +1632,7 @@ function getExplorerIds () {
     var select = document.getElementById("objective-function-dropdown"); 
     var options = Object.keys(objective_functions); // ["1", "2", "3", "4", "5"]; 
     console.log(options);
-    while (select.firstChild) { select.removeChild(select.firstChild);} // clear menu
+    while (select.firstChild) { select.removeChild(select.firstChild);} // clear dropdown menu
     //select.parentNode.removeChild(select); // clear menu
 
     // http://stackoverflow.com/questions/4772774/how-do-i-create-a-link-using-javascript
@@ -1751,11 +1774,91 @@ $('#cluster-seed-button').on('click', function(){
         one_checkbox.trigger('click');
     };
 });
-// dont_press button :-)
-$('#dont-press-button').on('click', function(){
-    console.log('dont press me!');
-    console.log('training_data:', window.tracker_data);
+// compare-runs-button-A and B
+$('#compare-run-button').on('click', function(){
+    console.log('in compare-run-dropdown function');
+
+    $('#myModal5').modal('toggle');
+    //$('myModal5').toggle();
+    var select = document.getElementById("dropdown-menu-4"); 
+    var select_2 = document.getElementById("dropdown-menu-4a"); 
+    var options = $('#tab-list').children().length; //["1", "2", "3", "4", "5"]; 
+
+    console.log(options);
+    while (select.firstChild) { select.removeChild(select.firstChild);} // clear menu
+    while (select_2.firstChild) { select_2.removeChild(select_2.firstChild);} 
+    //select.parentNode.removeChild(select); // clear menu
+
+    // http://stackoverflow.com/questions/4772774/how-do-i-create-a-link-using-javascript
+    //for(var i = 0; i < options.length; i++) {
+    for(var i = 1; i < options; i++) {
+        var opt = i;
+        var el = document.createElement("li");
+        var link = document.createElement("a");
+        link.innerHTML = "Run #" + opt;
+        link.href ='#!'
+        el.appendChild(link)
+        select.appendChild(el);
+    };
+
+        for(var i = 1; i < options; i++) {
+        var opt = i;
+        var el = document.createElement("li");
+        var link = document.createElement("a");
+        link.innerHTML = "Run #" + opt;
+        link.href ='#!'
+        el.appendChild(link)
+        select_2.appendChild(el);
+    };
 });
+
+// compare-runs-dropdown-chosen-A
+$('#dropdown-menu-4').on('click', 'li a', function(){
+    chosen_run_1 = $(this).text();
+    console.log(chosen_run_1);
+    z = document.getElementById('dropdownMenu1-label-4');
+    z.innerHTML = chosen_run_1;
+});
+// compare-runs-dropdown-chosen-B
+$('#dropdown-menu-4a').on('click', 'li a', function(){
+    chosen_run_2 = $(this).text();
+    console.log(chosen_run_2);
+    z = document.getElementById('dropdownMenu1-label-4a');
+    z.innerHTML = chosen_run_2;
+});
+
+$('#compare-run-button-2').on('click', function(){
+    console.log('in compare-run-2 button clicked');
+    r1 = Number(document.getElementById('dropdownMenu1-label-4').innerHTML.slice(5)) + 1;
+    //r1_length = r1.length;
+    r2 = Number(document.getElementById('dropdownMenu1-label-4a').innerHTML.slice(5)) + 1;
+    //r2_length = r2.length;
+    console.log(r1, r2);
+    var r1_table = $('#run-report-' + r1).clone()
+    r1_table.attr({class: 'run-report left-column'});
+    //r1_table.attr({float: 'left'});
+    var r2_table = $('#run-report-' + r2).clone();
+    r2_table.attr({class: 'run-report right-column'});
+    //r2_table.attr({float: 'right'});
+    //style="float: left;">
+    //var r3_table = $('.left-column,.right-column').wrap('<td></td>').parent().wrapAll('<table><tbody><tr></tr></tbody></table>');
+    //$('#run-a-goes-here').append(r1_table);
+    //$('#run-b-goes-here').append(r2_table);
+
+    $('#run-a-goes-here').html('<table border=1 class="run-report" id = "compare-table"><tr><td id="cell1"></td><td id="cell2"></td></tr></table>');
+    $('#cell1').append(r1_table);
+    $('#cell2').append(r2_table);
+    //$('#run-a-goes-here').append(r3_table);
+});
+
+function cleanUpComparison(){
+    console.log('in cleanUpComparison function');
+    $('#dropdownMenu1-label-4')[0].innerHTML = "Run 'A'";
+    $('#dropdownMenu1-label-4a')[0].innerHTML = "Run 'B'";
+    $('#compare-table').hide();
+    // $('#run-b-goes-here').hide();
+};
+
 // login button :-)
 $('#login').on('click', function(){
     console.log('login button pressed');

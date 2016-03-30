@@ -3,7 +3,9 @@ import numpy as np
 basedir = os.path.abspath(os.path.dirname(__file__)) + "/"
 filename = 'test_weights_v1.csv'
 
-responder_data = np.genfromtxt(basedir+filename, delimiter=',', skip_header=2)
+responder_data = pd.DataFrame.from_csv(path)
+
+responder_data = np.genfromtxt(basedir+filename, delimiter=',', skip_header=1)
 print 'responder data loaded: ', responder_data.shape
 print responder_data
 

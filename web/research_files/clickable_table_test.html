@@ -67,15 +67,15 @@ $(function () {
 });
 </script>
 <script>
-function startTracker(){
+function dataWeights(){
         
-        console.log('in startTracker function'); 
-        mytable = $('<table></table>').attr({ id: "trackerTable" }).attr({class: 'zzeditableTable'});
+        console.log('in dataWeights function'); 
+        myweighttable = $('<table></table>').attr({ id: "weights-table" }).attr({class: 'zzeditableTable'});
         var rows = 10;
         console.log (rows);
         var cols =  10;
         var cols_names = ['x','x','x','x','x','x','x','x','x','x','x','x','x','x','x'];
-        var header_row = $('<tr></tr>').appendTo(mytable);
+        var header_row = $('<tr></tr>').appendTo(myweighttable);
         header_row.append("<th>" + "</th>");
         for (var h = 0; h < cols; h++) {
             var header_name = cols_names[h];
@@ -83,17 +83,13 @@ function startTracker(){
             $('<th></th>').text(header_name).appendTo(header_row);}
 
         for (var i = 0; i < rows; i++) {
-            var row = $('<tr></tr>').appendTo(mytable);
-            var cols_names = ['x','x','x','x','x','x','x','x','x','x','x','x','x','x','x'];
-            var check_label = cols_names[i];
-
-            row.append('<td><input type="checkbox" name = "tcheck" value="' + check_label + '" id="'+check_label+'"></td>').attr({id:'rtable-' + check_label});//attr({id:'ztable-' + (i+1) + '-0'});
+            var row = $('<tr></tr>').appendTo(myweighttable);
             for (var j = 0; j < cols; j++) {
-                $('<td></td>').text('z').attr({id:'ttable-'+ (i+1) + "-" + (j+1)}).appendTo(row); 
+                $('<td></td>').text('z').attr({id:'wtable-'+ (i+1) + "-" + (j+1)}).appendTo(row); 
             }
                      
         }
-	mytable.appendTo("#tracker-goes-here");
+	myweight table.appendTo("#weights-table-goes-here");
     };
 </script>
 

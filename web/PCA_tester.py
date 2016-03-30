@@ -1025,6 +1025,7 @@ def save_session():
 	z = func_name(); print "--------in function: ", z, " -------------"
 
 	filename = save_results()
+	load_results(filename)
 	
 	results5 = {"save_results": filename}
 	
@@ -1508,7 +1509,7 @@ def clean_up (timestamps):
 
 def save_results():
 	'''
-	Writes results_dict to file
+	Writes save_dict to file
 	'''
 	z = func_name(); print "--------in function: ", z, "--------------"
 
@@ -1539,8 +1540,9 @@ def save_results():
 	method = 'cPickle'
 	print "trying :", method
 	last_time = time.time()
+	unique_id = str(uuid.uuid4()) 
 	try:
-		outfile = 'static/saved_sessions/save_dict_' + str(uuid.uuid4()) + '.pkl' #/static/saved_sesions/
+		outfile = 'static/saved_sessions/save_dict_' + unique_id + '.pkl' #/static/saved_sesions/
 		with open(outfile, 'wb') as handle:
 		    pickle.dump(save_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)		
 		this_time = time.time()
@@ -1559,6 +1561,54 @@ def save_results():
 	print '------------Results-----------'
 	print "saving file:", sorted(time_dict.items(), key=lambda x: x[1])
 	print "loading file:", sorted(load_time_dict.items(), key=lambda x: x[1])
+	
+	return unique_id
+
+def load_results(unique_id):
+	'''
+	Loads save_dict from file
+	'''
+	z = func_name(); print "--------in function: ", z, "--------------"
+
+	global results_dict
+	global question_dict
+	global X
+	global X_rebucketed
+ 
+	import cPickle as pickle
+	
+	save_dict = {}
+	print os.path.abspath(os.path.dirname(__file__))
+
+	# cPickle
+	method = 'cPickle'
+	print "trying :", method
+	try:
+		infile = 'static/saved_sessions/save_dict_' + unique_id + '.pkl' 
+		next_time = time.time()
+		save_dict = pickle.load(open(infile, 'rb'))
+		print method,": ", infile, ' loaded with ', len(save_dict), ' entries'
+
+		# now reconstitute dictionaries
+		results_dict = save_dict['results_dict']
+		question_dict = save_dict['question_dict']
+		X = save_dict['X']
+		X_rebucketed = save_dict['X_rebucketed']
+
+
+		print 'results_dict keys:',  results_dict.keys()
+		print 'question_dict keys:', question_dict.keys()
+		print 'X shape:', X.shape
+		print 'X_rebucketed shape:', X_rebucketed.shape
+
+		# reset upload_state for bulk upload
+		for key in results_dict.keys():
+			results_dict[key]['upload_state'] = False
+			print key, results_dict[key]['upload_state']
+	
+	except:
+		pass
+
 	return
 
 
@@ -2181,6 +2231,7 @@ if __name__ == "__main__":
 	# recommendation - top X%?
 	# synchronize explorer and run tracker checkboxes
 	# audit boolean_run_tracker
+	# compare run_reports: (a) convert label to integer; (b) formatting of tables in modal; (c) enlarge modal dynaically 
 
 
 
