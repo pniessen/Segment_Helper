@@ -984,12 +984,24 @@ def session_id():
 
 	inbound_data = flask.request.json
 
-	print "session_id:", inbound_data
+	print "user_id, session_id:", inbound_data
 	print type(inbound_data)
 	
-	session_id = inbound_data.encode('ascii', 'ignore')
-	print type(session_id)
+	user_id = inbound_data[0].encode('ascii', 'ignore')
+	print type(user_id)
+	print user_id
 
+	session_id = inbound_data[1].encode('ascii', 'ignore')
+	print type(session_id)
+	print session_id
+
+	# create subdirectory with user_id
+	d = 'static/saved_sessions/' + user_id
+	print 'user_id directory:', d
+	if not os.path.exists(d):
+		os.makedirs(d)
+		print 'created user_id directory:', d
+	
 	results4 = {"session_id": [session_id]}
 	
 	return flask.jsonify(results4)
@@ -1024,13 +1036,89 @@ def save_session():
 
 	z = func_name(); print "--------in function: ", z, " -------------"
 
-	filename = save_results()
-	load_results(filename)
+	inbound_data = flask.request.json
+
+	print "user_id, session_id:", inbound_data
+	print type(inbound_data)
+	
+	user_id = inbound_data[0].encode('ascii', 'ignore')
+	print type(user_id)
+	print user_id
+
+	session_id = inbound_data[1].encode('ascii', 'ignore')
+	print type(session_id)
+	print session_id
+	
+	filename = save_results(user_id, session_id)
+	print 'filename:', filename
+
+	# testing loop to see if load_results works
+	
+	# global results_dict
+	# global question_dict
+	# global X
+	# global X_rebucketed
+	
+	# results_dict = {}
+	# question_dict = {}
+	# X = np.zeros(X.shape)
+	# X_rebucketed = np.zeros(X_rebucketed.shape)
+
+	# print '-------data containers emptied after save_results()-----------'
+	# print "results_dict:", len(results_dict)
+	# print "question_dict:", len(question_dict)
+	# print 'X: size, all zeros?', X.shape, np.all(X==0)
+	# print 'X_rebucketed: size, all zeros?', X_rebucketed.shape, np.all(X_rebucketed==0)
+
+	#load_results(filename)
 	
 	results5 = {"save_results": filename}
 	
 	return flask.jsonify(results5)
 
+@app.route('/load_session', methods=['POST'])
+def load_session():
+
+	z = func_name(); print "--------in function: ", z, " -------------"
+
+	inbound_data = flask.request.json
+
+	print "user_id, filename:", inbound_data
+	print type(inbound_data)
+	
+	user_id = inbound_data[0].encode('ascii', 'ignore')
+	print type(user_id)
+	print user_id
+
+	filename = inbound_data[1].encode('ascii', 'ignore')
+	print type(session_id)
+	print session_id
+	
+	load_results(user_id, filename)
+	
+	results5 = {"save_results": filename}
+	
+	return flask.jsonify(results5)
+
+@app.route('/filenames', methods=['POST'])
+def get_filenames():
+	z = func_name(); print "--------in function: ", z, " -------------"
+	# create directory on submission of session_id
+
+	basedir = os.path.abspath(os.path.dirname(__file__)) + "/static/saved_sessions/"
+	#mypath = '/Users/pniessen/Rosetta_Desktop/Segmentation_2-point-0/segmentr/web/static/saved_sessions'
+	user_id = flask.request.json
+	print user_id
+	print type(user_id)
+	#user_id = user_id.encode('ascii', 'ignore')
+	#print user_id
+	mypath = basedir + user_id + "/"
+	filenames = os.listdir(mypath)
+	print filenames
+	
+	results5 = {"filenames": filenames}
+	
+	return flask.jsonify(results5)
 
 # file upload section
 # see http://code.runnable.com/UiPcaBXaxGNYAAAL/how-to-upload-a-file-to-the-server-in-flask-for-python
@@ -1507,7 +1595,7 @@ def clean_up (timestamps):
 
 	return
 
-def save_results():
+def save_results(user_id, session_id):
 	'''
 	Writes save_dict to file
 	'''
@@ -1539,32 +1627,23 @@ def save_results():
 	# cPickle
 	method = 'cPickle'
 	print "trying :", method
-	last_time = time.time()
-	unique_id = str(uuid.uuid4()) 
 	try:
-		outfile = 'static/saved_sessions/save_dict_' + unique_id + '.pkl' #/static/saved_sesions/
+		outfile = 'static/saved_sessions/' + user_id + '/save_dict_' + session_id + '_' + str(len(results_dict.keys())) + '.pkl'
 		with open(outfile, 'wb') as handle:
 		    pickle.dump(save_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)		
-		this_time = time.time()
-		elapsed_time = this_time - last_time
-		print method,": ", outfile, ' saved with ', len(results_dict), ' entries, in :' , elapsed_time
-		time_dict[method] = elapsed_time
+		print method,": ", outfile, ' saved with ', len(results_dict), ' entries'
 
-		next_time = time.time()
-		pickle.load(open(outfile, 'rb'))
-		elapsed_time = next_time - this_time
-		load_time_dict[method] = elapsed_time
+		return outfile
+
+		# pickle.load(open(outfile, 'rb'))
 	
 	except:
-		pass
+		print 'no file saved'
+		return
 	
-	print '------------Results-----------'
-	print "saving file:", sorted(time_dict.items(), key=lambda x: x[1])
-	print "loading file:", sorted(load_time_dict.items(), key=lambda x: x[1])
-	
-	return unique_id
 
-def load_results(unique_id):
+def load_results(user_id, filename):
+
 	'''
 	Loads save_dict from file
 	'''
@@ -1580,12 +1659,16 @@ def load_results(unique_id):
 	save_dict = {}
 	print os.path.abspath(os.path.dirname(__file__))
 
+	print 'user_id:', user_id
+	print 'filename', filename
+
 	# cPickle
 	method = 'cPickle'
 	print "trying :", method
 	try:
-		infile = 'static/saved_sessions/save_dict_' + unique_id + '.pkl' 
-		next_time = time.time()
+		infile = 'static/saved_sessions/' + user_id + "/" + filename  
+		print infile
+
 		save_dict = pickle.load(open(infile, 'rb'))
 		print method,": ", infile, ' loaded with ', len(save_dict), ' entries'
 
@@ -2232,6 +2315,7 @@ if __name__ == "__main__":
 	# synchronize explorer and run tracker checkboxes
 	# audit boolean_run_tracker
 	# compare run_reports: (a) convert label to integer; (b) formatting of tables in modal; (c) enlarge modal dynaically 
+	# http://www.abeautifulsite.net/jquery-file-tree/#demo
 
 
 
