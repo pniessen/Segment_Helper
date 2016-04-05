@@ -148,6 +148,7 @@
 
     .tab-name {display:none;width:120px;} //[type=text] 
     .tab-name a{display:block;}
+    body {overflow: hidden}
 
    /*   */
 
@@ -205,12 +206,12 @@
     <!-- Navigation -->
     <nav class="navbar navbar-custom navbar-fixed-top" role="navigation">
         <div class="container">
-            <div class="navbar-header">
+            <div class="navbar-header" style="display: none;">
                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-main-collapse">
                     <i class="fa fa-bars"></i>
                 </button>
                 <a class="navbar-brand page-scroll" href="#tabz">
-                    <i class="fa fa-play-circle"></i>  <span class="light">Start</span> Segment Helper
+                    <i class="fa fa-play-circle"></i>  <span class="light" >Start</span> Segment Helper
                 </a>
             </div>
 
@@ -221,7 +222,7 @@
                     <li class="hidden">
                         <a href="#page-top"></a>
                     </li>
-                    <li>
+                    <li id = 'about-link' class = 'login-hide' style="display: none;">
                         <a class="page-scroll" href="#about">About</a>
                     </li>
 <!--                     <li>
@@ -230,10 +231,10 @@
 <!--                     <li>
                         <a class="page-scroll" href="#explorer">Explorer</a>
                     </li> -->
-                    <li>
-                        <a class="page-scroll" onclick = "$('#myModal4').modal('toggle')">Load Data</a>
+                    <li id = 'load-data-link' class = 'login-hide' style="display: none;">
+                        <a class="page-scroll" href="#" onclick = "$('#myModal4').modal('toggle')">Load Data</a>
                     </li>
-                    <li>
+                    <li id = 'segment-link' class = 'login-hide'  style="display: none;">
                         <a class="page-scroll" href="#tabz">Segment</a>
                     </li>
 <!--                     <li>
@@ -243,13 +244,13 @@
                         <a class="page-scroll" href="#contact">Contact</a>
                     </li> -->
                     <li>
-                        <a class="page-scroll ui-icon-lock" onclick = "$('#myModal3').modal('toggle')"><span class="glyphicon glyphicon-lock" bgcolor = 'red' style="color:#B80000" id = 'login-lock'></span>Login</a>
+                        <a class="page-scroll ui-icon-lock" href="#" onclick = "$('#myModal3').modal('toggle')"><span class="glyphicon glyphicon-lock" href="#!" bgcolor = 'red' style="color:#B80000" id = 'login-lock'></span>Login</a>
                     </li>
-                    <li>
-                        <a class="page-scroll" onclick = SaveSession()><span class="glyphicon glyphicon-floppy-disk"></span>Save Session</a>
+                    <li id = 'save-session-link' class = 'login-hide' style="display: none;">
+                        <a class="page-scroll" href="#" onclick = SaveSession()><span class="glyphicon glyphicon-floppy-disk"></span>Save Session</a>
                     </li>
-                    <li>
-                        <a class="page-scroll" onclick = GetFilenames(window.user_id) id = 'load-session'><span class="glyphicon glyphicon-floppy-disk"></span>Load Session</a>
+                    <li id = 'load-session-link' class = 'login-hide' style="display: none;">
+                        <a class="page-scroll" href="#" onclick = GetFilenames(window.user_id) id = 'load-session'><span class="glyphicon glyphicon-floppy-disk"></span>Load Session</a>
                     </li>
                 </ul>
             </div>
@@ -266,7 +267,7 @@
                     <div class="col-md-8 col-md-offset-2">
                         <h1> Rosetta Segment Helper (Beta v2)</h1>
                         <p class="intro-text">'Segment 1.0 in the cloud - let machine learning automate the boring stuff, so you can focus on the fun part'<br></p>
-                        <a href="#about" class="btn btn-circle page-scroll">
+                        <a href="#about" id = 'scroll-circle-link' style="display: none;" class="btn btn-circle page-scroll">
                             <i class="fa fa-angle-double-down animated"></i>
                         </a>
                     </div>
@@ -496,7 +497,7 @@
 <!--                   <button type="button" id = 'grid-button-X' class="btn btn-primary" data-toggle="button" aria-pressed="true" autocomplete="off" bgcolor = 'red'> 
                     Grid<!-- <div id='grid-on-off'>off</div> --></button> 
                   <button id = 'objective-function-toggle' type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal2">Obj Func</button>
-                  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal"><span class="glyphicon glyphicon-cloud-upload"></span> Upload</button>
+<!--                   <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal"><span class="glyphicon glyphicon-cloud-upload"></span> Upload</button> -->
 
                   <a href = '/download' class="btn btn-primary"><span class="glyphicon glyphicon-cloud-download"></span> Download</a>
                   <button type="button" id = 'advanced-button' onclick="$('#advanced-toolbar').toggle()" class="btn btn-primary"><span class="glyphicon glyphicon-wrench"></span> Advanced</button>
@@ -749,6 +750,8 @@
                                 </span><input id = 'upload-field-4' type="text" class="form-control" readonly>
                             </div>
                         </fieldset>
+            </form> 
+            <form id="upload-file-3" method="post" enctype="multipart/form-data">
                         <fieldset>
                             <div class='input-group'>
                                 <span class="input-group-btn">
@@ -760,8 +763,7 @@
 
                             <button id="upload-file-btn-2" class="btn btn-primary btn-file" type="button">Upload</button>
                         </fieldset>
-
-                    </form> 
+            </form> 
            <!--  <p>Some text in the modal.</p> -->
           </div>
 <!--           <div class="modal-footer">
@@ -1204,7 +1206,7 @@ function SubmitData () {
                 corr_matrix = first_tracker_data.corr_matrix;
                 cluster_seed = first_tracker_data.cluster_seed;
                 startTracker(first_tracker_data);
-                fillExplorer(first_tracker_data);
+                //fillExplorer(first_tracker_data);
 
                 //loadTrainingImage(training_data);
              },
@@ -1584,6 +1586,56 @@ $(function() {
                 StartTrackerData ();
             },
         });
+    } else {return}
+    });
+});
+
+$(function() {
+    $('#upload-file-btn-2').click(function() {
+        var form_data_2 = new FormData($('#upload-file-2')[0]);
+        var form_data_3 = new FormData($('#upload-file-3')[0]);
+        //var form_data_all = [form_data_2, form_data_3];
+        if( document.getElementById('upload-field-3').value.length > 0 && document.getElementById('upload-field-4').value.length > 0) { // empty field test
+        $("#myModal4").modal("toggle");
+        //myApp.showPleaseWait();
+        console.log('form data 2 (weights): ', form_data_2.files); 
+        console.log('form data 3 (data): ', form_data_3.files); 
+        $.ajax({
+            type: 'POST',
+            url: '/upload_2',
+            data: form_data_2,
+            contentType: false,
+            cache: false,
+            processData: false,
+            async: true ,
+            success: function(data) {
+                console.log('Success 1!');
+                //console.log('Data:', data);
+                //myApp.hidePleaseWait();
+                //clearTabs ();
+                //console.log('tabs cleared');
+                //StartTrackerData ();
+            },
+        });
+
+        $.ajax({
+            type: 'POST',
+            url: '/upload_3',
+            data: form_data_3,
+            contentType: false,
+            cache: false,
+            processData: false,
+            async: true ,
+            success: function(data) {
+                console.log('Success 2!');
+                console.log('Data:', data);
+                myApp.hidePleaseWait();
+                clearTabs ();
+                console.log('tabs cleared');
+                StartTrackerData ();
+            },
+        });
+
     } else {return}
     });
 });
@@ -1974,6 +2026,9 @@ $('#login').on('click', function(){
         $('#login-lock')[0].style.color = '#00FF66';
         window.session_id = UUID();
         window.user_id = hashCode(user_id).toString();
+        $('.login-hide').toggle();
+        $('body').css('overflow', 'auto');
+        // http://stackoverflow.com/questions/9538868/prevent-body-from-scrolling-when-a-modal-is-opened
         console.log('session_id:', window.session_id);
         console.log('user_id:', window.user_id);
         SubmitSessionId (window.session_id);
@@ -1982,6 +2037,12 @@ $('#login').on('click', function(){
         $("#myModal3").modal("toggle"); // close modal
     };
 });
+// triggers login 'click' if enter pressed in password field
+$('#password').on('keydown',function(e){
+       if(e.which==13) { // 13=enter}
+        $('#login').trigger('click')}
+});
+
 
 // Dropdown: objective function chooser  
 // http://codepedia.info/2015/02/click-event-for-dynamic-button-jquery/  
@@ -2038,6 +2099,23 @@ $('#file-search-2').on('change', function(){
     upload_field.value = upfile_name;
     console.log(upfile_name, upload_field.value);
 });
+
+$('#file-search-3').on('change', function(){
+    var upfile_name_2 = document.getElementById('file-search-3').value.slice(12);
+    var upload_field_2 = document.getElementById('upload-field-3');
+    upload_field_2.value = upfile_name_2;
+    console.log(upfile_name_2, upload_field_2.value);
+});
+
+$('#file-search-4').on('change', function(){
+    var upfile_name_3 = document.getElementById('file-search-4').value.slice(12);
+    var upload_field_3 = document.getElementById('upload-field-4');
+    upload_field_3.value = upfile_name_3;
+    console.log(upfile_name_3, upload_field_3.value);
+});
+
+
+
 // objective function dropdown
 // remove already chosen vars from dropdown
 // 
@@ -2177,7 +2255,9 @@ $(function () {
     $("#tracker-goes-here").on('dblclick', 'tr td:nth-child(4)', function() {
         var OriginalContent = $(this).text();
         console.log('in cell edit function');
-        var row_name = $(this).parent().attr("id").slice(-5);
+        console.log('full row name:', $(this).parent().attr("id"));
+        var full_row_name_length = $(this).parent().attr("id").length;
+        var row_name = $(this).parent().attr("id").slice(7); // (rtable-) slice includes starting num
         console.log('row name:', row_name);
          
         $(this).addClass("cellEditing");
@@ -2239,7 +2319,7 @@ function LoadSession(filenames){
     console.log('load session clicked');
     $('#myModal6').modal('toggle');
     var select = document.getElementById("dropdown-menu-5"); 
-    var options = filenames['filenames']
+    var options = filenames['filenames'];
     while (select.firstChild) { select.removeChild(select.firstChild);} // clear menu
 
     // http://stackoverflow.com/questions/4772774/how-do-i-create-a-link-using-javascript
@@ -2249,7 +2329,7 @@ function LoadSession(filenames){
         var el = document.createElement("li");
         var link = document.createElement("a");
         link.innerHTML = opt;
-        link.href ='#!'
+        link.href ='#!';
         el.appendChild(link);
         select.appendChild(el);
     };
@@ -2268,8 +2348,8 @@ $("#load-session-button").on('click', function(){
     console.log('load session button clicked');
     filename = $('#dropdownMenu1-label-5').text();
     console.log('filename chosen:', filename);
-    LoadSessionFile(window.user_id, filename);
-    // if (filename != 'Choose Session') {LoadSessionFile (window.user_id, filename);}
+    //http://stackoverflow.com/questions/1789945/how-can-i-check-if-one-string-contains-another-substring
+    if (filename.indexOf('Choose Session') == -1) {LoadSessionFile (window.user_id, filename);}
 });
 
 function cleanUpSavedSession(){

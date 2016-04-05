@@ -85,7 +85,12 @@ weights <- unlist(weights)
 # xtab_var_rows <- c(2:ncol(ds)) # of var columns
 rov_stats <- list()
 
-for (var in xtab_var_rows){  
+#print (paste0('weights: ',weights))
+#print (xtab_var_rows)
+
+for (var in xtab_var_rows){
+  #print (var)
+  #print (ds[,var])  
   chisq_stat <- wtd.chi.sq(as.character(unlist(ds[,var])),predicted_segment,weight=as.numeric(weights),na.rm=TRUE)
   chisq_df <- ( length(unique(ds[,var])) - 1)  * ( length(unique(predicted_segment)) - 1) 
   chisq_stat <- chisq_stat[[1]] / 1
