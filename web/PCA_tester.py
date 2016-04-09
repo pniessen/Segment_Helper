@@ -2024,7 +2024,7 @@ def run_report(timestamps):
 		segment_list = 	 ['S' + str((num + 1)) for num in range(number_of_clusters)]
 
 		segment_counts = ['# in seg',   '',''			   ]     + results_dict[run]['cluster_counts']  + [sum(results_dict[run]['cluster_counts'])] + [''] + ([''] * len(segment_list))
-		segment_shares = ['Pct in seg', '',''			   ]     + ['{0:.1%}'.format(results_dict[run]['cluster_shares'][cluster]) for cluster in range(number_of_clusters)] + ['100.0%'] + [''] + ([''] * len(segment_list)) 
+		segment_shares = ['Pct in seg', '',''			   ]     + ['{0:.0%}'.format(results_dict[run]['cluster_shares'][cluster]) for cluster in range(number_of_clusters)] + ['{0:.0%}'.format(sum(results_dict[run]['cluster_shares']))] + [''] + ([''] * len(segment_list)) 
 		header_1 = 		 ['', '', ''			 		   ]     + segment_list + ['Total']        + [''] + ([''] * len(segment_list)) 
 		header_2 = 		 ['Question', 'Dimension', 'Bucket'] + segment_list + ['Average'] + [''] + segment_list
 
@@ -2053,7 +2053,8 @@ def run_report(timestamps):
 
 			for bucket in range(number_of_buckets):
 				bucket_data = [results_dict[run]['response_shares'][survey_question][cluster][bucket] for cluster in range(number_of_clusters)]
-				bucket_shares = ['{0:.1%}'.format(item) for item in bucket_data]
+				#bucket_shares = ['{0:.1%}'.format(item) for item in bucket_data]
+				bucket_shares = ['{0:.0%}'.format(item) for item in bucket_data]
 				bucket_average = sum([float(x)*float(y) for x,y in zip(bucket_data,results_dict[run]['cluster_shares'])])
 				bucket_avg = ['{0:.1%}'.format(bucket_average)]
 				bucket_index_scores = [int((float(share) / bucket_average) * 100) for share in bucket_data]

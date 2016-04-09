@@ -244,7 +244,7 @@
                         <a class="page-scroll" href="#contact">Contact</a>
                     </li> -->
                     <li>
-                        <a class="page-scroll ui-icon-lock" href="#" onclick = "$('#myModal3').modal('toggle')"><span class="glyphicon glyphicon-lock" href="#!" bgcolor = 'red' style="color:#B80000" id = 'login-lock'></span>Login</a>
+                        <a class="page-scroll ui-icon-lock" href="#" onclick = LoginLogout() id = 'login-text'><span class="glyphicon glyphicon-lock" href="#!" bgcolor = 'red' style="color:#B80000" id = 'login-lock'></span>Login</a>
                     </li>
                     <li id = 'save-session-link' class = 'login-hide' style="display: none;">
                         <a class="page-scroll" href="#" onclick = SaveSession()><span class="glyphicon glyphicon-floppy-disk"></span>Save Session</a>
@@ -645,7 +645,7 @@
         <!-- Modal content-->
         <div class="modal-content">
           <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <button type="button" class="close" data-dismiss="modal" >&times;</button>
             <h4 class="modal-title" style="color:black">Choose a file to upload</h4>
           </div>
           <div class="modal-body">
@@ -713,7 +713,7 @@
             <!-- Modal content-->
             <div class="modal-content">
               <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <button type="button" class="close" data-dismiss="modal" onclick = cleanUpLogin()>&times;</button>
                 <h4 class="modal-title" style="color:black">Please log in:</h4>
               </div> <!-- modal-header -->
               <div class="modal-body">
@@ -2016,6 +2016,22 @@ function cleanUpComparison(){
     // $('#run-b-goes-here').hide();
 };
 
+function LoginLogout(){
+    console.log('in LoginLogout function');
+    var login_text = $('#login-text')[0].innerHTML;
+    if (login_text.indexOf('Login') != -1) { $('#myModal3').modal('toggle');}
+    else {
+        $('#login-text')[0].innerHTML = '<span class="glyphicon glyphicon-lock" href="#!" bgcolor="red" style="color:#B80000" id="login-lock"></span>Login';
+        $('.login-hide').toggle();
+        $('#basic-toolbar').toggle();
+        $('body').css('overflow', 'hidden');
+    };
+};
+function cleanUpLogin(){
+    console.log('in cleanUpLogin function');
+    $('#password').val(''); // reset password input field
+    $('#user-id').val(''); // reset user id input field
+};
 // login button :-)
 $('#login').on('click', function(){
     console.log('login button pressed');
@@ -2023,7 +2039,8 @@ $('#login').on('click', function(){
     user_id = $('#user-id').val();
     console.log('password:', password);
     if (password == 'r0sett@' && user_id != 0) {
-        $('#login-lock')[0].style.color = '#00FF66';
+        //$('#login-lock')[0].style.color = '#00FF66';
+        $('#login-text')[0].innerHTML = '<span class="glyphicon glyphicon-lock" href="#!" bgcolor="red" style="color:#00FF66" id="login-lock"></span>Logout'
         window.session_id = UUID();
         window.user_id = hashCode(user_id).toString();
         $('.login-hide').toggle();
@@ -2034,9 +2051,12 @@ $('#login').on('click', function(){
         SubmitSessionId (window.session_id);
         StartTrackerData ();
         $('#basic-toolbar').toggle();
+        $('#password').val(''); // reset password input field
+        $('#user-id').val(''); // reset user id input field
         $("#myModal3").modal("toggle"); // close modal
     };
 });
+    
 // triggers login 'click' if enter pressed in password field
 $('#password').on('keydown',function(e){
        if(e.which==13) { // 13=enter}
