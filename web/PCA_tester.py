@@ -45,7 +45,11 @@ import csv
 import json
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.feature_selection import RFE
-
+from pymongo import MongoClient
+import cPickle as pickle
+from bson.binary import Binary
+import gridfs
+import StringIO
 
 #def init():
 # default options
@@ -97,9 +101,19 @@ app = Flask(__name__)
 # socketio = SocketIO(app)
 start_time = time.time()
 
+
+
+# load db
+client   = MongoClient()
+db  = client.dsbc.segmentr
+db.remove()
+grid_db  = MongoClient().gridfs_segmentr
+gridfs = gridfs.GridFS(grid_db)
+
 basedir_for_upload = os.path.abspath(os.path.dirname(__file__))
 basedir = os.path.abspath(os.path.dirname(__file__)) + "/"
 print basedir_for_upload
+print 'basedir:', basedir
 
 from logging import Formatter, FileHandler
 handler = FileHandler(os.path.join(basedir_for_upload, 'log.txt'), encoding='utf8')
@@ -112,13 +126,92 @@ app.logger.addHandler(handler)
 app.config['ALLOWED_EXTENSIONS'] = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'csv', 'xls', 'xlsx'])
 
 # return basedir, basedir_for_upload, handler, xls, interactive_mode, web_mode, filename, grid_search, app, start_time
+def new_session (session_id):
+	z = func_name(); print "--------in function: ", z, " -------------"
+
+	print 'creating new db entry with session_id: ', session_id
+
+	db.insert_one({'session_id': session_id})
+	return
+    
+def load_db(session_id):
+	#z = func_name(); print "--------in function: ", z, " -------------"
+	
+	results = db.find_one({'session_id': session_id})
+	
+	X_file_id = results['X']
+	X_rebucketed_file_id = results['X_rebucketed']
+	X_rebucketed_df_file_id = results['X_rebucketed_df']	
+	results_dict_file_id = results['results_dict']
+	question_dict_file_id = results['question_dict']
+	names = results['names']
+
+	X = pickle.loads(gridfs.get(X_file_id).read())
+	X_rebucketed = pickle.loads(gridfs.get(X_rebucketed_file_id).read())
+	X_rebucketed_df = pickle.loads(gridfs.get(X_rebucketed_df_file_id).read())
+	results_dict = pickle.loads(gridfs.get(results_dict_file_id ).read())
+	question_dict = pickle.loads(gridfs.get(question_dict_file_id).read())
+
+	print '---load_db scorecard-------'
+	print 'Session_id:', session_id
+	print 'All documents: ', list(results)
+	print 'X.shape: ', X.shape
+	print 'X_rebucketed.shape: ', X_rebucketed.shape
+	print 'X_rebucketed_df.shape: ', X_rebucketed_df.shape
+	print 'question_dict: ', len(question_dict)
+	print 'results_dict: ', len(results_dict)
+	print 'names: ', len(names)
+
+	# X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names = load_db(session_id)
+	return X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names
+
+def save_db(session_id, X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names):
+	#z = func_name(); print "--------in function: ", z, " -------------"
+
+	X_pickle = Binary(pickle.dumps(X, protocol=2), subtype=128)
+	X_file_id = gridfs.put(X_pickle)
+	db.update_one({'session_id': session_id},{"$set":{'X': X_file_id}},upsert=True)
+
+	X_rebucketed_pickle = Binary(pickle.dumps(X_rebucketed, protocol=2), subtype=128 )
+	X_rebucketed_file_id = gridfs.put(X_rebucketed_pickle)
+	db.update_one({'session_id': session_id},{"$set":{'X_rebucketed': X_rebucketed_file_id}},upsert=True) 
+
+	X_rebucketed_df_pickle = Binary(pickle.dumps(X_rebucketed_df, protocol=2), subtype=128 )
+	X_rebucketed_df_file_id = gridfs.put( X_rebucketed_df_pickle )
+	db.update_one({'session_id': session_id},{"$set":{'X_rebucketed_df': X_rebucketed_df_file_id}},upsert=True)
+
+	results_dict_pickle = Binary(pickle.dumps(results_dict, protocol=2), subtype=128 )
+	results_dict_pickle_file_id = gridfs.put( results_dict_pickle )
+	db.update_one({'session_id': session_id},{"$set":{'results_dict': results_dict_pickle_file_id}},upsert=True)
+
+	question_dict_pickle = Binary(pickle.dumps(question_dict, protocol=2), subtype=128 )
+	question_dict_pickle_file_id = gridfs.put( question_dict_pickle )
+	db.update_one({'session_id': session_id},{"$set":{'question_dict': question_dict_pickle_file_id}},upsert=True)
+
+	db.update_one({'session_id': session_id},{"$set":{'names':names}},upsert=True)
+
+	results = db.find_one({'session_id': session_id})
+
+	print '---save_db scorecard-------'
+	print 'Session_id:', session_id
+	print 'All documents: ', list(results)
+	print 'X.shape: ', X.shape
+	print 'X_rebucketed.shape: ', X_rebucketed.shape
+	print 'X_rebucketed_df.shape: ', X_rebucketed_df.shape
+	print 'question_dict: ', len(question_dict)
+	print 'results_dict: ', len(results_dict)
+	print 'names: ', len(names)
+
+	#save_data(session_id, X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names)
+	return
+
 def clean_text(text):
 	'''
 	Removes non-UTF8 and other stop characters from text
 	'''
 	z = func_name(); print "--------in function: ", z, " -------------"
 	
-	print 'now cleaning:', text
+	#print 'now cleaning:', text
 	
 	# stop characters (could this be a dict?)
 	a = chr(146) # single quotation mark
@@ -135,7 +228,7 @@ def clean_text(text):
 	
 	text_3 = ''.join(text_2)
 
-	print 'cleaned text: ', text_3
+	#print 'cleaned text: ', text_3
 
 	return text_3
 
@@ -190,26 +283,51 @@ def convert_data(filename):
 # Step 1: load datasets, namess
 # load datafile
 
-def get_PCA(filename, weights_filename):
+def get_PCA(filename, weights_filename, session_id):
 	'''
-	Uses sclearn.decomposition for principal componets analysis of survey response data
+	Uses sklearn.decomposition for principal componets analysis of survey response data
 	'''
 	z = func_name(); print "--------in function: ", z, " -------------"
 	
 	# reboot question and results containers
-	global question_dict
+	#global question_dict
 	question_dict = {}
 
-	global results_dict
+	#global results_dict
 	results_dict = {}
 
-	global X_rebucketed
+	#global X
+	X = np.random.random((10,10))
+
+	#global X_rebucketed
+	#global X_rebucketed_df
 	X_rebucketed = np.random.random((10,10))
+	X_rebucketed_df = pd.DataFrame(X_rebucketed)
+
+	#global names 
+	names = '' 
+
+	# initialize db
+	# can we make this conditional, e.g. if session_id is already in db then pass?
+
+	try:
+		results = db.find_one({'session_id': session_id})
+		filename = results['data_filename']
+		weights_filename = results['weights_filename']
+		print 'using uploaded data - loading data_file and weights_file from db'
+
+	except:
+		new_session (session_id)
+		db.update_one({'session_id': session_id},{"$set":{'data_filename':filename}},upsert=True)
+		db.update_one({'session_id': session_id},{"$set":{'weights_filename':weights_filename}},upsert=True)
+		print 'initializing session_id, using default data_file and weights_file'
+	
+	save_db(session_id, X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names)
 
 	# clean up /plots directory
-	d = 'static/plots/'
-	if os.path.exists(d):
-		shutil.rmtree(d); os.makedirs(d)
+	# d = 'static/plots/'
+	# if os.path.exists(d):
+	# 	shutil.rmtree(d); os.makedirs(d)
 
 	X, names, question_text, response_dict = convert_data(filename)
 
@@ -244,9 +362,13 @@ def get_PCA(filename, weights_filename):
 
 	# X = np.genfromtxt(basedir+filename, delimiter=',', skip_header=2)
 
-	# generate weights_filename from filename - 'test_file.csv --> 'test_file_weights.csv'
-	#weights_filename = filename[:len(filename)-4] + '_weights' + filename[len(filename)-4:] 
+	# create weights, save under standardized name with unique session_id
+
 	X_weights = np.asmatrix(np.genfromtxt(basedir + weights_filename, delimiter=',', skip_header=1))
+	print 'X_weights.shape', X_weights.shape
+	filename = basedir + 'static/weights_file/X_weights_' + session_id +'.csv'
+	np.savetxt(filename, X_weights.T, delimiter=',') 
+	print 'weights_filename:', filename
 
 	print filename, "loaded"
 	print weights_filename, "loaded"
@@ -271,14 +393,22 @@ def get_PCA(filename, weights_filename):
 	#print pca.components_.shape
 
 	# transpose to get compontents on X axis and questions on Y
-	global factor_matrix
-	#factor_matrix = pca.components_.T # <type 'numpy.ndarray'>
+
+	#global factor_matrix
+
 	factor_matrix = homebrew_factor_matrix(X, X_weights) 
 	print "factor matrix d_type:", type(factor_matrix)
 	
 	print "factor_matrix shape:", factor_matrix.shape
 	print "sample row: ", factor_matrix[0]
 	print "max absolute value:", np.absolute(factor_matrix)[0].max()
+
+	save_db(session_id, X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names)
+
+	factor_matrix_pickle = Binary(pickle.dumps(factor_matrix, protocol=2), subtype=128)
+	factor_matrix_file_id = gridfs.put(factor_matrix_pickle)
+	db.update_one({'session_id': session_id},{"$set":{'factor_matrix': factor_matrix_file_id}},upsert=True)
+
 
 	return factor_matrix, names, X, question_dict, results_dict
 
@@ -388,7 +518,7 @@ def varimax(Phi, gamma = 1.0, q = 100, tol = 1e-10):
 
 	return result
 
-def top_n_factors (factor_matrix, top_n, question_dict, names):
+def top_n_factors (factor_matrix, top_n, question_dict, names, session_id):
 	'''
 	Uses PCA to group survey questions by PCA factors: 
 		(a) rank order questions by largest PCA factor (factor_matrix) 
@@ -396,6 +526,8 @@ def top_n_factors (factor_matrix, top_n, question_dict, names):
 	'''
 	z = func_name(); print "--------in function: ", z, " -------------"
 	
+	X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names = load_db(session_id)
+
 	#print "length of question_dict: ", len(question_dict)
 	#print "question_dict keys: ", question_dict.keys()
 	#print "length of question names list: ", len(names)
@@ -460,10 +592,11 @@ def top_n_factors (factor_matrix, top_n, question_dict, names):
 	print "question_dict keys:", question_dict[question_dict.keys()[0]].keys()
 
 	print("Runtime: %s seconds ---" % (time.time() - start_time))
-
+	
+	save_db(session_id, X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names)
 	return factor_matrix, num_rows, num_cols, question_number, rh, best_factor, second_best_factor, question_dict
 
-def rebucket(factor_matrix, names, X, rh, question_dict):
+def rebucket(factor_matrix, names, X, rh, question_dict, session_id):
 	'''
 	Tries different bucketing techniques: [(2,3,2),(3,2,2), (2,2,3), (3,1,3), (1,3,3), (1,2,4)]
 	Chooses technique that best proxies normal distribution 
@@ -471,6 +604,7 @@ def rebucket(factor_matrix, names, X, rh, question_dict):
 	Rosetta_heuristic = np.absolute((top_bucket - .26)) + np.absolute((bottom_bucket - .26)) + np.absolute((middle_bucket - .48)) + np.absolute((top_bucket - bottom_bucket)) * 100
 	'''
 	z = func_name(); print "--------in function: ", z, " -------------"
+	X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names = load_db(session_id)
 	print 'X.shape', X.shape
 	
 	print "length of question_dict: ", len(question_dict)
@@ -595,9 +729,9 @@ def rebucket(factor_matrix, names, X, rh, question_dict):
 	# np.savetxt(basedir + rebucketed_filename, X_rebucketed, fmt='%.2f', delimiter=",")
 	# print rebucketed_filename, "saved to:", basedir
 
-	rebucketed_filename = 'X_rebucketed.csv'
-	X_rebucketed_df.to_csv(basedir + rebucketed_filename, index=False)
-	print rebucketed_filename, "saved to:", basedir
+	rebucketed_filename = 'X_rebucketed_' + session_id + '.csv'
+	X_rebucketed_df.to_csv(basedir + 'static/data_file/' + rebucketed_filename, index=False)
+	print rebucketed_filename, "saved to:", basedir + 'static/data_file/' 
 
 	#http://stackoverflow.com/questions/7701429/efficient-evaluation-of-a-function-at-every-cell-of-a-numpy-array
 	#def rebucket(x):
@@ -616,23 +750,26 @@ def rebucket(factor_matrix, names, X, rh, question_dict):
 
 	# print question_dict
 
-	return rebucketed_filename, X_rebucketed, question_dict, X_rebucketed_df
+	save_db(session_id, X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names)
+	return rebucketed_filename, X_rebucketed, question_dict, X_rebucketed_df, rh
 
-def make_cluster_seed(factor_matrix, best_factor, question_number, num_cols, num_rows):
+def make_cluster_seed(factor_matrix, best_factor, question_number, num_cols, num_rows, rh, session_id):
 	'''
 	Builds cluster_seed (size n_factors), grouping questions by highest PCA value then choosing lowest RH as cluster_seed
 
 	'''
 	z = func_name(); print "--------in function: ", z, " -------------"
+
+	X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names = load_db(session_id)
 	print 'X_rebucketed.shape: ', X_rebucketed.shape
 	
-	global cluster_seed
+	#global cluster_seed
 	cluster_seed=[]
 
 	# Step 5: now group questions by highest factor (=factor_matrix[best_factor], remember col #1 = index 0!)
 	# http://stackoverflow.com/questions/2828059/sorting-arrays-in-numpy-by-column
 	
-	factor_matrix, best_factor, question_number, num_cols, num_rows = factor_matrix, best_factor, question_number, num_cols, num_rows
+	#factor_matrix, best_factor, question_number, num_cols, num_rows = factor_matrix, best_factor, question_number, num_cols, num_rows
 
 	#print factor_matrix.shape
 	sorted_factor_matrix = factor_matrix[factor_matrix[:,best_factor].argsort()]
@@ -664,15 +801,20 @@ def make_cluster_seed(factor_matrix, best_factor, question_number, num_cols, num
 	print "cluster seed:", cluster_seed
 	print "number of items in cluster seed", len(cluster_seed)
 
+	save_db(session_id, X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names)
+	db.update_one({'session_id': session_id},{"$set":{'cluster_seed':cluster_seed}},upsert=True)
 	return cluster_seed
 
 # step 6: use cluster_seed as input to poLCA
-#def poLCA(cluster_seed, num_seg, num_rep, rebucketed_filename):
-def poLCA(i, cluster_seed, num_seg, num_rep, rebucketed_filename):
+#def poLCA(cluster_seed, num_seg, num_rep, rebucketed_filename, session_id):
+# def poLCA(i, cluster_seed, num_seg, num_rep, rebucketed_filename, session_id):
+def poLCA(i, cluster_seed, num_seg, num_rep, session_id):
 	'''
 	Runs poLCA script in R - see http://dlinzer.github.io/poLCA/
 	'''
-	z = func_name(); print "--------in function: ", z, " -------------"
+	z = func_name(); print "--------entering function: ", z, " -------------"
+
+	X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names = load_db(session_id)
 
 	import subprocess
 	import base64
@@ -692,8 +834,8 @@ def poLCA(i, cluster_seed, num_seg, num_rep, rebucketed_filename):
 	# #path2script = '/Users/pniessen/Rosetta_Desktop/Segmentation_2-point-0/poLCA_test_v2.R'
 	# path2script = '/Users/pniessen/Rosetta_Desktop/Segmentation_2-point-0/simple_poLCA_test.R'
 	path2script = basedir +'simple_poLCA_test.R'
-	#rebucketed_filename = "X_rebucketed.csv"
-	infile = basedir + rebucketed_filename
+	rebucketed_filename = 'static/data_file/X_rebucketed_' + session_id + '.csv'
+	#infile = basedir + 'static/data_file/' + rebucketed_filename
 
 	#cluster_seed_names = ['q06_1', 'q06_2', 'q06_3','q06_4','q06_5','q06_6','q06_7']
 
@@ -702,10 +844,10 @@ def poLCA(i, cluster_seed, num_seg, num_rep, rebucketed_filename):
 	# #args = ['11', '3', '9', '42']
 	cluster_seed_names = [names[int(value)] for value in cluster_seed]
 	#timestamp = base64.b64encode(str(time.time() + np.random.random_integers(0,1000000000000)))
-	timestamp = str(uuid.uuid4()) # http://stackoverflow.com/questions/534839/how-to-create-a-guid-in-python
-	# Q: how is names() global?
-	#weights_filename = filename[:len(filename)-4] + '_weights' + filename[len(filename)-4:] 
-	weights_filename = 'test_raw_data_q_v1_weights.csv'
+	timestamp = str(uuid.uuid4()) # http://stackoverflow.com/questions/534839/how-to-create-a-guid-in-pytho
+
+	#weights_filename = 'test_raw_data_q_v1_weights.csv'
+	weights_filename = 'static/weights_file/X_weights_' + session_id + '.csv'
 
 	cluster_seeds = [num_seg] + [num_rep] + [basedir] + [rebucketed_filename] + [timestamp] + cluster_seed_names + [weights_filename]
 	cluster_seeds = [str(seed) for seed in cluster_seeds]
@@ -728,6 +870,11 @@ def poLCA(i, cluster_seed, num_seg, num_rep, rebucketed_filename):
 	#return
 	#scorecard(cluster_seeds, cluster_seed_names, num_seg)
 	print("------- Runtime: %.2f seconds -------" % (time.time() - start_time))
+
+	save_db(session_id, X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names)
+	
+	z = func_name(); print "--------exiting function: ", z, " -------------"
+	
 	return timestamp, cluster_seeds, cluster_seed_names, num_seg
 
 def allowed_file(filename):
@@ -744,9 +891,13 @@ def hello():
 
 @app.route("/data", methods=["GET"])
 def scorecard_2():
-
 	z = func_name(); print "--------in function: ", z, " -------------"
 
+	session_id = flask.request.args.get('session_id')
+	print 'session id: ', session_id
+
+	X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names = load_db(session_id)
+	
 	training_list = []
 
 	print "results_dict size: ", len(results_dict.keys())
@@ -771,11 +922,13 @@ def scorecard_2():
 
 	training_results = {'training': training_list}
 
+	save_db(session_id, X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names)
 	return flask.jsonify(training_results)
 
-def scorecard_3(keys_to_upload):
+def scorecard_3(keys_to_upload, session_id):
 
 	z = func_name(); print "--------in function: ", z, " -------------"
+	X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names = load_db(session_id)
 
 	run_scorecards = []
 
@@ -803,27 +956,29 @@ def scorecard_3(keys_to_upload):
 		run_scorecards.append(run_scorecard)
 		#print training_list
 
+	#save_db(session_id, X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names)
 	return run_scorecards
 
 @app.route("/create_tracker", methods=["GET"])
 def create_tracker():
+	z = func_name(); print "--------entering function: ", z, " -------------"
 
-	global question_dict
-	global X
-	global X_rebucketed
-	global names
-	global cluster_seed
-
-	print 'names:', names
+	session_id = flask.request.args.get('session_id')
+	print 'session id: ', session_id
+	
+	factor_matrix, names, X, question_dict, results_dict = get_PCA(filename, weights_filename, session_id)
+	factor_matrix, num_rows, num_cols, question_number, rh, best_factor, second_best_factor, question_dict = top_n_factors(factor_matrix, top_n, question_dict, names, session_id)
+	rebucketed_filename, X_rebucketed, question_dict, X_rebucketed_df, rh = rebucket(factor_matrix, names, X, rh, question_dict, session_id)
+	cluster_seed = make_cluster_seed(factor_matrix, best_factor, question_number, num_cols, num_rows, rh, session_id)
 
 	tracker_list = []
-	z = func_name(); print "--------in function: ", z, " -------------"
-	print "X_rebucketed.shape:", X_rebucketed.shape
-	print "X.shape", X.shape
 
-	print question_dict.keys()
-	print question_dict[question_dict.keys()[0]]
-	print question_dict[question_dict.keys()[0]].keys()
+	#print "X_rebucketed.shape:", X_rebucketed.shape
+	#print "X.shape", X.shape
+
+	#print question_dict.keys()
+	#print question_dict[question_dict.keys()[0]]
+	#print question_dict[question_dict.keys()[0]].keys()
 
 	# if len(results_dict) == 0 and 'run_tracker' not in question_dict[question_dict.keys()[0]].keys():
 	# can this be written with a try: [add data] except [data=0] for each var to add crashproofness?
@@ -849,19 +1004,62 @@ def create_tracker():
 	tracker_json = flask.jsonify(tracker)
 	print tracker_json
 
+	save_db(session_id, X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names)
+
+	z = func_name(); print "--------exiting function: ", z, " -------------"
 	return flask.jsonify(tracker)
+
+
+@app.route("/create_tracker_from_saved_session", methods=["GET"])
+def make_tracker_data():
+	z = func_name(); print "--------entering function: ", z, " -------------"
+	
+	session_id = flask.request.args.get('session_id')
+	print 'session id: ', session_id
+
+	X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names = load_db(session_id)
+	cluster_seed = db.find_one({'session_id': session_id})['cluster_seed']
+
+	tracker_list = []
+
+	for key in question_dict:
+		try:
+			tracker_dict = OrderedDict([('001_Q#',key),('002_Q_name',question_dict[key]['question_text']),('003_Dim','n/a'),('0031Dimension','n/a'),('004_LF', round(question_dict[key]['first_factor_value'],3)),('005_#1 Factor', question_dict[key]['first_factor']),('006_#2 Factor', question_dict[key]['second_factor']),('007_Bucket', question_dict[key]['bucket_scheme']),('008_%T(=1)', round(question_dict[key]['rebucket_shares'][0]*100)),('009_%M(=2)', round(question_dict[key]['rebucket_shares'][1]*100)),('010_%L(=3)', round(question_dict[key]['rebucket_shares'][2]*100)), ('011_RH',round(question_dict[key]['best_rh'],2))])
+		except:
+			tracker_dict = OrderedDict([('001_Q#',key),('002_Q_name',question_dict[key]['question_text']),('003_Dim','n/a'),('0031Dimension','n/a'), ('004_LF', round(question_dict[key]['first_factor_value'],3)),('005_#1 Factor', question_dict[key]['first_factor']),('006_#2 Factor', question_dict[key]['second_factor']),('007_Bucket', question_dict[key]['bucket_scheme']),('008_%T(=1)', round(question_dict[key]['rebucket_shares'][0]*100)),('009_%M(=2)', round(question_dict[key]['rebucket_shares'][1]*100)),('010_%L(=3)', 0), ('011_RH',round(question_dict[key]['best_rh'],2))])	
+		tracker_list.append(tracker_dict)
+	
+	corr_matrix = np.corrcoef(X.T)
+	corr_matrix_list = dict(zip(names,[dict(zip(names, corr_matrix[:,row].tolist())) for row in range(corr_matrix.shape[1])]))
+	#print 'correlation matrix shape: ', corr_matrix.shape
+
+	cluster_seed_question_list = [names[seed] for seed in cluster_seed]
+	#print 'cluster_seed_question_list being sent to front end: ', cluster_seed_question_list
+
+	visual_flag_list = [visual_mode]
+
+	tracker = {'tracker': tracker_list, 'corr_matrix': corr_matrix_list, 'cluster_seed': cluster_seed_question_list, 'visual_mode': visual_flag_list}
+	z = func_name(); print "--------exiting function: ", z, " -------------"
+	
+	return flask.jsonify(tracker)
+
 	
 @app.route("/tracker", methods=["GET"])
 def update_run_tracker():
-	z = func_name(); print "--------in function: ", z, " -------------"
+	z = func_name(); print "--------entering function: ", z, " -------------"
 
-# could we use intersection of two dictionaries (resuts_dict_old, resuts_dict_current) and update difference?
-# http://code.activestate.com/recipes/576644-diff-two-dictionaries/
-# or dict.viewitems() - see http://zetcode.com/lang/python/dictionaries/
+	session_id = flask.request.args.get('session_id')
+	print 'session id: ', session_id
 
-	global results_dict #updated when new values uploaded
-	global cluster_seed
-	global X_rebucketed_df
+	X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names = load_db(session_id)
+
+	# could we use intersection of two dictionaries (resuts_dict_old, resuts_dict_current) and update difference?
+	# http://code.activestate.com/recipes/576644-diff-two-dictionaries/
+	# or dict.viewitems() - see http://zetcode.com/lang/python/dictionaries/
+
+	#global results_dict #updated when new values uploaded
+	#global cluster_seed
+	#global X_rebucketed_df
 
 	tracker_list = []
 	r_and_q_list = []
@@ -911,20 +1109,24 @@ def update_run_tracker():
 		#print tracker
 		#print r_and_q_list
 
-		run_reports_list = run_report(keys_to_upload)
-		run_scorecards_list = scorecard_3(keys_to_upload)
-		rfe_list = feature_importances(X_rebucketed_df, keys_to_upload)
+		run_reports_list = run_report(keys_to_upload, session_id)
+		run_scorecards_list = scorecard_3(keys_to_upload, session_id)
+		rfe_list = feature_importances(X_rebucketed_df, keys_to_upload, session_id)
 		# cluster_seed_question_list = [names[seed] for seed in cluster_seed]
 		# print 'cluster_seed_list being sent to front end:', cluster_seed_question_list
 		tracker = {'tracker': tracker_list, 'run_reports': run_reports_list, 
 		'run_scorecard': run_scorecards_list, 'feature_importance': rfe_list}
 
+		save_db(session_id, X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names)
+		z = func_name(); print "--------exiting function: ", z, " -------------"
+
 		return flask.jsonify(tracker)
 
 @app.route("/submit_data", methods=["POST"])
 def submit_data():
-	z = func_name(); print "--------in function: ", z, " -------------"
-	print 'X_rebucketed.shape:', X_rebucketed.shape
+	z = func_name(); print "--------entering function: ", z, " -------------"
+
+	#print 'X_rebucketed.shape:', X_rebucketed.shape
 
     # read the data that came with the POST request as a dict
     # inbound request example: http://127.0.0.1:5000/predict -X POST -H 'Content-Type: application/json' -d '{"example": [154]}'
@@ -933,10 +1135,10 @@ def submit_data():
 	# curl http://127.0.0.1:5000/submit_data -X POST -H 'Content-Type: applcation/json' -d '{u'segments': [6], u'questions': u'[q39_8,q39_4,q39_6,q48_28,q31_20,q07_18,q07_17,q07_11,q35_5,q16_8,q06_2,q08_5,q08_6,q06_8,q06_16,q35_8,q48_25,q48_27]'}'
 	# {"questions":"[q39_8,q39_4,q39_6,q48_28,q31_20,q07_18,q07_17,q07_11,q35_5,q16_8,q06_2,q08_5,q08_6,q06_8,q06_16,q35_8,q48_25,q48_27]", "segments":[6]} 
 	# 	
-	global cluster_seed
-	global names
-	global X_rebucketed_df
-	global X_rebucketed
+	#global cluster_seed
+	#global names
+	#global X_rebucketed_df
+	#global X_rebucketed
 
 	counter = 0
 	inbound_data = flask.request.json
@@ -946,6 +1148,14 @@ def submit_data():
 	keys = inbound_data.keys(); print keys
 	for key in inbound_data:
 		print key, inbound_data[key], type(inbound_data[key])
+
+	if 'session_id' in keys:
+		print "--session id-----"
+		session_id = inbound_data['session_id']
+		print 'session_id', session_id
+
+		X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names = load_db(session_id)
+		print 'X_rebucketed.shape:', X_rebucketed.shape
 
 	if 'questions' in keys:
 		print "----questions---"
@@ -961,6 +1171,7 @@ def submit_data():
 			print "questions:", len(questions), questions
 
 		else:
+			cluster_seed = db.find_one({'session_id': session_id})['cluster_seed']
 			cluster_seed_inbound = cluster_seed
 			print "no questions provided; using cluster seed"
 
@@ -1017,42 +1228,49 @@ def submit_data():
 
 	#print "----run number:", len(result_dict.keys()), "-----------"
  	if method.lower() in ['agclust', 'meanshift', 'dbscan', 'kmeans', 'affinityprop', 'birch', 'spectral']:
- 		results = get_segments(X_rebucketed_df, names, cluster_seed_inbound, method.lower(), num_seg)
+ 		results = get_segments(X_rebucketed_df, names, cluster_seed_inbound, method.lower(), num_seg, session_id)
  		print method, ' results:', results
 	
 	else:
 		print "---------now running poLCA from submit_data function--------------"
 		print 'X_rebucketed.shape: ', X_rebucketed.shape
-		results = run_poLCA (grid_search,cluster_seed_inbound,num_seg,num_rep,rebucketed_filename)	
+		results = run_poLCA (grid_search,cluster_seed_inbound,num_seg,num_rep, session_id)	
 	
-	timestamps = update_results_dict(results, X_rebucketed, names, method)
+	timestamps = update_results_dict(results, X_rebucketed, names, method, session_id)
 
-	print "---question_dict:-----", len(question_dict)
-	print "---results_dict:------", len(results_dict)
+	#print "---question_dict:-----", len(question_dict)
+	#print "---results_dict:------", len(results_dict)
 	
-	update_question_dict(timestamps)
-	run_report(timestamps)
+	update_question_dict(timestamps, session_id)
+	run_report(timestamps, session_id)
 	# threading.Thread(target=make_visual, args=(X_rebucketed_df, timestamps), kwargs={}).start()
 	# print 'this is after threading started'
 	if visual_mode == True:
 		Parallel(n_jobs=num_cores,verbose=5)(delayed(make_visual)(i,X_rebucketed_df, timestamps[i]) for i in range(len(timestamps)))
 	#rfe_list = feature_importances(X_rebucketed_df, timestamps)
-	clean_up(timestamps)
+	clean_up(timestamps, session_id)
 
 	if xls:
-		make_xls()
+		make_xls(session_id)
 
 
 	results2 = {"example": [155]}
+	z = func_name(); print "--------exiting function: ", z, " -------------"
+	#save_db(session_id, X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names)
+
 	return flask.jsonify(results2)
 
 @app.route('/submit_objective_function', methods=['POST'])
 def objective_function():
 
-	global question_dict
+	cookies = flask.request.cookies
+	session_id = cookies['session_id']
+	X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names = load_db(session_id)
+
+	#global question_dict
 	print "questions: ", question_dict.keys()
 
-	z = func_name(); print "--------in function: ", z, " -------------"
+	z = func_name(); print "--------entering function: ", z, " -------------"
 	inbound_data = flask.request.json
 
 	print "inbound data", inbound_data
@@ -1072,6 +1290,9 @@ def objective_function():
 		for question in questions:
 			 print question, ": ", question_dict[question]['dimension']
 
+	z = func_name(); print "--------exiting function: ", z, " -------------"
+	save_db(session_id, X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names)
+
 	results3 = {"example": [666]}
 	return flask.jsonify(results3)
 
@@ -1080,8 +1301,8 @@ def session_id():
 
 	z = func_name(); print "--------in function: ", z, " -------------"
 
-	global results_dict
-	global question_dict
+	#global results_dict
+	#global question_dict
 
 	inbound_data = flask.request.json
 
@@ -1110,17 +1331,32 @@ def session_id():
 @app.route('/submit_dimension', methods=['POST'])
 def submit_dimension():
 
-	z = func_name(); print "--------in function: ", z, " -------------"
+	z = func_name(); print "--------entering function: ", z, " -------------"
 
-	global results_dict
-	global question_dict
+	cookies = flask.request.cookies
+	session_id = cookies['session_id']
+	X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names = load_db(session_id)
+
+	#global results_dict
+	#global question_dict
 
 	dimension = flask.request.json
+	cookies = flask.request.cookies
 
 	print "dimension", dimension
 	print type(dimension)
 	
-	new_dimension = [value.encode('ascii', 'ignore') for value in dimension]
+	print "cookies:", cookies
+	print type(cookies)
+
+	print "cookies[session_id]:", cookies['session_id']
+	session_id = cookies['session_id']
+	print type(session_id)
+
+	session_id = dimension[0]
+	print session_id, type(session_id)
+
+	new_dimension = [value.encode('ascii', 'ignore') for value in dimension[1]]
 	print type(new_dimension)
 	print new_dimension
 	question, dim = new_dimension
@@ -1130,6 +1366,9 @@ def submit_dimension():
 
 	results5 = {"new_dimension": new_dimension}
 	
+	z = func_name(); print "--------exiting function: ", z, " -------------"
+	save_db(session_id, X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names)
+
 	return flask.jsonify(results5)
 
 @app.route('/save', methods=['POST'])
@@ -1192,10 +1431,18 @@ def load_session():
 	print user_id
 
 	filename = inbound_data[1].encode('ascii', 'ignore')
-	print type(session_id)
-	print session_id
+	print type(filename)
+	print filename
+
+	cookies = flask.request.cookies
+	print "cookies:", cookies
+	print type(cookies)
 	
-	load_results(user_id, filename)
+	session_id = cookies['session_id']
+	print 'session_id:', session_id
+	
+	new_session(session_id)
+	load_results(user_id, filename,session_id)
 	
 	results5 = {"save_results": filename}
 	
@@ -1227,18 +1474,19 @@ def get_filenames():
 # https://github.com/moremorefor/flask-fileupload-ajax-example/blob/master/app.py
 # http://stackoverflow.com/questions/18334717/how-to-upload-a-file-using-an-ajax-call-in-flask
 
+'''
 # Route that will process the file upload
 @app.route('/upload', methods=['POST'])
 def upldfile():
 	z = func_name(); print "--------in function: ", z, " -------------"
 
-	global X_rebucketed
-	global X
-	global names
-	global results_dict
-	global question_dict
+	#global X_rebucketed
+	#global X
+	#global names
+	#global results_dict
+	#global question_dict
 
-	print 'X_rebucketed.shape:', X_rebucketed.shape
+	#print 'X_rebucketed.shape:', X_rebucketed.shape
 
 	if request.method == 'POST':
 		files = request.files['file']
@@ -1253,9 +1501,9 @@ def upldfile():
             filename = 'uploads/' + filename
 
             global cluster_seed
-            global question_dict
-            global names
-            global X_rebucketed_df
+            #global question_dict
+            #global names
+            #global X_rebucketed_df
 
             factor_matrix, names, X, question_dict, results_dict = get_PCA(filename)
             factor_matrix, num_rows, num_cols, question_number, rh, best_factor, second_best_factor, question_dict = top_n_factors(factor_matrix, top_n, question_dict, names)
@@ -1266,26 +1514,36 @@ def upldfile():
             cluster_seed = make_cluster_seed(factor_matrix, best_factor, question_number, num_cols, num_rows)
             
             return jsonify(name=filename, size=file_size)#, question_dict
-
+'''
 # Route that will process the file upload
 # http://code.runnable.com/UiPeYmdVjZlYAAAf/how-to-upload-multiple-files-in-flask-for-python
 # this is for weights
 @app.route('/upload_2', methods=['POST'])
 def upldfile_2():
-	z = func_name(); print "--------in function: ", z, " -------------"
+	#z = func_name(); print "--------in function: ", z, " -------------"
 
-	global X_rebucketed
-	global X
-	global names
-	global results_dict
-	global question_dict
-	global weights_filename
+	#global X_rebucketed
+	#global X
+	#global names
+	#global results_dict
+	#global question_dict
+	#global weights_filename
 
-	print 'X_rebucketed.shape:', X_rebucketed.shape
+	#print 'X_rebucketed.shape:', X_rebucketed.shape
 
 	if request.method == 'POST':
+		
+		z = func_name(); print "--------entering function: ", z, " -------------"
+		
 		files = request.files['file']
         print files
+
+        cookies = flask.request.cookies
+        print "cookies:", cookies
+        print type(cookies)
+
+        session_id = cookies['session_id']
+        print 'session_id:', session_id
 
     	if files and allowed_file(files.filename):
             filename = secure_filename(files.filename)
@@ -1295,6 +1553,10 @@ def upldfile_2():
             files.save(os.path.join(updir, filename))
             file_size = os.path.getsize(os.path.join(updir, filename))
             filename = 'uploads/' + filename
+
+            # create new db record, save filenames
+            new_session(session_id)
+            db.update_one({'session_id': session_id},{"$set":{'weights_filename': filename }},upsert=True)
 
         #     global cluster_seed
         #     global question_dict
@@ -1312,25 +1574,35 @@ def upldfile_2():
         weights_filename = filename
         print 'weights_filename:', filename
 
-        return jsonify(name=filename)#, size=file_size)#, question_dict
+        return jsonify(name=filename, size=file_size)#, question_dict
 
 # this is for survey data 
 @app.route('/upload_3', methods=['POST'])
 def upldfile_3():
-	z = func_name(); print "--------in function: ", z, " -------------"
+	z = func_name(); print "--------entering function: ", z, " -------------"
 
-	global X_rebucketed
-	global X
-	global names
-	global results_dict
-	global question_dict
-	global weights_filename
+	#global X_rebucketed
+	#global X
+	#global names
+	#global results_dict
+	#global question_dict
+	#global weights_filename
 
-	print 'X_rebucketed.shape:', X_rebucketed.shape
+	#print 'X_rebucketed.shape:', X_rebucketed.shape
 
 	if request.method == 'POST':
+
+		z = func_name(); print "--------entering function: ", z, " -------------"
+		
 		files = request.files['file']
         print files
+
+        cookies = flask.request.cookies
+        print "cookies:", cookies
+        print type(cookies)
+
+        session_id = cookies['session_id']
+        print 'session_id:', session_id
 
     	if files and allowed_file(files.filename):
             filename = secure_filename(files.filename)
@@ -1341,22 +1613,29 @@ def upldfile_3():
             file_size = os.path.getsize(os.path.join(updir, filename))
             filename = 'uploads/' + filename
 
-            global cluster_seed
-            global question_dict
-            global names
-            global X_rebucketed_df
+            db.update_one({'session_id': session_id},{"$set":{'data_filename': filename }},upsert=True)
 
-            factor_matrix, names, X, question_dict, results_dict = get_PCA(filename, weights_filename)
-            factor_matrix, num_rows, num_cols, question_number, rh, best_factor, second_best_factor, question_dict = top_n_factors(factor_matrix, top_n, question_dict, names)
-            rebucketed_filename, X_rebucketed, question_dict, X_rebucketed_df = rebucket(factor_matrix, names, X, rh, question_dict)
+            top_n = 2 # fix this!
+
+            #global cluster_seed
+            #global question_dict
+            #global names
+            #global X_rebucketed_df
+
+            #factor_matrix, names, X, question_dict, results_dict = get_PCA(filename, weights_filename, session_id)
+            #factor_matrix, num_rows, num_cols, question_number, rh, best_factor, second_best_factor, question_dict = top_n_factors(factor_matrix, top_n, question_dict, names, session_id)
+            #rebucketed_filename, X_rebucketed, question_dict, X_rebucketed_df, rh = rebucket(factor_matrix, names, X, rh, question_dict, session_id)
             
-            print 'X_rebucketed.shape:', X_rebucketed.shape
+            #print 'X_rebucketed.shape:', X_rebucketed.shape
 
-            cluster_seed = make_cluster_seed(factor_matrix, best_factor, question_number, num_cols, num_rows)
+            #cluster_seed = make_cluster_seed(factor_matrix, best_factor, question_number, num_cols, num_rows, rh, session_id)
         
         print 'data_filename:', filename
 
+        z = func_name(); print "--------exiting function: ", z, " -------------"
+
         return jsonify(name=filename, size=file_size)#, question_dict
+'''
 # Route that will process the file upload
 @app.route('/upload_weights', methods=['POST'])
 def upload_weights():
@@ -1383,21 +1662,35 @@ def upload_weights():
 	    calculate_weights(filename)
 
 	    return jsonify(name=filename, size=file_size)
+'''
 
 # download excel file
 # http://stackoverflow.com/questions/30024948/flask-download-a-csv-file-on-clicking-a-button
 @app.route('/download') # this is a job for GET, not POST
 def download_file():
+	z = func_name(); print "--------in function: ", z, " -------------"
+	
+	cookies = flask.request.cookies
+	print "cookies:", cookies
+	print type(cookies)
 
-	filename = make_xls()
+	session_id = cookies['session_id']
+	print 'session_id:', session_id
+
+    #session_id = flask.request.args.get('session_id')
+    #print 'session id: ', session_id
+
+	filename = make_xls(session_id)
 
 	return send_file(filename, attachment_filename=filename, as_attachment=True) #mimetype='text/csv'
 
-def scorecard(timestamp, cluster_seeds, cluster_seed_names, num_seg):
+def scorecard(timestamp, cluster_seeds, cluster_seed_names, num_seg, session_id):
 	'''
 	Yields scorecard for single segmentation run - legacy module, does not run off results_dict
 	'''
 	z = func_name(); print "--------in function: ", z, " -------------"
+
+	X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names = load_db(session_id)
 
 	# step 7: load predicted clusters from file, add back to original data matrix (X)	
 	# also calculate cluster scorecard metrics
@@ -1437,6 +1730,8 @@ def scorecard(timestamp, cluster_seeds, cluster_seed_names, num_seg):
 	print "Mean posterior probabilities (%):", ['%.2f' % (mpp * 100) for mpp in mean_posterior_probabilities]
 	print("------- Runtime: %.2f seconds -------" % (time.time() - start_time))
 
+	save_db(session_id, X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names)
+
 	return
 
 # @socketio.on('connect', namespace='/test')
@@ -1447,15 +1742,17 @@ def scorecard(timestamp, cluster_seeds, cluster_seed_names, num_seg):
 # 	emit('my response', {'data': '------connected---------'})
 # 	print('--------------------Client connected----------------------------')
 
-def update_results_dict(results, X_rebucketed, names, method):
+def update_results_dict(results, X_rebucketed, names, method, session_id):
 	''''
 	Updates results_dict after poLCA run
 	'''
 	z = func_name(); print "--------in function: ", z, " -------------"
+	X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names = load_db(session_id)
+
 	print 'X_rebucketed.shape: ', X_rebucketed.shape
 
-	global results_dict
-	global question_dict
+	#global results_dict
+	#global question_dict
 
 	starting_results_dict_length = len(results_dict.keys())
 	print "results_dict size when entering make_results_dict function:", starting_results_dict_length
@@ -1512,7 +1809,7 @@ def update_results_dict(results, X_rebucketed, names, method):
 	print("------- Runtime: %.2f seconds -------" % (time.time() - start_time))
 	
 	#results_dict = dict(Parallel(n_jobs=num_cores,verbose=5)(delayed(make_one_results_dict_entry_mp)(i,results_dict.keys()[i],results_dict[results_dict.keys()[i]], X_rebucketed, names) for i in range(len(results_dict.keys()))))
-	new_results_dict = dict(Parallel(n_jobs=num_cores,verbose=5)(delayed(make_one_results_dict_entry_mp)(i,timestamps[i],results_dict[timestamps[i]], X_rebucketed, names) for i in range(len(timestamps))))
+	new_results_dict = dict(Parallel(n_jobs=num_cores,verbose=5)(delayed(make_one_results_dict_entry_mp)(i,timestamps[i],results_dict[timestamps[i]], X_rebucketed, names, question_dict) for i in range(len(timestamps))))
 	results_dict.update(new_results_dict)
 
 	print "sample results_dict entry:",results_dict[results_dict.keys()[0]].keys()
@@ -1522,18 +1819,20 @@ def update_results_dict(results, X_rebucketed, names, method):
 	print "results_dict complete with", len(results_dict.keys()), "entries"
 	print("------- Runtime: %.2f seconds -------" % (time.time() - start_time))
 
+	save_db(session_id, X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names)
+
 	return timestamps#, results_dict
 
-def make_one_results_dict_entry_mp(i, key, results_dict_entry, X_rebucketed, names):
+def make_one_results_dict_entry_mp(i, key, results_dict_entry, X_rebucketed, names, question_dict):
 	'''
 	Breaks apart results_dict update into threads if multiprocessing possible
 	'''
 	z = func_name(); print "--------in function: ", z, " -------------"
 	print 'X_rebucketed.shape: ', X_rebucketed.shape
 	
-	results_dict = dict(results_dict_entry) #not same as global var; should change name!
+	one_results_dict_entry = dict(results_dict_entry)
 	
-	pred_clusters = np.array(results_dict['predicted_clusters'])
+	pred_clusters = np.array(one_results_dict_entry['predicted_clusters'])
 	pred_clusters = np.reshape(pred_clusters, (pred_clusters.shape[0],1))
 	clustered_responders = np.append(X_rebucketed, pred_clusters, axis=1)
 	
@@ -1547,17 +1846,17 @@ def make_one_results_dict_entry_mp(i, key, results_dict_entry, X_rebucketed, nam
 	df = pd.DataFrame(clustered_responders, columns=df_names)
 	df.to_csv('clustered_responders', header=True, sep=',')
 	
-	results_dict['response_shares'] = {}; results_dict['response_counts'] = {}; results_dict['response_polarity'] = {}; results_dict['cross_question_polarity'] = {}
-	questions = results_dict['quest_list']
+	one_results_dict_entry['response_shares'] = {}; one_results_dict_entry['response_counts'] = {}; one_results_dict_entry['response_polarity'] = {}; one_results_dict_entry['cross_question_polarity'] = {}
+	questions = one_results_dict_entry['quest_list']
 	
 	#for question in results_dict['quest_list']:
 	# for question in question_dict.keys():
 	for question in names:
-		print 'now trying question: ', question 
-		print 'this is element: ', names.index(question), ' in names'
+		#print 'now trying question: ', question 
+		#print 'this is element: ', names.index(question), ' in names'
 		response_shares = []; response_counts = []
 		
-		for cluster in set(results_dict['predicted_clusters']):
+		for cluster in set(one_results_dict_entry['predicted_clusters']):
 			response_count = [sum(clustered_responders[clustered_responders[:,-1] == cluster][:,names.index(question)] == bucket) for bucket in set(clustered_responders[:,names.index(question)])]
 			
 			# if names.index(question) > 145: #bugcheck
@@ -1574,9 +1873,9 @@ def make_one_results_dict_entry_mp(i, key, results_dict_entry, X_rebucketed, nam
 
 		#print question, "response counts:", response_counts	
 		#print question, "response shares:", response_shares	
-		results_dict['response_counts'][question] = response_counts
-		results_dict['response_shares'][question] = response_shares
-		results_dict['response_polarity'][question] = [max(item) - np.mean(item) for item in response_shares]
+		one_results_dict_entry['response_counts'][question] = response_counts
+		one_results_dict_entry['response_shares'][question] = response_shares
+		one_results_dict_entry['response_polarity'][question] = [max(item) - np.mean(item) for item in response_shares]
 
 		# if names.index(question) > 145: #bugcheck
 		# 	print 'results_dict[response_shares]', question, ': ', results_dict['response_shares'][question]
@@ -1588,24 +1887,24 @@ def make_one_results_dict_entry_mp(i, key, results_dict_entry, X_rebucketed, nam
 		#cross_question_polarity = np.reshape(results_dict['response_shares'][question],(results_dict['cluster_number'],3))
 		
 		try:
-			cross_question_polarity = np.reshape(results_dict['response_shares'][question],(results_dict['cluster_number'],len(question_dict[question]['rebucket_counts']))) # multibucket
+			cross_question_polarity = np.reshape(one_results_dict_entry['response_shares'][question],(one_results_dict_entry['cluster_number'],len(question_dict[question]['rebucket_counts']))) # multibucket
 		except:
 			print '----error checking info------'
 			print 'question: ', question
-			print 'set(results_dict[predicted_clusters]):', set(results_dict['predicted_clusters'])
-			print 'results_dict[response_counts][question]: ', results_dict['response_counts'][question]
+			print 'set(results_dict[predicted_clusters]):', set(one_results_dict_entry['predicted_clusters'])
+			print 'results_dict[response_counts][question]: ', one_results_dict_entry['response_counts'][question]
 			print '# of values in question: set(clustered_responders[:,names.index(question)]):', set(clustered_responders[:,names.index(question)])
 			print 'names.index(question):', names.index(question)
 			print '------do number of values in question match X_rebucketed manual check?----------'
 			print 'X_rebucketed.csv saved in line 597'
 			print 'clustered_responders saved in line 1457, col names do not match X_rebucketed.csv!'
 			# clustered_responders is given name from names - is this refreshed on load of saved session file?
-			print 'results_dict.keys():', results_dict.keys()
+			print 'results_dict.keys():', one_results_dict_entry.keys()
 			print 'question_dict.keys():', question_dict.keys()
 			print 'question_dict[question]:', question_dict[question].keys()
 			print 'names:', names
-			print 'results_dict[response_shares]', question, ': ', type(results_dict['response_shares'][question]), results_dict['response_shares'][question]
-			print 'results_dict[cluster_number]: ', results_dict['cluster_number']
+			print 'results_dict[response_shares]', question, ': ', type(one_results_dict_entry['response_shares'][question]), one_results_dict_entry['response_shares'][question]
+			print 'results_dict[cluster_number]: ', one_results_dict_entry['cluster_number']
 			print 'len(question_dict[question][rebucket_counts]: ', len(question_dict[question]['rebucket_counts'])
 			print 'question_dict[question][rebucket_counts]: ', question_dict[question]['rebucket_counts']
 
@@ -1643,31 +1942,32 @@ def make_one_results_dict_entry_mp(i, key, results_dict_entry, X_rebucketed, nam
 			'''
 		#### above line creates error with <>3 buckets
 		
-		results_dict['cross_question_polarity'][question] = [max(cross_question_polarity[:,col]) - np.mean(cross_question_polarity[:,col]) for col in range(cross_question_polarity.shape[1])]
+		one_results_dict_entry['cross_question_polarity'][question] = [max(cross_question_polarity[:,col]) - np.mean(cross_question_polarity[:,col]) for col in range(cross_question_polarity.shape[1])]
 
-	print "results_dict[response_shares] length:", len(results_dict['response_shares'])
+	print "results_dict[response_shares] length:", len(one_results_dict_entry['response_shares'])
 	
-	results_dict['polarity_scores'] = [sum(results_dict['response_polarity'][question][cluster] / len (results_dict['quest_list']) for question in results_dict['quest_list']) for cluster in range(results_dict['cluster_number'])]
-	results_dict['weighted_average_cluster_polarity'] = sum([a*b for a,b in zip(results_dict['polarity_scores'],results_dict['cluster_shares'])])
-	results_dict['mean_cluster polarity'] = np.mean(results_dict['polarity_scores'])
-	results_dict['average_cross_question_polarity'] = sum(sum(value) for value in results_dict['cross_question_polarity'].values()) / len(results_dict['cross_question_polarity'].values())	
+	one_results_dict_entry['polarity_scores'] = [sum(one_results_dict_entry['response_polarity'][question][cluster] / len (one_results_dict_entry['quest_list']) for question in one_results_dict_entry['quest_list']) for cluster in range(one_results_dict_entry['cluster_number'])]
+	one_results_dict_entry['weighted_average_cluster_polarity'] = sum([a*b for a,b in zip(one_results_dict_entry['polarity_scores'],one_results_dict_entry['cluster_shares'])])
+	one_results_dict_entry['mean_cluster polarity'] = np.mean(one_results_dict_entry['polarity_scores'])
+	one_results_dict_entry['average_cross_question_polarity'] = sum(sum(value) for value in one_results_dict_entry['cross_question_polarity'].values()) / len(one_results_dict_entry['cross_question_polarity'].values())	
 
-	print "number of entries for results_dict", key, len(results_dict.keys())
+	print "number of entries for results_dict", key, len(one_results_dict_entry.keys())
 	#print results_dict
-	one_entry = dict(results_dict.items())
+	one_entry = dict(one_results_dict_entry.items())
 
 	print "number of entries for one_entry", key, len(one_entry.keys())
 
 	return key, one_entry
 
-def update_question_dict(timestamps):#question_dict, results_dict):
+def update_question_dict(timestamps, session_id):#question_dict, results_dict):
 	'''
 	Updates question_dict after poLCA run, adding back a boolean run inclusion tracker for each question 
 	'''
 	z = func_name(); print "--------in function: ", z, " -------------"
+	X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names = load_db(session_id)
 
-	global results_dict
-	global question_dict
+	#global results_dict
+	#global question_dict
 
 	z = func_name(); print "--------in function: ", z, " -------------"
 	print "number of keys in question_dict:", len(question_dict.keys())
@@ -1705,19 +2005,25 @@ def update_question_dict(timestamps):#question_dict, results_dict):
 			print question, "# of bool entries:", len(question_dict[question]['bool_run_tracker'])
 			print question, "sum of bool entries", sum(question_dict[question]['bool_run_tracker'])
 
+	save_db(session_id, X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names)
 	return #question_dict, results_dict
 
-def make_xls():#results_dict):
+def make_xls(session_id):#results_dict):
 	'''
 	Excel export - currently only detailed run results
 	'''
 	z = func_name(); print "--------in function:", z, "-------------"
+	X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names = load_db(session_id)
 
-	global results_dict
-	global question_dict
-	global X
-	global X_rebucketed
-	global factor_matrix
+	results = db.find_one({'session_id': session_id})
+	factor_matrix_file_id = results['factor_matrix']
+	factor_matrix = pickle.loads(gridfs.get(factor_matrix_file_id).read())
+
+	#global results_dict
+	#lobal question_dict
+	#global X
+	#global X_rebucketed
+	#global factor_matrix
 
 
 	# uses http://xlsxwriter.readthedocs.org/getting_started.html
@@ -1763,7 +2069,7 @@ def make_xls():#results_dict):
 	run_number = 0
 
 	timestamps = results_dict.keys()
-	run_reports = run_report(timestamps)
+	run_reports = run_report(timestamps, session_id)
 
 	for run in run_reports:
 		run_number += 1
@@ -1825,13 +2131,19 @@ def make_xls():#results_dict):
 	workbook.close()
 
 	print "workbook exported: ", basedir+outfile
+
+	save_db(session_id, X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names)
+
 	return basedir+outfile
 
-def clean_up (timestamps):
+def clean_up (timestamps, session_id):
 	'''
 	Deletes working files from poLCA run (easiest way R>Python)
 	'''
 	z = func_name(); print "--------in function: ", z, " -------------"
+	
+	if visual_mode:
+		X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names = load_db(session_id)
 	
 	# now clean up!
 	for timestamp in timestamps:
@@ -1839,6 +2151,12 @@ def clean_up (timestamps):
 		os.remove(basedir+"/static/model/predicted_segment_"+timestamp+".txt")
 		os.remove(basedir+"/static/model/posterior_probabilities_"+timestamp+".txt")
 		os.remove(basedir+"/static/model/rov_"+timestamp+".txt")
+
+		if visual_mode:
+			num_clusters = results_dict[timestamp]['cluster_number']
+			for cluster in range(num_clusters + 1):
+				os.remove(basedir + "/static/plots/seg_graph_" + timestamp + "_" + cluster + ".png")
+
 	print len(timestamps) * 4, "scoring files cleaned up from ", len(timestamps), "runs"
 
 	return
@@ -1847,16 +2165,28 @@ def save_results(user_id, session_id):
 	'''
 	Writes save_dict to file
 	'''
-	z = func_name(); print "--------in function: ", z, "--------------"
-
-	global results_dict
-	global question_dict
-	global X
-	global X_rebucketed
- 
 	import cPickle as pickle
 	import time
-	
+
+	z = func_name(); print "--------in function: ", z, "--------------"
+	X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names = load_db(session_id)
+
+	results = db.find_one({'session_id': session_id})
+
+	cluster_seed = results['cluster_seed']
+	weights_filename = results['weights_filename']
+	data_filename = results['data_filename']
+
+	factor_matrix_file_id = results['factor_matrix']
+	print factor_matrix_file_id
+
+	factor_matrix = pickle.loads(gridfs.get(factor_matrix_file_id).read())
+
+	#global results_dict
+	#global question_dict
+	#global X
+	#global X_rebucketed
+ 	
 	time_dict = {}
 	load_time_dict = {}
 
@@ -1867,13 +2197,30 @@ def save_results(user_id, session_id):
 	save_dict['X_rebucketed'] = X_rebucketed
 	save_dict['names'] = names
 	save_dict['X_rebucketed_df'] = X_rebucketed_df
+	save_dict['cluster_seed'] = cluster_seed
+	save_dict['weights_filename'] = weights_filename
+	save_dict['data_filename'] = data_filename
+	save_dict['factor_matrix'] = factor_matrix
 
 	print 'results_dict keys:',  save_dict['results_dict'].keys()
 	print 'question_dict keys:', save_dict['question_dict'].keys()
 	print 'X shape:', save_dict['X'].shape
 	print 'X_rebucketed shape: ', save_dict['X_rebucketed'].shape
-	print 'Names:', len(names)
-	print 'X_rebucketed_df shape: ', X_rebucketed_df.shape
+	print 'Names:', len(save_dict['names'])
+	print 'X_rebucketed_df shape: ', save_dict['X_rebucketed_df'].shape
+	print 'cluster_seed length:', len(save_dict['cluster_seed'])
+	print 'weights_filename: ', save_dict['weights_filename']
+	print 'data_filename: ', save_dict['data_filename']
+	print 'factor_matrix.shape: ', save_dict['factor_matrix'].shape
+	
+	# now load weights, add to save_dict
+	weights_filename = 'static/weights_file/X_weights_' + session_id + '.csv'
+	X_weights = np.asmatrix(np.genfromtxt(basedir + weights_filename, delimiter=',', skip_header=0))
+	save_dict['weights']= X_weights
+
+	#np.savetxt(filename, X_weights, delimiter=',') 
+
+
 	print os.path.abspath(os.path.dirname(__file__))
 
 	# cPickle
@@ -1894,19 +2241,19 @@ def save_results(user_id, session_id):
 		return
 	
 
-def load_results(user_id, filename):
+def load_results(user_id, filename, session_id):
 
 	'''
 	Loads save_dict from file
 	'''
 	z = func_name(); print "--------in function: ", z, "--------------"
 
-	global results_dict
-	global question_dict
-	global X
-	global X_rebucketed
-	global names
-	global X_rebucketed_df
+	#global results_dict
+	#global question_dict
+	#global X
+	#global X_rebucketed
+	#global names
+	#global X_rebucketed_df
  
 	import cPickle as pickle
 	
@@ -1931,29 +2278,59 @@ def load_results(user_id, filename):
 		question_dict = save_dict['question_dict']
 		X = save_dict['X']
 		X_rebucketed = save_dict['X_rebucketed']
-		#names = question_dict.keys() # not consistent order!  Q: how to fix?
-		#X_rebucketed_df = pd.DataFrame(X_rebucketed, columns=names) # this will also be off! 
 		names = save_dict['names']
 		X_rebucketed_df = save_dict['X_rebucketed_df']
 
+		cluster_seed = save_dict['cluster_seed']
+		weights_filename = save_dict['weights_filename']
+		data_filename = save_dict['data_filename']
+		factor_matrix = save_dict['factor_matrix']
+		X_weights = save_dict['weights']
 
-		print 'results_dict keys:',  results_dict.keys()
-		print 'question_dict keys:', question_dict.keys()
-		print 'X shape:', X.shape
-		print 'X_rebucketed shape:', X_rebucketed.shape
+		# now save working data_file and weights_file to their private directories
+		data_filename = 'X_rebucketed_' + session_id + '.csv'
+		X_rebucketed_df.to_csv(basedir + 'static/data_file/' + data_filename, index=False)
+		print data_filename, "saved to:", basedir + 'static/data_file/' 
+
+		weights_filename = 'X_weights_' + session_id + '.csv'
+		np.savetxt(basedir + 'static/weights_file/' + weights_filename, X_weights.T, delimiter=',') 
+		print weights_filename, "saved to:", basedir + 'static/weights_file/' 
 
 		# reset upload_state for bulk upload
 		for key in results_dict.keys():
 			results_dict[key]['upload_state'] = False
 			print key, results_dict[key]['upload_state']
-	
+		
+		# update db
+		save_db(session_id, X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names) 
+
+		factor_matrix_pickle = Binary(pickle.dumps(factor_matrix, protocol=2), subtype=128 )
+		factor_matrix_pickle_file_id = gridfs.put( factor_matrix_pickle )
+		db.update_one({'session_id': session_id},{"$set":{'factor_matrix': factor_matrix_pickle_file_id}},upsert=True)
+
+		db.update_one({'session_id': session_id},{"$set":{'cluster_seed':cluster_seed}},upsert=True)
+		db.update_one({'session_id': session_id},{"$set":{'weights_filename':weights_filename}},upsert=True)
+		db.update_one({'session_id': session_id},{"$set":{'data_filename':data_filename}},upsert=True)
+
+		print 'results_dict keys:',  results_dict.keys()
+		print 'question_dict keys:', question_dict.keys()
+		print 'X shape:', X.shape
+		print 'X_rebucketed shape: ', X_rebucketed.shape
+		print 'Names:', len(names)
+		print 'X_rebucketed_df shape: ', X_rebucketed_df.shape
+		print 'cluster_seed length:', len(cluster_seed)
+		print 'weights_filename: ', weights_filename
+		print 'data_filename: ', data_filename
+		print 'factor_matrix.shape: ', factor_matrix.shape
+
 	except:
+		print '----------save_dict load error!!!!!----------------'
 		pass
 
 	return
 
 
-def run_poLCA (grid_search,cluster_seed,num_seg,num_rep,rebucketed_filename):
+def run_poLCA (grid_search,cluster_seed,num_seg,num_rep, session_id):
 	'''
 	Runs single or gridsearch, also uses multiprocessing for gridsearch (if possible)
 	'''
@@ -1961,8 +2338,8 @@ def run_poLCA (grid_search,cluster_seed,num_seg,num_rep,rebucketed_filename):
 
 	if grid_search == False:
 		print '--------in grid_search == False function--------------'
-		timestamp, cluster_seeds, cluster_seed_names, num_seg = poLCA (1, cluster_seed,num_seg,num_rep,rebucketed_filename)
-		scorecard(timestamp, cluster_seeds, cluster_seed_names, num_seg)
+		timestamp, cluster_seeds, cluster_seed_names, num_seg = poLCA (1, cluster_seed,num_seg,num_rep,session_id)
+		scorecard(timestamp, cluster_seeds, cluster_seed_names, num_seg, session_id)
 		#timestamps = [timestamp]
 		results = [(timestamp,cluster_seeds,cluster_seed_names,num_seg)]
 		print "results:", results
@@ -1988,7 +2365,7 @@ def run_poLCA (grid_search,cluster_seed,num_seg,num_rep,rebucketed_filename):
 		#scorecard(cluster_seeds, cluster_seed_names, num_seg)
 		# see http://blog.dominodatalab.com/simple-parallelization/
 		print "running grid search (seg x variables removed):", len(num_seg), ", ", num_remove
-		results = Parallel(n_jobs=num_cores,verbose=5)(delayed(poLCA)(i,shortened_cluster_seeds[j], num_seg[i], num_rep, rebucketed_filename) for i in range(len(num_seg)) for j in range (len(shortened_cluster_seeds)))
+		results = Parallel(n_jobs=num_cores,verbose=5)(delayed(poLCA)(i,shortened_cluster_seeds[j], num_seg[i], num_rep, session_id) for i in range(len(num_seg)) for j in range (len(shortened_cluster_seeds)))
 		#print results
 	
 	print "number of runs completed:", len(results)
@@ -1998,14 +2375,15 @@ def func_name():
 	import traceback
 	return traceback.extract_stack(None, 2)[0][2]
 
-def run_report(timestamps):
+def run_report(timestamps, session_id):
 	'''
 	Detailed report from single segmenting run
 	'''
 	z = func_name(); print "------in function:", z, "---------------"
-
-	global results_dict
-	global question_dict
+	X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names = load_db(session_id)
+	
+	#global results_dict
+	#global question_dict
 
 	#  sample results_dict entry keys: ['cluster_shares', 'run_number', 'model_stats', 'response_shares', 'posterior_probabilities', 'cluster_number',
 	# 'cross_question_polarity', 'quest_list', 'predicted_clusters', 'response_counts', 'cluster_counts', 'polarity_scores', 'upload_state', 
@@ -2036,6 +2414,9 @@ def run_report(timestamps):
 
 		# order responses: segmenting variables, objective functions, other
 		clustering_variables = results_dict[run]['quest_list']
+
+		print 'clustering_variables:', clustering_variables
+		
 		all_questions = results_dict[run]['response_shares'].keys()
 		d = ['n/a']
 		dimension_vars = [q for q in all_questions if question_dict[q]['dimension'] not in d and q not in clustering_variables]
@@ -2043,6 +2424,8 @@ def run_report(timestamps):
 		dimension_variables = [a for a,b in sorted(zip(dimension_vars, dimension_vars_text), key = lambda z: z[1])]
 		non_clustering_variables = [q for q in all_questions if q not in clustering_variables and q not in dimension_variables]
 		ordered_variables = sorted(clustering_variables) + dimension_variables + sorted(non_clustering_variables)
+
+		print 'ordered_variables: ', ordered_variables
 
 		#for survey_question in results_dict[run]['response_shares'].keys():
 		for survey_question in ordered_variables:
@@ -2074,7 +2457,7 @@ def run_report(timestamps):
 					run_report.append(rov_row)
 					run_report.append(row_spacer)
 
-			if survey_question == clustering_variables[-1]: # and len(clustering_variables) == clustering_variables.index(survey_question):
+			if survey_question == sorted(clustering_variables)[-1]: # and len(clustering_variables) == clustering_variables.index(survey_question):
 				row_spacer = [''] * (len(row))
 				run_report.append(row_spacer)
 				run_report.append(row_spacer)
@@ -2132,14 +2515,17 @@ def run_report(timestamps):
 	print 'total length of one run_report', len(run_reports[0])
 	print 'header for one run_report:', run_reports[0][0]
 	print 'sample entry for one question in one run_report:', run_reports[0][1]
- 				
+ 	
+ 	save_db(session_id, X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names)
+
 	return run_reports
 
-def get_segments(X_rebucketed_df, names, cluster_seed, method, num_seg):
+def get_segments(X_rebucketed_df, names, cluster_seed, method, num_seg, session_id):
 	'''
 	Performs range of clustering methods 
 	'''
-	z = func_name(); print "------in function:", z, "---------------"
+	z = func_name(); print "------entering function:", z, "---------------"
+	X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names = load_db(session_id)
 
 	cluster_seed_names = [names[int(value)] for value in cluster_seed]
 	timestamp = str(uuid.uuid4())
@@ -2209,13 +2595,18 @@ def get_segments(X_rebucketed_df, names, cluster_seed, method, num_seg):
 	print 'fake rov file written to:', basedir_for_segs + filename	
 
 	results = [(timestamp,cluster_seed,cluster_seed_names,num_seg)]
+
+	z = func_name(); print "------exiting function:", z, "---------------"
+	save_db(session_id, X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names)
+
 	return results
 
-def feature_importances(X_rebucketed_df, timestamps):
+def feature_importances(X_rebucketed_df, timestamps, session_id):
 	'''
 	Calculates relative contribution of features using DecisionTreeClassifier
 	'''
 	z = func_name(); print "------in function:", z, "---------------"
+	X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names = load_db(session_id)
 
 	rfe_list = []
 
@@ -2272,6 +2663,7 @@ def feature_importances(X_rebucketed_df, timestamps):
 				
 				break
 
+	save_db(session_id, X, X_rebucketed, X_rebucketed_df, results_dict, question_dict, names)			
 	return rfe_list
 
 def make_visual(i, X_rebucketed_df, timestamp):
@@ -2455,6 +2847,7 @@ if __name__ == "__main__":
 	cluster_seed = []
 	method = 'poLCA'
 	timestamp = 'test123'
+	session_id = 'test_test_test_test'
 
 	#basedir = '/Users/pniessen/Rosetta_Desktop/Segmentation_2-point-0/sample_case_work/GoPro/'
 	# filename = 'test_raw_data_v1.csv' 
@@ -2476,31 +2869,31 @@ if __name__ == "__main__":
 	# weighting (module TBA)
 
 	# pre-processing pipeline:
-	factor_matrix, names, X, question_dict, results_dict = get_PCA(filename, weights_filename)
-	factor_matrix, num_rows, num_cols, question_number, rh, best_factor, second_best_factor, question_dict = top_n_factors(factor_matrix, top_n, question_dict, names)
-	rebucketed_filename, X_rebucketed, question_dict, X_rebucketed_df = rebucket(factor_matrix, names, X, rh, question_dict)
-	cluster_seed = make_cluster_seed(factor_matrix, best_factor, question_number, num_cols, num_rows)
+	#factor_matrix, names, X, question_dict, results_dict = get_PCA(filename, weights_filename, session_id)
+	#factor_matrix, num_rows, num_cols, question_number, rh, best_factor, second_best_factor, question_dict = top_n_factors(factor_matrix, top_n, question_dict, names, session_id)
+	#rebucketed_filename, X_rebucketed, question_dict, X_rebucketed_df, rh = rebucket(factor_matrix, names, X, rh, question_dict, session_id)
+	#cluster_seed = make_cluster_seed(factor_matrix, best_factor, question_number, num_cols, num_rows, rh, session_id)
 	# get_segments(X_rebucketed_df, names, cluster_seed, method, timestamp, num_seg)
 	# make_visual(X_rebucketed_df, cluster_seed_inbound, timestamps, names)
 	# rfe_list = feature_importances(X_rebucketed_df, timestamps, cluster_seed_names)
 	# app.run()
 
-	print "cluster_seed: ", cluster_seed
+	#print "cluster_seed: ", cluster_seed
 
 	if grid_search:
 	#analysis and reporting pipeline
-		results = run_poLCA (grid_search,cluster_seed,num_seg,num_rep,rebucketed_filename)#,filename)	
-		timestamps = update_results_dict(results, X_rebucketed, names, method)
-		update_question_dict(timestamps)
-		clean_up(timestamps)
+		results = run_poLCA (grid_search,cluster_seed,num_seg,num_rep,session_id)#,filename)	
+		timestamps = update_results_dict(results, X_rebucketed, names, method, session_id)
+		update_question_dict(timestamps, session_id)
+		clean_up(timestamps, session_id)
 		save_results()
-		run_report(timestamps)
+		run_report(timestamps, session_id)
 	
 	print("------- Runtime: %.2f seconds -------" % (time.time() - start_time))
 
 	# feature switches
 	if xls:
-		make_xls()
+		make_xls(session_id)
 
 	if interactive_mode:
 		# app.debug = True

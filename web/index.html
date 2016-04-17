@@ -725,6 +725,7 @@
                     <input type="button" class = 'btn btn-primary' name="login" id="login" value="Login">
                     <br>
                 </form>
+                <div style="color:black"><input type = 'checkbox' id = 'login-check'> Please save my email for future logins (next 7 days only)</div>
               </div> <!-- modal-body -->
             </div> <!-- modal-content -->
           </div> <!-- modal-dialog -->
@@ -941,13 +942,14 @@
     <script>
     function GetTrainingData () {
         console.log('in GetTrainingData function');
+        data_to_send = $.param({ session_id: window.session_id});
         $.ajax({
              type: "GET",
              contentType: "application/json; charset=utf-8",
              url: "/data",
              dataType: "json",
              async: true,
-             //data: data_to_send,
+             data: data_to_send,
              success: function (training_data) {console.log(training_data);
                                         //MakeTable(training_data);
                                         //createTable(training_data);
@@ -984,7 +986,7 @@ function SubmitObjectiveFunction (objective_functions) {
 function SubmitDimension (new_dimension) {
     console.log('in SubmitDimension function');  
     console.log(new_dimension);
-    var data_to_send = JSON.stringify(new_dimension);
+    var data_to_send = JSON.stringify([window.session_id, new_dimension]);
     console.log(data_to_send);      
     $.ajax({
          type: "POST",
@@ -1031,8 +1033,11 @@ function SaveSession (user_id, session_id) {
 </script>
 <script>
 function LoadSessionFile (user_id, filename) {
-    console.log('in LoadSessionFile function');  
-    //console.log(new_dimension);
+    console.log('in LoadSessionFile function');
+    window.session_id = UUID(); //new file = new session_id
+    console.log('new session_id:', window.session_id);
+    createCookie('session_id', session_id, 7);
+    console.log('new session_id cookie:', document.cookie);  
     var data_to_send = JSON.stringify([window.user_id, filename]);
     console.log(data_to_send);      
     $.ajax({
@@ -1047,9 +1052,9 @@ function LoadSessionFile (user_id, filename) {
             //z = document.getElementById('tracker-goes-here');
             //z.removeChild(z.lastChild);
             clearTabs();
-            StartTrackerData ();
+            StartTrackerDataFromSavedSession ();
             //addColumn();
-            UpdateTrackerData ();
+            //UpdateTrackerData (); (moved to StatTrackerFromSavedSession)
             $('#myModal6').modal('toggle');
             cleanUpSavedSession();
          },
@@ -1127,6 +1132,7 @@ function SubmitData () {
     if (num_segments <= 0){num_segments = 5};   
 
     var data_to_send = {};
+    data_to_send['session_id'] = window.session_id;
     data_to_send['questions'] = checkbox_ids;
     data_to_send['segments'] = num_segments;
     data_to_send['xls'] = xls_out_flag;
@@ -1163,13 +1169,14 @@ function SubmitData () {
     window.tracker_data = [];
     function UpdateTrackerData () {
         console.log('in UpdateTrackerData function');
+        data_to_send = $.param({ session_id: window.session_id});
         $.ajax({
              type: "GET",
              contentType: "application/json; charset=utf-8",
              url: "/tracker",
              dataType: "json",
              async: true,
-             //data: data_to_send,
+             data: data_to_send,
              success: function (tracker_data) {
                 console.log('tracker data:', tracker_data);
                 window.tracker_data = tracker_data;
@@ -1191,13 +1198,14 @@ function SubmitData () {
     function StartTrackerData () {
         console.log('in StartTrackerData function');
         console.log('session_id:', window.session_id);
+        data_to_send = $.param({ session_id: window.session_id});
         $.ajax({
              type: "GET",
              contentType: "application/json; charset=utf-8",
              url: "/create_tracker",
              dataType: "json",
              async: true,
-             //data: data_to_send,
+             data: data_to_send,
              success: function (first_tracker_data) {
                 console.log('in StartTrackerData function');
                 visual_flag = first_tracker_data.visual_mode[0];
@@ -1213,7 +1221,36 @@ function SubmitData () {
              error: function (first_tracker_data) {console.log(first_tracker_data);
             }
            });
-    };      
+    };
+
+    function StartTrackerDataFromSavedSession () {
+        console.log('in StartTrackerDataFromSavedSession function');
+        console.log('session_id:', window.session_id);
+        data_to_send = $.param({ session_id: window.session_id});
+        $.ajax({
+             type: "GET",
+             contentType: "application/json; charset=utf-8",
+             url: "/create_tracker_from_saved_session",
+             dataType: "json",
+             async: true,
+             data: data_to_send,
+             success: function (first_tracker_data) {
+                console.log('in StartTrackerDataFromSavedSession function');
+                visual_flag = first_tracker_data.visual_mode[0];
+                console.log('visual_flag:', visual_flag);
+                console.log('first_tracker_data:', first_tracker_data);                
+                corr_matrix = first_tracker_data.corr_matrix;
+                cluster_seed = first_tracker_data.cluster_seed;
+                startTracker(first_tracker_data);
+                UpdateTrackerData ();
+                //fillExplorer(first_tracker_data);
+
+                //loadTrainingImage(training_data);
+             },
+             error: function (first_tracker_data) {console.log(first_tracker_data);
+            }
+           });
+    };       
     </script>
 
     <!-- create tracker_table -->
@@ -1594,10 +1631,17 @@ $(function() {
     $('#upload-file-btn-2').click(function() {
         var form_data_2 = new FormData($('#upload-file-2')[0]);
         var form_data_3 = new FormData($('#upload-file-3')[0]);
+        window.session_id = UUID();
+        console.log('session_id: ', window.session_id);
+        document.cookie ='session_id=' + window.session_id + '; expires=Fri, 31 Dec 2016 20:47:11 UTC; path=/'
         //var form_data_all = [form_data_2, form_data_3];
         if( document.getElementById('upload-field-3').value.length > 0 && document.getElementById('upload-field-4').value.length > 0) { // empty field test
+        $('#upload-field-3').val(''); // reset weights_filename
+        $('#upload-field-4').val(''); // reset data_filename
         $("#myModal4").modal("toggle");
         //myApp.showPleaseWait();
+        console.log('form data 2 (weights): ', form_data_2); 
+        console.log('form data 3 (data): ', form_data_3); 
         console.log('form data 2 (weights): ', form_data_2.files); 
         console.log('form data 3 (data): ', form_data_3.files); 
         $.ajax({
@@ -1610,7 +1654,7 @@ $(function() {
             async: true ,
             success: function(data) {
                 console.log('Success 1!');
-                //console.log('Data:', data);
+                console.log('Data:', data);
                 //myApp.hidePleaseWait();
                 //clearTabs ();
                 //console.log('tabs cleared');
@@ -1644,7 +1688,8 @@ $(function() {
 function clearTabs() {
     // clear run_tracker
     var elem = document.getElementById('trackerTable');
-    elem.parentNode.removeChild(elem);
+    if (elem != null)
+        {elem.parentNode.removeChild(elem);
     // clear run_reports
     var tab_labels = document.getElementById('tab-list').children,
         tab_fields = document.getElementById('tabs').children,
@@ -1664,6 +1709,9 @@ function clearTabs() {
             console.log('j:', j);
             tab_fields[2].parentNode.removeChild(tab_fields[2]);
         }
+    }
+    else
+        {return}
 };
 </script>
 
@@ -2019,7 +2067,10 @@ function cleanUpComparison(){
 function LoginLogout(){
     console.log('in LoginLogout function');
     var login_text = $('#login-text')[0].innerHTML;
-    if (login_text.indexOf('Login') != -1) { $('#myModal3').modal('toggle');}
+    if (login_text.indexOf('Login') != -1) { 
+        var user_email = readCookie('user_email');
+        if (user_email != null) { $('#user-id').val(user_email);}// if ($('#login-check').prop('checked') == false) {//$(this).trigger('click')}};
+        $('#myModal3').modal('toggle');}
     else {
         $('#login-text')[0].innerHTML = '<span class="glyphicon glyphicon-lock" href="#!" bgcolor="red" style="color:#B80000" id="login-lock"></span>Login';
         $('.login-hide').toggle();
@@ -2027,10 +2078,30 @@ function LoginLogout(){
         $('body').css('overflow', 'hidden');
     };
 };
+// store user_id?
+$('#login-check').on('change', function(){
+    console.log('login-check function');
+    if ($(this).prop('checked')) {
+        console.log('user_id box checked'); 
+        user_id = $('#user-id').val();
+        createCookie('user_email', user_id, 7); // (cookie name, value, days untill expire) 
+        //document.cookie = 'user_email=' + user_id + '; expires=Fri, 31 Dec 2016 20:47:11 UTC; path=/'
+        console.log(document.cookie);
+    }
+        else
+            {console.log('user_id box unchecked');
+             eraseCookie('user_email');
+             //document.cookie ='user_email=' + null;
+             //'user_email=''; expires=Fri, 31 Dec 2016 20:47:11 UTC; path=/'}
+             console.log(document.cookie);
+    }
+});
+
 function cleanUpLogin(){
     console.log('in cleanUpLogin function');
     $('#password').val(''); // reset password input field
-    $('#user-id').val(''); // reset user id input field
+    $('#user-id').val('');  // reset user id input field
+    //if ($('#login-check').prop('checked')) {$(this).trigger('click')} // reset user_id checkbox if checked
 };
 // login button :-)
 $('#login').on('click', function(){
@@ -2042,13 +2113,16 @@ $('#login').on('click', function(){
         //$('#login-lock')[0].style.color = '#00FF66';
         $('#login-text')[0].innerHTML = '<span class="glyphicon glyphicon-lock" href="#!" bgcolor="red" style="color:#00FF66" id="login-lock"></span>Logout'
         window.session_id = UUID();
+        document.cookie = 'session_id=' + window.session_id + '; expires=Fri, 31 Dec 2016 20:47:11 UTC; path=/';
+        if ($('#login-check').prop('checked')) { createCookie('user_email', user_id, 7); console.log(document.cookie)}
         window.user_id = hashCode(user_id).toString();
         $('.login-hide').toggle();
         $('body').css('overflow', 'auto');
         // http://stackoverflow.com/questions/9538868/prevent-body-from-scrolling-when-a-modal-is-opened
         console.log('session_id:', window.session_id);
         console.log('user_id:', window.user_id);
-        SubmitSessionId (window.session_id);
+        //SubmitSessionId (window.session_id);
+        clearTabs();
         StartTrackerData ();
         $('#basic-toolbar').toggle();
         $('#password').val(''); // reset password input field
@@ -2420,6 +2494,33 @@ function dataWeights(){
         $("#spinner-weight-" + h).spinner();};
     //$('#wtable-1-5').append("<input id='spinner-weight-1'>");
     };
+
+//http://www.quirksmode.org/js/cookies.html
+
+function readCookie(name) {
+    var nameEQ = name + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0;i < ca.length;i++) {
+        var c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+    }
+    return null;
+};
+
+function createCookie(name,value,days) {
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime()+(days*24*60*60*1000));
+        var expires = "; expires="+date.toGMTString();
+    }
+    else var expires = "";
+    document.cookie = name+"="+value+expires+"; path=/";
+}
+
+function eraseCookie(name) {
+    createCookie(name,"",-1);
+}
 </script>
 <script>
 // $("#tab-list li:eq(1)").addClass("active").show(); //Activate second tab

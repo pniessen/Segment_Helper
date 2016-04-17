@@ -92,6 +92,7 @@ for (var in xtab_var_rows){
   #print (var)
   #print (ds[,var])  
   chisq_stat <- wtd.chi.sq(as.character(unlist(ds[,var])),predicted_segment,weight=as.numeric(weights),na.rm=TRUE)
+  print (chisq_stat)
   chisq_df <- ( length(unique(ds[,var])) - 1)  * ( length(unique(predicted_segment)) - 1) 
   chisq_stat <- chisq_stat[[1]] / 1
   rov_stat <- (chisq_stat - chisq_df) / sqrt(2*chisq_df)
