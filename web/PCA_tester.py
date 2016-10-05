@@ -6,7 +6,7 @@
 # Peter Niessen
 
 '''
-Segmentr: a customer segmentation toolkit
+Segment Helper: a customer segmentation toolkit
 '''
 
 
