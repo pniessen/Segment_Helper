@@ -58,7 +58,6 @@ xls = False
 web_mode = False
 filename = 'test_raw_data_q_v1.csv' # (user x question) .csv with question labels in first row
 weights_filename = 'test_raw_data_q_v1_weights.csv' # (user x question) .csv with question labels in first row
-#filename = 'research_files/labelled_data/GP_Content_Seg_Input_File_092115_Full_Data.csv' # labeled data
 grid_search = False
 visual_mode = True
 
@@ -466,7 +465,7 @@ def homebrew_factor_matrix(X_unweighted, X_weights):
 	print loading_factors_matrix_rotated.shape
 
 	'''
-	tested vs SPSS output using gopro data:
+	tested vs SPSS output using test_raw_data_v1:
 	for explanation of SPSS output
 	see http://www.ats.ucla.edu/stat/spss/output/principal_components.htm
 	----------------
