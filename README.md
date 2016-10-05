@@ -1,2 +1,2 @@
-# segmentr
+# segment helper
 Customer segmentation toolkit
