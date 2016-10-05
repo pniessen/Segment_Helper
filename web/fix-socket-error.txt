@@ -1,4 +1,0 @@
-ps aux | grep python 
-sudo kill -9 procees id [ex: sudo kill -9 3550 where 3550 is process id]
-
-maheshwarimayur.blogspot.com/2013/02/socketerror-errno-98-address-already-in.htm
