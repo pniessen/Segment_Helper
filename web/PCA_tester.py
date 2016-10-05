@@ -3,7 +3,7 @@
 
 # Rosetta Consulting customer segmentation pipeline
 # 1.20.2016
-# Peter Niessen
+# Peter Niessen, peter.niessen@rosetta.com
 
 '''
 Segment Helper: a customer segmentation toolkit
